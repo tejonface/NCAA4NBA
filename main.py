@@ -229,3 +229,33 @@ school_summary = draft_df.groupby(['School'])['Player'].count()
 school_summary =school_summary.reset_index()
 school_summary = school_summary.rename(columns={'School':'Team/Country','Player': 'Total'})
 school_summary = school_summary.sort_values(by='Total', ascending=False)
+
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# Set the theme for Seaborn
+sns.set_theme()
+
+# Create a figure and axis
+fig, ax = plt.subplots(figsize=(10, 6))
+
+# Create a bar plot of Schools with the most prospects
+sns.barplot(
+    data=school_summary,
+    x="Total",
+    y="Team/Country",
+    ax=ax,
+    palette="viridis"
+)
+
+# Set labels and title
+ax.set_xlabel("Number of NBA Prospects")
+ax.set_ylabel("Team/Country")
+ax.set_title("Schools with Most NBA Prospects in 2025 Draft")
+
+# Rotate the labels for better readability if needed
+plt.xticks(rotation=45)
+
+# Display the plot in Streamlit
+st.header("NBA Prospect Distribution by School")
+st.pyplot(fig)
