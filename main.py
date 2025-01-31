@@ -225,5 +225,5 @@ url = f"https://www.espn.com/mens-college-basketball/schedule/_/date/{date_str}"
 st.write("[espn.com ncaa schedule](%s)" % url)
 
 
-school_summary = draft_df.groupby('School')['Player'].count()
+school_summary = draft_df.groupby(['School'])['Player'].count()
 st.dataframe(school_summary, hide_index=True)
