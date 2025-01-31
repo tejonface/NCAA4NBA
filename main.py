@@ -226,6 +226,9 @@ st.write("[espn.com ncaa schedule](%s)" % url)
 
 
 school_summary = draft_df.groupby(['School'])['Player'].count()
+school_summary =school_summary.reset_index()
+school_summary = school_summary.rename(columns={'School':'Team/Country','Player': 'Total'})
+school_summary = school_summary.sort_values(by='Total', ascending=False)
 
 st.dataframe(school_summary, hide_index=False)
-st.bar_chart(school_summary)
+st.bar_chart(school_summary, horizontal=True, color='Red')
