@@ -228,7 +228,10 @@ st.write("[espn.com ncaa schedule](%s)" % url)
 school_summary = draft_df.groupby(['School'])['Player'].count()
 school_summary =school_summary.reset_index()
 school_summary = school_summary.rename(columns={'School':'Team/Country','Player': 'Total'})
-school_summary_sorted = school_summary.sort_values(by='Total', ascending=False)
+school_summary = school_summary.sort_values(by='Total', ascending=False)
 
 st.dataframe(school_summary, hide_index=True)
-st.bar_chart(school_summary_sorted, x='Team/Country', y='Total', horizontal=True)
+
+import plotly.express as px
+fig = px.bar(school_summary, x='Total', y='Team/Country', text_auto=True)
+st.plotly_chart(fig)
