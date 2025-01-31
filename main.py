@@ -231,4 +231,4 @@ school_summary = school_summary.rename(columns={'School':'Team/Country','Player'
 school_summary = school_summary.sort_values(by='Total', ascending=False)
 
 st.dataframe(school_summary, hide_index=False)
-st.bar_chart(school_summary, horizontal=True, color='Red')
+st.bar_chart(school_summary, horizontal=True)
