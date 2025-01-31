@@ -44,7 +44,7 @@ def scrape_ncaa_schedule():
     combined_df = pd.DataFrame()
 
     for i in range(7):  # Loop through the next 3 days
-        single_date = date.today() + timedelta(days=1 + i)  # Start with tomorrow
+        single_date = date.today() + timedelta(days=0 + i)  # Start with oday
         date_str = single_date.strftime("%Y%m%d")
         url = f"https://www.espn.com/mens-college-basketball/schedule/_/date/{date_str}"
         headers = {"User-Agent": "Mozilla/5.0"}
