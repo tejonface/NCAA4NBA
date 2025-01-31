@@ -241,7 +241,7 @@ sns.set_theme()
 fig, ax = plt.subplots(figsize=(12, 12))
 
 
-gradient_palette = sns.color_palette("viridis", n_colors=len(school_summary))
+gradient_palette = sns.color_palette("viridis", n_colors=len(school_summary[['Total']].drop_duplicates()))
 
 # Create a bar plot of Schools with the most prospects
 sns.barplot(
@@ -259,7 +259,7 @@ ax.set_ylabel("School/Country")
 #ax.set_title("Schools with Most NBA Prospects in 2025 Draft")
 
 # Rotate the labels for better readability if needed
-plt.xticks(rotation=45)
+plt.xticks(rotation=15)
 
 # Display the plot in Streamlit
 st.header("NBA Prospect Distribution by School/Country")
