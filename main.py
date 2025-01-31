@@ -235,17 +235,16 @@ import matplotlib.pyplot as plt
 
 # Set the theme for Seaborn
 sns.set_theme()
-
+sns.color_palette("mako", as_cmap=True)
 # Create a figure and axis
-fig, ax = plt.subplots(figsize=(12, 6))
+fig, ax = plt.subplots(figsize=(12, 12))
 
 # Create a bar plot of Schools with the most prospects
 sns.barplot(
     data=school_summary,
     x="Total",
     y="Team/Country",
-    ax=ax,
-    palette="colorblind"
+    ax=ax
 )
 
 # Set labels and title
