@@ -5,6 +5,7 @@ import requests
 from bs4 import BeautifulSoup
 from datetime import date, timedelta
 
+from seaborn import color_palette
 from tabulate import tabulate
 
 
@@ -238,13 +239,14 @@ sns.set_theme()
 sns.color_palette("mako", as_cmap=True)
 # Create a figure and axis
 fig, ax = plt.subplots(figsize=(12, 12))
-
+crayon_colors = sns.crayon_palette(["Dandelion", "Denim", "Blush", "Fern", "Periwinkle"])
 # Create a bar plot of Schools with the most prospects
 sns.barplot(
     data=school_summary,
     x="Total",
     y="Team/Country",
-    ax=ax
+    ax=ax,
+    color_palette=crayon_colors
 )
 
 # Set labels and title
