@@ -241,7 +241,7 @@ sns.set_theme()
 fig, ax = plt.subplots(figsize=(12, 12))
 
 
-gradient_palette = sns.color_palette("rocket", n_colors=6)
+gradient_palette = sns.color_palette("rocket", n_colors=6, as_cmap=True)
 
 # Create a bar plot of Schools with the most prospects
 sns.barplot(
