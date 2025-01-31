@@ -240,16 +240,14 @@ sns.set_theme()
 # Create a figure and axis
 fig, ax = plt.subplots(figsize=(12, 12))
 
-gradient_palette = sns.color_palette("mako", as_cmap=True, n_colors=6)
-sns.set_palette(gradient_palette)
-
 
 # Create a bar plot of Schools with the most prospects
 sns.barplot(
     data=school_summary,
     x="Total",
     y="Team/Country",
-    ax=ax
+    ax=ax,
+    palette="YlGnBu_d",
 
 )
 
