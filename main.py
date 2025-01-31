@@ -151,11 +151,16 @@ super_matchups_expanded = super_matchups_expanded[['AWAY', 'HOME', 'DATE', 'TIME
 
 # Streamlit App
 st.title("NBA Prospect Schedule")
-st.text("Upcoming NCAA games featuring top 60 draft prospects")
+st.text("Upcoming NCAA games featuring top 60 NBA draft prospects.")
 draft_with_games = draft_with_games[['Rank', 'Team', 'Player', 'School','DATE', 'TIME', 'AWAY', 'HOME']]
+
+url = "https://www.nbadraft.net/nba-mock-drafts/?year-mock=2025"
+st.write("[nbadraft.net mock draft board](%s)" % url)
+
 
 # Display full draft board with upcoming games
 st.header("Draft Board with Next Games")
+st.text("2025 NBA Mock Draft order with current draft order with their next scheduled NCAA game.")
 st.dataframe(draft_with_games.drop_duplicates(subset=['Rank', 'Player', 'School']), hide_index=True)
 
 # Display in Streamlit
