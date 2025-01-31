@@ -223,3 +223,7 @@ single_date = date.today() + timedelta(days=1)  # Start with tomorrow
 date_str = single_date.strftime("%Y%m%d")
 url = f"https://www.espn.com/mens-college-basketball/schedule/_/date/{date_str}"
 st.write("[espn.com ncaa schedule](%s)" % url)
+
+
+school_summary = draft_df.groupby('School').count()
+st.dataframe(school_summary, hide_index=True)
