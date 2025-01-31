@@ -218,14 +218,6 @@ else:
     st.write("Please select a date.")
 
 
-url = "https://www.nbadraft.net/nba-mock-drafts/?year-mock=2025"
-st.write("[nbadraft.net mock draft board](%s)" % url)
-single_date = date.today() + timedelta(days=1)  # Start with tomorrow
-date_str = single_date.strftime("%Y%m%d")
-url = f"https://www.espn.com/mens-college-basketball/schedule/_/date/{date_str}"
-st.write("[espn.com ncaa schedule](%s)" % url)
-
-
 school_summary = draft_df.groupby(['School'])['Player'].count()
 school_summary =school_summary.reset_index()
 school_summary = school_summary.rename(columns={'School':'School/Country','Player': 'Total'})
@@ -256,8 +248,17 @@ ax.set_ylabel("School/Country")
 #ax.set_title("Schools with Most NBA Prospects in 2025 Draft")
 
 # Rotate the labels for better readability if needed
-plt.xticks(rotation=15)
+plt.xticks(rotation=30)
 
 # Display the plot in Streamlit
 st.header("NBA Prospect Distribution by School/Country")
 st.pyplot(fig)
+
+
+
+url = "https://www.nbadraft.net/nba-mock-drafts/?year-mock=2025"
+st.write("[nbadraft.net mock draft board](%s)" % url)
+single_date = date.today() + timedelta(days=1)  # Start with tomorrow
+date_str = single_date.strftime("%Y%m%d")
+url = f"https://www.espn.com/mens-college-basketball/schedule/_/date/{date_str}"
+st.write("[espn.com ncaa schedule](%s)" % url)
