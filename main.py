@@ -241,7 +241,7 @@ sns.set_theme()
 fig, ax = plt.subplots(figsize=(12, 12))
 
 
-gradient_palette = sns.color_palette("viridis", n_colors=len(school_summary[['Total']].drop_duplicates()), as_cmap=True)
+gradient_palette = sns.color_palette("mako", len(school_summary))
 
 # Create a bar plot of Schools with the most prospects
 sns.barplot(
