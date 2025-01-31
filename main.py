@@ -245,6 +245,7 @@ sns.barplot(
 # Set labels and title
 ax.set_xlabel("Number of NBA Prospects")
 ax.set_ylabel("School/Country")
+ax.bar_label(ax.containers[0], fontsize=10);
 #ax.set_title("Schools with Most NBA Prospects in 2025 Draft")
 
 # Rotate the labels for better readability if needed
