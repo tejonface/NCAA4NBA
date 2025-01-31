@@ -226,7 +226,6 @@ st.write("[espn.com ncaa schedule](%s)" % url)
 
 
 school_summary = draft_df.groupby(['School'])['Player'].count()
-school_summary.columns.values[1] = 'Team/Country'
 
 st.dataframe(school_summary, hide_index=False)
 st.bar_chart(school_summary)
