@@ -170,17 +170,17 @@ st.dataframe(super_matchups_expanded, hide_index=True)
 # Get tomorrow's date as the default selection
 tomorrow = date.today() + timedelta(days=1)
 
-# Select date(s) using segmented control with multi-selection enabled, default to tomorrow
+# Select a single date using segmented control, default to tomorrow
 date_options = sorted(combined_df['DATE'].unique())
-selected_dates = st.segmented_control("Select Date(s)", date_options, selection_mode="multi", default=[tomorrow])
+selected_date = st.segmented_control("Select Date", date_options, selection_mode="single", default=tomorrow)
 
-# Display schedule for selected dates
-st.header(f"Schedule for {', '.join(map(str, selected_dates))}")
+# Display schedule for the selected date
+st.header(f"Schedule for {selected_date}")
 
-# Ensure selected_dates is treated as a list for filtering
-if selected_dates:
-    # Filter upcoming games for selected dates
-    filtered_games = upcoming_games_df[upcoming_games_df['DATE'].isin(selected_dates)]
+# Ensure selected_date is treated as a single value for filtering
+if selected_date:
+    # Filter upcoming games for the selected date
+    filtered_games = upcoming_games_df[upcoming_games_df['DATE'] == selected_date]
 
     # Merge filtered games with draft data to add player info
     filtered_games_expanded = filtered_games.copy()
@@ -214,7 +214,7 @@ if selected_dates:
     st.dataframe(filtered_games_expanded, hide_index=True)
 
 else:
-    st.write("Please select at least one date.")
+    st.write("Please select a date.")
 
 
 url = "https://www.nbadraft.net/nba-mock-drafts/?year-mock=2025"
