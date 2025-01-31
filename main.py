@@ -150,7 +150,7 @@ super_matchups_expanded['All_Players'] = super_matchups_expanded.apply(
 super_matchups_expanded = super_matchups_expanded[['AWAY', 'HOME', 'DATE', 'TIME', 'All_Players']]
 
 # Streamlit App
-st.title("NBA Draft Prospect Schedule Viewer")
+st.title("NBA Prospect Schedule")
 
 draft_with_games = draft_with_games[['Rank', 'Team', 'Player', 'School','DATE', 'TIME', 'AWAY', 'HOME']]
 
