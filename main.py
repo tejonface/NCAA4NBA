@@ -234,4 +234,4 @@ st.dataframe(school_summary, hide_index=True)
 
 import plotly.express as px
 fig = px.bar(school_summary, x='Total', y='Team/Country', text_auto=True)
-st.plotly_chart(fig)
+#st.plotly_chart(fig)
