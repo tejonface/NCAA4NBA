@@ -151,7 +151,7 @@ super_matchups_expanded = super_matchups_expanded[['AWAY', 'HOME', 'DATE', 'TIME
 
 # Streamlit App
 st.title("NBA Prospect Schedule")
-
+st.text("Upcoming NCAA games featuring top 60 draft prospects")
 draft_with_games = draft_with_games[['Rank', 'Team', 'Player', 'School','DATE', 'TIME', 'AWAY', 'HOME']]
 
 # Display full draft board with upcoming games
