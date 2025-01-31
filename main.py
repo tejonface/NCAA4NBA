@@ -228,7 +228,7 @@ import matplotlib.pyplot as plt
 
 # Set the theme for Seaborn
 sns.set_theme()
-#sns.color_palette("mako", as_cmap=True)
+
 # Create a figure and axis
 fig, ax = plt.subplots(figsize=(12, 12))
 
@@ -238,7 +238,8 @@ sns.barplot(
     data=school_summary,
     x="Total",
     y="School/Country",
-    ax=ax
+    ax=ax,
+    palette=sns.color_palette("flare", len(school_summary)),
 
 )
 
