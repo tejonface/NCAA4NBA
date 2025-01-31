@@ -158,12 +158,13 @@ draft_with_games = draft_with_games[['Rank', 'Team', 'Player', 'School','DATE', 
 
 # Display full draft board with upcoming games
 st.header("Draft Board with Next Games")
-st.text("2025 NBA Mock Draft order with current draft order with their next scheduled NCAA game.")
+st.text("2025 NBA Mock Draft board with each NCAA players' upcoming game.")
 
 st.dataframe(draft_with_games.drop_duplicates(subset=['Rank', 'Player', 'School']), hide_index=True)
 
 # Display in Streamlit
 st.header("SUPER MATCHUPS")
+st.text("Games with top 60 NBA draft prospects on both teams.")
 st.dataframe(super_matchups_expanded, hide_index=True)
 
 # Get tomorrow's date as the default selection
