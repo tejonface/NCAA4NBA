@@ -237,7 +237,7 @@ import matplotlib.pyplot as plt
 sns.set_theme()
 
 # Create a figure and axis
-fig, ax = plt.subplots(figsize=(10, 6))
+fig, ax = plt.subplots(figsize=(12, 6))
 
 # Create a bar plot of Schools with the most prospects
 sns.barplot(
@@ -245,7 +245,7 @@ sns.barplot(
     x="Total",
     y="Team/Country",
     ax=ax,
-    palette="viridis"
+    palette="colorblind"
 )
 
 # Set labels and title
