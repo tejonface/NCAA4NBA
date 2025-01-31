@@ -245,8 +245,21 @@ sns.barplot(
 # Set labels and title
 ax.set_xlabel("Number of NBA Prospects")
 ax.set_ylabel("School/Country")
-ax.bar_label(ax.containers[0], fontsize=10);
 #ax.set_title("Schools with Most NBA Prospects in 2025 Draft")
+
+# Add value labels to each bar
+for bar in barplot.patches:
+    ax.text(
+        bar.get_width() + 0.5,  # Adjust placement slightly right of the bar
+        bar.get_y() + bar.get_height() / 2,  # Center vertically
+        f"{int(bar.get_width())}",  # Convert to integer for readability
+        ha="left",  # Align text to the left of bars
+        va="center",  # Center text vertically
+        fontsize=12  # Adjust font size as needed
+    )
+
+
+
 
 # Rotate the labels for better readability if needed
 plt.xticks(rotation=30)
