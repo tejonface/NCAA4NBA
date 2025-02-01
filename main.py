@@ -99,6 +99,8 @@ combined_df_away['TEAM'] = combined_df_away['AWAY'].str.replace(r'[@0-9]', '', r
 
 combined_df = pd.concat([combined_df_home, combined_df_away])
 
+combined_df['TEAM'] = combined_df['TEAM'].str.replace("'","")
+
 combined_df['HomeTeam'] = combined_df['HOME'].str.replace(r'[@0-9]', '', regex=True).str.strip()
 combined_df['AwayTeam'] = combined_df['AWAY'].str.replace(r'[@0-9]', '', regex=True).str.strip()
 
@@ -230,7 +232,7 @@ import matplotlib.pyplot as plt
 
 # Set the theme for Seaborn
 sns.set_theme()
-seaborn.set(rc={'axes.facecolor':'transparent', 'figure.facecolor':'transparent'})
+seaborn.set(rc={'axes.':'transparent', 'figure.facecolor':'transparent'})
 
 #sns.color_palette("flare")
 # Create a figure and axis
