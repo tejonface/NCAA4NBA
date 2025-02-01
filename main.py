@@ -153,18 +153,16 @@ super_matchups_expanded = super_matchups_expanded[['AWAY', 'HOME', 'DATE', 'TIME
 # Streamlit App
 st.title("NBA Prospect Schedule")
 st.text("Upcoming NCAA games featuring top 60 NBA draft prospects.")
-draft_with_games = draft_with_games[['Rank', 'Team', 'Player', 'School','DATE', 'TIME (ET)', 'AWAY', 'HOME']]
 
-
+#with st.expander("About", expanded=False):
+#    st.subheader("More information")
+#    st.image("https://storage.googleapis.com/nbadraft-theringer-com-cms/public/media/ringernba2024/default/2024-header-group_desktop-v2-1711463345632.png")
 
 # Display full draft board with upcoming games
 st.header("Draft Board with Next Games")
 st.text("2025 NBA Mock Draft board with each NCAA players' upcoming game.")
-with st.expander("About", expanded=False):
-    st.subheader("More information")
-    st.image("https://storage.googleapis.com/nbadraft-theringer-com-cms/public/media/ringernba2024/default/2024-header-group_desktop-v2-1711463345632.png")
 
-
+draft_with_games = draft_with_games[['Rank', 'Team', 'Player', 'School','DATE', 'TIME (ET)', 'AWAY', 'HOME']]
 st.dataframe(draft_with_games.drop_duplicates(subset=['Rank', 'Player', 'School']), hide_index=True)
 
 # Display in Streamlit
