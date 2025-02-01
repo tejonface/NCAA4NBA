@@ -118,8 +118,8 @@ combined_df['AwayTeam'] = combined_df['AWAY'].str.replace(r'[@0-9]', '', regex=T
 #print(tabulate(combined_df))
 st.dataframe(combined_df)
 # Merge draft board with upcoming games
-upcoming_games_df = combined_df[combined_df['TEAM'].isin(draft_df['School'])]
-draft_with_games = pd.merge(draft_df, upcoming_games_df, left_on='School', right_on='TEAM', how='left')
+upcoming_games_df = combined_df[combined_df['TEAM'].isin(draft_df['School_Merge'])]
+draft_with_games = pd.merge(draft_df, upcoming_games_df, left_on='School_Merge', right_on='TEAM', how='left')
 
 draft_with_games = draft_with_games[['Rank', 'Team', 'Player', 'School','DATE', 'TIME (ET)', 'AWAY', 'HOME', 'HomeTeam', 'AwayTeam']]
 
@@ -127,7 +127,7 @@ draft_with_games = draft_with_games[['Rank', 'Team', 'Player', 'School','DATE', 
 
 # Highlight matchups with NBA prospects on both teams
 super_matchups = combined_df[
-    (combined_df['HomeTeam'].isin(draft_df['School'])) & (combined_df['AwayTeam'].isin(draft_df['School']))]
+    (combined_df['HomeTeam'].isin(draft_df['School_Merge'])) & (combined_df['AwayTeam'].isin(draft_df['School_Merge']))]
 
 super_matchups = super_matchups[['AWAY', 'HOME', 'DATE', 'TIME (ET)','HomeTeam', 'AwayTeam']].drop_duplicates()
 
