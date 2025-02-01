@@ -249,7 +249,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 # Choose a colormap
-cmap = plt.get_cmap("flare")
+cmap = plt.get_cmap("crest")
 
 values = np.array(school_summary['Total'])
 
