@@ -248,6 +248,20 @@ sns.color_palette("flare")
 plt.show()
 # Create a figure and axis
 fig, ax = plt.subplots(figsize=(12, 12))
+import seaborn as sns
+import matplotlib.pyplot as plt
+import numpy as np
+
+# Choose a colormap
+cmap = plt.get_cmap("viridis")
+
+values = np.array(school_summary['Total'])
+
+# Normalize values
+norm = plt.Normalize(values.min(), values.max())
+
+# Generate colors (same values get same colors)
+colors = [cmap(norm(value)) for value in values]
 
 
 # Create a bar plot of Schools with the most prospects
@@ -256,7 +270,7 @@ sns.barplot(
     x="Total",
     y="School/Country",
     ax=ax,
-    palette=sns.color_palette("flare")
+    palette=colors
 
 )
 
