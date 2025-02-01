@@ -242,10 +242,6 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import numpy as np
 
-# Set the theme for Seaborn
-sns.color_palette("flare")
-
-plt.show()
 # Create a figure and axis
 fig, ax = plt.subplots(figsize=(12, 12))
 import seaborn as sns
@@ -253,7 +249,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 # Choose a colormap
-cmap = plt.get_cmap("viridis")
+cmap = plt.get_cmap("flare")
 
 values = np.array(school_summary['Total'])
 
