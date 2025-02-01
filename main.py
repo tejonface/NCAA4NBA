@@ -247,6 +247,8 @@ fig, ax = plt.subplots(figsize=(12, 12))
 import seaborn as sns
 import matplotlib.pyplot as plt
 import numpy as np
+import mpld3
+import streamlit.components.v1 as components
 
 # Choose a colormap
 cmap = plt.get_cmap("crest")
@@ -277,6 +279,10 @@ ax.set_ylabel("School/Country")
 
 # Rotate the labels for better readability if needed
 plt.xticks(rotation=30)
+
+fig_html = mpld3.fig_to_html(fig)
+components.html(fig_html, height=600)
+
 
 # Display the plot in Streamlit
 st.header("NBA Prospect Distribution by School/Country")
