@@ -234,7 +234,7 @@ sns.set_theme()
 # Create a figure and axis
 fig, ax = plt.subplots(figsize=(12, 12))
 
-
+sns.set_context("notebook", font_scale=1.5, rc={"lines.linewidth": 2.5})
 # Create a bar plot of Schools with the most prospects
 sns.barplot(
     data=school_summary,
