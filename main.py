@@ -255,7 +255,8 @@ sns.barplot(
     data=school_summary,
     x="Total",
     y="School/Country",
-    ax=ax
+    ax=ax,
+    palette=sns.color_palette("flare")
 
 )
 
