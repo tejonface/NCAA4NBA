@@ -36,8 +36,6 @@ def scrape_nba_mock_draft(url):
 draft_url = "https://www.nbadraft.net/nba-mock-drafts/?year-mock=2025"
 draft_df = scrape_nba_mock_draft(draft_url)
 #print(draft_df)
-draft_df['School'] = draft_df['School'].str.replace(r'St\.$', 'State', regex=True)
-draft_df['School'] = draft_df['School'].str.replace(r'^St\.', 'Saint', regex=True)
 
 # Function to scrape NCAA schedule
 def scrape_ncaa_schedule():
@@ -88,17 +86,23 @@ combined_df = combined_df.rename(columns={
 })
 
 
+#Create duplicate column for cleaning and merging
+#Clean Draft Board Schools
+
+draft_df['School_Merge'] = draft_df['School']
+draft_df['School_Merge'] = draft_df['School_Merge'].str.replace(r'St\.$', 'State', regex=True)
+draft_df['School_Merge'] = draft_df['School_Merge'].str.replace(r'^St\.', 'Saint', regex=True)
+draft_df['School_Merge'] = draft_df['School_Merge'].str.replace("'","")
+
+
 # Create duplicate df to join on home or away team.
 combined_df_home = combined_df.copy()
 combined_df_away = combined_df.copy()
 
-
 # Clean team names
-combined_df_home['TEAM'] = combined_df_home['HOME'].str.replace(r'[@0-9]', '', regex=True).str.strip()
-combined_df_away['TEAM'] = combined_df_away['AWAY'].str.replace(r'[@0-9]', '', regex=True).str.strip()
-
 combined_df = pd.concat([combined_df_home, combined_df_away])
 
+combined_df['TEAM'] = combined_df['TEAM'].str.replace(r'[@0-9]', '', regex=True).str.strip()
 combined_df['TEAM'] = combined_df['TEAM'].str.replace("'","")
 combined_df['TEAM'] = combined_df['TEAM'].str.replace(r'St\.$', 'State', regex=True)
 combined_df['TEAM'] = combined_df['TEAM'].str.replace(r'^St\.', 'Saint', regex=True)
@@ -107,7 +111,7 @@ combined_df['TEAM'] = combined_df['TEAM'].str.replace(r'^St\.', 'Saint', regex=T
 combined_df['HomeTeam'] = combined_df['HOME'].str.replace(r'[@0-9]', '', regex=True).str.strip()
 combined_df['AwayTeam'] = combined_df['AWAY'].str.replace(r'[@0-9]', '', regex=True).str.strip()
 
-draft_df['School'] = draft_df['School'].str.replace("'","")
+
 
 #print(tabulate(combined_df))
 st.dataframe(combined_df)
