@@ -151,6 +151,7 @@ super_matchups_expanded['All_Players'] = super_matchups_expanded.apply(
 super_matchups_expanded = super_matchups_expanded[['AWAY', 'HOME', 'DATE', 'TIME (ET)', 'All_Players']]
 
 # Streamlit App
+st.set_page_config(layout="wide")
 st.title("NBA Prospect Schedule")
 st.text("Upcoming NCAA games featuring top 60 NBA draft prospects.")
 
