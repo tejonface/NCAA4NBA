@@ -3,4 +3,3 @@ tabulate
 seaborn
 matplotlib
 numpy
-mpld3
