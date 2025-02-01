@@ -78,7 +78,7 @@ combined_df = scrape_ncaa_schedule()
 combined_df = combined_df.rename(columns={
     combined_df.columns[0]: "AWAY",
     combined_df.columns[1]: "HOME",
-    combined_df.columns[2]: "TIME (EST)",
+    combined_df.columns[2]: "TIME (ET)",
     combined_df.columns[3]: "TV",
     combined_df.columns[4]: "TICKETS",
     combined_df.columns[5]: "LOCATION",
@@ -108,7 +108,7 @@ combined_df['AwayTeam'] = combined_df['AWAY'].str.replace(r'[@0-9]', '', regex=T
 upcoming_games_df = combined_df[combined_df['TEAM'].isin(draft_df['School'])]
 draft_with_games = pd.merge(draft_df, upcoming_games_df, left_on='School', right_on='TEAM', how='left')
 
-draft_with_games = draft_with_games[['Rank', 'Team', 'Player', 'School','DATE', 'TIME (EST)', 'AWAY', 'HOME', 'HomeTeam', 'AwayTeam']]
+draft_with_games = draft_with_games[['Rank', 'Team', 'Player', 'School','DATE', 'TIME (ET)', 'AWAY', 'HOME', 'HomeTeam', 'AwayTeam']]
 
 #print(tabulate(draft_with_games, headers='keys', tablefmt='psql'))
 
@@ -116,7 +116,7 @@ draft_with_games = draft_with_games[['Rank', 'Team', 'Player', 'School','DATE', 
 super_matchups = combined_df[
     (combined_df['HomeTeam'].isin(draft_df['School'])) & (combined_df['AwayTeam'].isin(draft_df['School']))]
 
-super_matchups = super_matchups[['AWAY', 'HOME', 'DATE', 'TIME (EST)','HomeTeam', 'AwayTeam']].drop_duplicates()
+super_matchups = super_matchups[['AWAY', 'HOME', 'DATE', 'TIME (ET)','HomeTeam', 'AwayTeam']].drop_duplicates()
 
 #print(tabulate(super_matchups, headers='keys', tablefmt='psql'))
 # Merge super_matchups with draft data to get players for each game
@@ -148,12 +148,12 @@ super_matchups_expanded['All_Players'] = super_matchups_expanded.apply(
 )
 
 # Drop unnecessary columns and keep only the relevant details
-super_matchups_expanded = super_matchups_expanded[['AWAY', 'HOME', 'DATE', 'TIME (EST)', 'All_Players']]
+super_matchups_expanded = super_matchups_expanded[['AWAY', 'HOME', 'DATE', 'TIME (ET)', 'All_Players']]
 
 # Streamlit App
 st.title("NBA Prospect Schedule")
 st.text("Upcoming NCAA games featuring top 60 NBA draft prospects.")
-draft_with_games = draft_with_games[['Rank', 'Team', 'Player', 'School','DATE', 'TIME (EST)', 'AWAY', 'HOME']]
+draft_with_games = draft_with_games[['Rank', 'Team', 'Player', 'School','DATE', 'TIME (ET)', 'AWAY', 'HOME']]
 
 
 
@@ -209,7 +209,7 @@ if selected_date:
     )
 
     # Drop unnecessary columns and keep only relevant details
-    filtered_games_expanded = filtered_games_expanded[['AWAY', 'HOME', 'DATE', 'TIME (EST)', 'All_Players']]
+    filtered_games_expanded = filtered_games_expanded[['AWAY', 'HOME', 'DATE', 'TIME (ET)', 'All_Players']]
 
     # Display in Streamlit
     st.dataframe(filtered_games_expanded, hide_index=True)
