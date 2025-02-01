@@ -100,6 +100,9 @@ combined_df_away['TEAM'] = combined_df_away['AWAY'].str.replace(r'[@0-9]', '', r
 combined_df = pd.concat([combined_df_home, combined_df_away])
 
 combined_df['TEAM'] = combined_df['TEAM'].str.replace("'","")
+combined_df['TEAM'] = combined_df['TEAM'].str.replace(r'St\.$', 'State', regex=True)
+combined_df['TEAM'] = combined_df['TEAM'].str.replace(r'^St\.', 'Saint', regex=True)
+
 
 combined_df['HomeTeam'] = combined_df['HOME'].str.replace(r'[@0-9]', '', regex=True).str.strip()
 combined_df['AwayTeam'] = combined_df['AWAY'].str.replace(r'[@0-9]', '', regex=True).str.strip()
