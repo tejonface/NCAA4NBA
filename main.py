@@ -244,9 +244,6 @@ import numpy as np
 
 # Set the theme for Seaborn
 sns.color_palette("flare")
-pal = sns.color_palette("Greens_d", len(school_summary))
-rank = school_summary.argsort().argsort()  # http://stackoverflow.com/a/6266510/1628638
-sns.barplot(x=school_summary.index, y=school_summary['Total'], palette=np.array(pal[::-1])[rank])
 
 plt.show()
 # Create a figure and axis
