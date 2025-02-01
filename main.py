@@ -242,7 +242,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 
 # Set the theme for Seaborn
-sns.set_theme()
+sns.set_context("notebook", font_scale=1.5)
 #sns.color_palette("flare")
 # Create a figure and axis
 fig, ax = plt.subplots(figsize=(12, 12))
