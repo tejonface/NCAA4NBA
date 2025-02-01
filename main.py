@@ -78,7 +78,7 @@ combined_df = scrape_ncaa_schedule()
 combined_df = combined_df.rename(columns={
     combined_df.columns[0]: "AWAY",
     combined_df.columns[1]: "HOME",
-    combined_df.columns[2]: "TIME",
+    combined_df.columns[2]: "TIME (EST)",
     combined_df.columns[3]: "TV",
     combined_df.columns[4]: "TICKETS",
     combined_df.columns[5]: "LOCATION",
