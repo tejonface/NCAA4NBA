@@ -230,11 +230,13 @@ import matplotlib.pyplot as plt
 
 # Set the theme for Seaborn
 sns.set_theme()
+seaborn.set(rc={'axes.facecolor':'transparent', 'figure.facecolor':'transparent'})
+
 #sns.color_palette("flare")
 # Create a figure and axis
 fig, ax = plt.subplots(figsize=(12, 12))
 
-sns.set_context("notebook", font_scale=1.5, rc={"lines.linewidth": 2.5})
+
 # Create a bar plot of Schools with the most prospects
 sns.barplot(
     data=school_summary,
