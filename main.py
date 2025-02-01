@@ -154,9 +154,8 @@ super_matchups_expanded = super_matchups_expanded[['AWAY', 'HOME', 'DATE', 'TIME
 st.title("NBA Prospect Schedule")
 st.text("Upcoming NCAA games featuring top 60 NBA draft prospects.")
 
-#with st.expander("About", expanded=False):
-#    st.subheader("More information")
-#    st.image("https://storage.googleapis.com/nbadraft-theringer-com-cms/public/media/ringernba2024/default/2024-header-group_desktop-v2-1711463345632.png")
+with st.expander("More Information", expanded=False):
+    st.subheader("This page helps NBA fans keep track of upcoming NCAA games featuring top prospects for the 2025 NBA Draft. If you don’t follow college basketball but want to know when the next potential stars are playing, this is your go-to schedule. Check back for updates on key matchups and players to watch.")
 
 # Display full draft board with upcoming games
 st.header("Draft Board with Next Games")
