@@ -116,7 +116,7 @@ combined_df['AwayTeam'] = combined_df['AWAY'].str.replace(r'[@0-9]', '', regex=T
 
 
 #print(tabulate(combined_df))
-st.dataframe(combined_df)
+#st.dataframe(combined_df)
 # Merge draft board with upcoming games
 upcoming_games_df = combined_df[combined_df['TEAM'].isin(draft_df['School_Merge'])]
 draft_with_games = pd.merge(draft_df, upcoming_games_df, left_on='School_Merge', right_on='TEAM', how='left')
