@@ -294,3 +294,4 @@ st.write("[espn.com ncaa schedule](%s)" % url)
 
 url= "https://www.jstew.info"
 st.write("[created by jstew.info](%s)" % url)
+st.image("static/logo.png")
