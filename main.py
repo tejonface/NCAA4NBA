@@ -284,14 +284,22 @@ st.header("NBA Prospect Distribution by School/Country")
 st.pyplot(fig)
 
 
-st.header("Sources")
-url = "https://www.nbadraft.net/nba-mock-drafts/?year-mock=2025"
-st.write("[nbadraft.net mock draft board](%s)" % url)
-single_date = date.today() + timedelta(days=1)  # Start with tomorrow
-date_str = single_date.strftime("%Y%m%d")
-url = f"https://www.espn.com/mens-college-basketball/schedule/_/date/{date_str}"
-st.write("[espn.com ncaa schedule](%s)" % url)
 
-url= "https://www.jstew.info"
-st.write("[created by jstew.info](%s)" % url)
-st.image("static/logo.png")
+col1, col2 = st.columns(2)
+
+with col1:
+    st.header("Sources")
+    url = "https://www.nbadraft.net/nba-mock-drafts/?year-mock=2025"
+    st.write("[nbadraft.net mock draft board](%s)" % url)
+    single_date = date.today() + timedelta(days=1)  # Start with tomorrow
+    date_str = single_date.strftime("%Y%m%d")
+    url = f"https://www.espn.com/mens-college-basketball/schedule/_/date/{date_str}"
+    st.write("[espn.com ncaa schedule](%s)" % url)
+
+with col2:
+    url = "https://www.jstew.info"
+    st.write("[created by jstew.info](%s)" % url)
+    st.image("static/logo.png")
+
+
+
