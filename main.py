@@ -246,7 +246,7 @@ import numpy as np
 fig, ax = plt.subplots(figsize=(12, 12))
 import seaborn as sns
 import matplotlib.pyplot as plt
-import numpy as np
+
 
 
 # Choose a colormap
@@ -299,7 +299,7 @@ with col1:
     st.write("[created by jstew.info](%s)" % url)
 
 with col2:
-    st.image("static/logo.png")
+    st.image("static/logo.png", width=400)
 
 
 
