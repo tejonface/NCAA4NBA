@@ -295,11 +295,12 @@ with col1:
     date_str = single_date.strftime("%Y%m%d")
     url = f"https://www.espn.com/mens-college-basketball/schedule/_/date/{date_str}"
     st.write("[espn.com ncaa schedule](%s)" % url)
-    url = "https://www.jstew.info"
-    st.write("[created by jstew.info](%s)" % url)
+
 
 with col2:
     st.text("")
 
 with col3:
     st.image("static/logo.png", width=200)
+    url = "https://www.jstew.info"
+    st.write("[created by jstew.info](%s)" % url)
