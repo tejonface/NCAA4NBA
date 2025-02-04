@@ -285,7 +285,7 @@ st.pyplot(fig)
 
 
 
-col1, col2 = st.columns(2)
+col1, col2, col3 = st.columns(3)
 
 with col1:
     st.header("Sources")
@@ -299,7 +299,7 @@ with col1:
     st.write("[created by jstew.info](%s)" % url)
 
 with col2:
+    st.text("")
+
+with col3:
     st.image("static/logo.png", width=200)
-
-
-
