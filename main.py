@@ -285,7 +285,8 @@ st.pyplot(fig)
 
 
 
-col1, col2, col3, col4 = st.columns(4)
+col1, col2, col3, col4 = st.columns(3)
+
 
 with col1:
     st.header("Sources")
@@ -295,16 +296,11 @@ with col1:
     date_str = single_date.strftime("%Y%m%d")
     url = f"https://www.espn.com/mens-college-basketball/schedule/_/date/{date_str}"
     st.write("[espn.com ncaa schedule](%s)" % url)
-
-
-with col2:
-    st.text("")
-
-with col2:
-    st.text("")
-
-
-with col4:
-    st.image("static/logo.png", width=200)
     url = "https://www.jstew.info"
     st.write("[created by jstew.info](%s)" % url)
+
+with col2:
+    st.text("")
+
+with col3:
+    st.image("static/logo.png", width=200)
