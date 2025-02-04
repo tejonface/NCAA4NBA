@@ -299,7 +299,7 @@ with col1:
     st.write("[created by jstew.info](%s)" % url)
 
 with col2:
-    st.image("static/logo.png", width=400)
+    st.image("static/logo.png", width=200)
 
 
 
