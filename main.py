@@ -8,7 +8,7 @@ from datetime import date, timedelta
 from seaborn import color_palette
 from tabulate import tabulate
 
-
+# =================================================================== Scrape NBA Draft Board
 # Function to scrape NBA draft board tables
 def scrape_nba_mock_draft(url):
     response = requests.get(url)
@@ -36,6 +36,8 @@ def scrape_nba_mock_draft(url):
 draft_url = "https://www.nbadraft.net/nba-mock-drafts/?year-mock=2025"
 draft_df = scrape_nba_mock_draft(draft_url)
 #print(draft_df)
+
+# =================================================================== Scrape NCAA Schedule
 
 # Function to scrape NCAA schedule
 def scrape_ncaa_schedule():
@@ -70,8 +72,9 @@ def scrape_ncaa_schedule():
 # Scrape NCAA schedule
 combined_df = scrape_ncaa_schedule()
 
-#print(tabulate(combined_df, headers='keys', tablefmt='psql'))
 
+
+# =================================================================== Clean Data
 # Rename columns
 combined_df = combined_df.rename(columns={
     combined_df.columns[0]: "AWAY",
@@ -84,7 +87,6 @@ combined_df = combined_df.rename(columns={
     combined_df.columns[7]: "DATE",
     "DATE": "DATE"
 })
-
 
 #Create duplicate column for cleaning and merging
 #Clean Draft Board Schools
@@ -114,8 +116,6 @@ combined_df['HomeTeam'] = combined_df['HOME'].str.replace(r'[@0-9]', '', regex=T
 combined_df['HomeTeam'] = combined_df['HomeTeam'].str.replace(r'St\.$', 'State', regex=True)
 combined_df['HomeTeam'] = combined_df['HomeTeam'].str.replace(r'^St\.', 'Saint', regex=True)
 
-
-
 combined_df['AwayTeam'] = combined_df['AWAY'].str.replace(r'[@0-9]', '', regex=True).str.strip()
 combined_df['AwayTeam'] = combined_df['AwayTeam'].str.replace(r'St\.$', 'State', regex=True)
 combined_df['AwayTeam'] = combined_df['AwayTeam'].str.replace(r'^St\.', 'Saint', regex=True)
@@ -143,7 +143,7 @@ super_matchups_expanded = super_matchups.copy()
 
 # Function to get players from a given school
 def get_players_from_school(school):
-    players = draft_df[draft_df['School'] == school][['Rank', 'Player', 'School']]
+    players = draft_df[draft_df['SchoolMerge'] == school][['Rank', 'Player', 'School']]
     return players.to_dict(orient='records')
 
 # Add players from both home and away teams
@@ -239,6 +239,8 @@ else:
     st.write("Please select a date.")
 
 
+# -----------------------------------------------------------------------   Chart
+
 school_summary = draft_df.groupby(['School'])['Player'].count()
 school_summary =school_summary.reset_index()
 school_summary = school_summary.rename(columns={'School':'School/Country','Player': 'Total'})
@@ -247,13 +249,12 @@ school_summary = school_summary.sort_values(by='Total', ascending=False)
 import seaborn as sns
 import matplotlib.pyplot as plt
 import numpy as np
-
-# Create a figure and axis
-fig, ax = plt.subplots(figsize=(12, 12))
 import seaborn as sns
 import matplotlib.pyplot as plt
 
 
+# Create a figure and axis
+fig, ax = plt.subplots(figsize=(12, 12))
 
 # Choose a colormap
 cmap = plt.get_cmap("crest")
@@ -265,7 +266,6 @@ norm = plt.Normalize(values.min(), values.max())
 
 # Generate colors (same values get same colors)
 colors = [cmap(norm(value)) for value in values]
-
 
 # Create a bar plot of Schools with the most prospects
 sns.barplot(
