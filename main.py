@@ -9,7 +9,7 @@ from seaborn import color_palette
 from tabulate import tabulate
 
 
-# Function to scrape NBA draft data
+# Function to scrape NBA draft board tables
 def scrape_nba_mock_draft(url):
     response = requests.get(url)
     response.raise_for_status()
@@ -111,8 +111,14 @@ combined_df['TEAM'] = combined_df['TEAM'].str.replace(r'^St\.', 'Saint', regex=T
 
 
 combined_df['HomeTeam'] = combined_df['HOME'].str.replace(r'[@0-9]', '', regex=True).str.strip()
-combined_df['AwayTeam'] = combined_df['AWAY'].str.replace(r'[@0-9]', '', regex=True).str.strip()
+combined_df['HomeTeam'] = combined_df['HomeTeam'].str.replace(r'St\.$', 'State', regex=True)
+combined_df['HomeTeam'] = combined_df['HomeTeam'].str.replace(r'^St\.', 'Saint', regex=True)
 
+
+
+combined_df['AwayTeam'] = combined_df['AWAY'].str.replace(r'[@0-9]', '', regex=True).str.strip()
+combined_df['AwayTeam'] = combined_df['AwayTeam'].str.replace(r'St\.$', 'State', regex=True)
+combined_df['AwayTeam'] = combined_df['AwayTeam'].str.replace(r'^St\.', 'Saint', regex=True)
 
 
 #print(tabulate(combined_df))
