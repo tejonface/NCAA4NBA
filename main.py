@@ -208,7 +208,7 @@ if selected_date:
 
     # Function to get players for a team
     def get_players_from_school(school):
-        return draft_df[draft_df['School'] == school][['Rank', 'Player', 'School']].to_dict(orient='records')
+        return draft_df[draft_df['School_Merge'] == school][['Rank', 'Player', 'School']].to_dict(orient='records')
 
     # Get players from both home and away teams
     filtered_games_expanded['HomeTeam_Players'] = filtered_games_expanded['HomeTeam'].apply(lambda x: get_players_from_school(x))
