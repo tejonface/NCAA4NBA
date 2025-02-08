@@ -142,7 +142,7 @@ super_matchups_expanded = super_matchups.copy()
 
 # Function to get players from a given school
 def get_players_from_school(school):
-    players = draft_df[draft_df['SchoolMerge'] == school][['Rank', 'Player', 'School']]
+    players = draft_df[draft_df['School'] == school][['Rank', 'Player', 'School']]
     return players.to_dict(orient='records')
 
 # Add players from both home and away teams
