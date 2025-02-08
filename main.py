@@ -96,30 +96,23 @@ draft_df['School_Merge'] = draft_df['School_Merge'].str.replace(r'St\.$', 'State
 draft_df['School_Merge'] = draft_df['School_Merge'].str.replace(r'^St\.', 'Saint', regex=True)
 draft_df['School_Merge'] = draft_df['School_Merge'].str.replace("'","")
 
+def clean_team_name(team_name):
+    team_name = re.sub(r'[@0-9]', '', team_name).strip()
+    team_name = team_name.replace("'","")
+    team_name = re.sub(r'St\.$', 'State', team_name)
+    team_name = re.sub(r'^St\.', 'Saint', team_name)
+    return team_name
 
-# Create duplicate df to join on home or away team.
+combined_df['HomeTeam'] = combined_df['HOME'].apply(clean_team_name)
+combined_df['AwayTeam'] = combined_df['AWAY'].apply(clean_team_name)
+
+
 combined_df_home = combined_df.copy()
 combined_df_away = combined_df.copy()
-
-# Clean team names
-combined_df_home['TEAM'] = combined_df_home['HOME'].str.replace(r'[@0-9]', '', regex=True).str.strip()
-combined_df_away['TEAM'] = combined_df_away['AWAY'].str.replace(r'[@0-9]', '', regex=True).str.strip()
+combined_df_home['TEAM'] = combined_df['HomeTeam']
+combined_df_away['TEAM'] = combined_df['AwayTeam']
 
 combined_df = pd.concat([combined_df_home, combined_df_away])
-
-combined_df['TEAM'] = combined_df['TEAM'].str.replace("'","")
-combined_df['TEAM'] = combined_df['TEAM'].str.replace(r'St\.$', 'State', regex=True)
-combined_df['TEAM'] = combined_df['TEAM'].str.replace(r'^St\.', 'Saint', regex=True)
-
-
-combined_df['HomeTeam'] = combined_df['HOME'].str.replace(r'[@0-9]', '', regex=True).str.strip()
-combined_df['HomeTeam'] = combined_df['HomeTeam'].str.replace(r'St\.$', 'State', regex=True)
-combined_df['HomeTeam'] = combined_df['HomeTeam'].str.replace(r'^St\.', 'Saint', regex=True)
-
-combined_df['AwayTeam'] = combined_df['AWAY'].str.replace(r'[@0-9]', '', regex=True).str.strip()
-combined_df['AwayTeam'] = combined_df['AwayTeam'].str.replace(r'St\.$', 'State', regex=True)
-combined_df['AwayTeam'] = combined_df['AwayTeam'].str.replace(r'^St\.', 'Saint', regex=True)
-
 
 #print(tabulate(combined_df))
 #st.dataframe(combined_df)
