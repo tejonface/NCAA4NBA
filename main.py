@@ -185,7 +185,7 @@ with st.expander("More Information", expanded=False):
 # Display full draft board with upcoming games
 st.header("Draft Board with Next Games")
 st.text("2025 NBA Mock Draft board with each NCAA players' upcoming game.")
-st.dataframe(draft_with_games.drop_duplicates(subset=['Rank', 'Player', 'School']), hide_index=True)
+st.dataframe(draft_with_games.drop_duplicates(), hide_index=True) # subset=['Rank', 'Player', 'School']
 
 
 # Display Super Matchups
