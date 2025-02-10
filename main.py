@@ -4,6 +4,12 @@ import pandas as pd
 import requests
 from bs4 import BeautifulSoup
 from datetime import date, timedelta
+import seaborn as sns
+import matplotlib.pyplot as plt
+import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
+
 
 from seaborn import color_palette
 from tabulate import tabulate
@@ -101,9 +107,10 @@ draft_df['School_Merge'] = draft_df['School_Merge'].str.replace("'","")
 combined_df_home = combined_df.copy()
 combined_df_away = combined_df.copy()
 
-# Clean team names
+# Clean team names in schedule
 combined_df_home['TEAM'] = combined_df_home['HOME'].str.replace(r'[@0-9]', '', regex=True).str.strip()
 combined_df_away['TEAM'] = combined_df_away['AWAY'].str.replace(r'[@0-9]', '', regex=True).str.strip()
+
 
 combined_df = pd.concat([combined_df_home, combined_df_away])
 
@@ -120,15 +127,13 @@ combined_df['AwayTeam'] = combined_df['AwayTeam'].str.replace(r'St\.$', 'State',
 combined_df['AwayTeam'] = combined_df['AwayTeam'].str.replace(r'^St\.', 'Saint', regex=True)
 
 
-#print(tabulate(combined_df))
-#st.dataframe(combined_df)
+# ==================================================================================== Prepare Tables for Display
+
 # Merge draft board with upcoming games
 upcoming_games_df = combined_df[combined_df['TEAM'].isin(draft_df['School_Merge'])]
 draft_with_games = pd.merge(draft_df, upcoming_games_df, left_on='School_Merge', right_on='TEAM', how='left')
 
 draft_with_games = draft_with_games[['Rank', 'Team', 'Player', 'School','DATE', 'TIME (ET)', 'AWAY', 'HOME', 'HomeTeam', 'AwayTeam']]
-
-#print(tabulate(draft_with_games, headers='keys', tablefmt='psql'))
 
 # Highlight matchups with NBA prospects on both teams
 super_matchups = combined_df[
@@ -165,9 +170,15 @@ super_matchups_expanded['All_Players'] = super_matchups_expanded.apply(
     axis=1
 )
 
-# Drop unnecessary columns and keep only the relevant details
+# Draft Board: Drop unnecessary columns and keep only the relevant details
+draft_with_games = draft_with_games[['Rank', 'Team', 'Player', 'School','DATE', 'TIME (ET)', 'AWAY', 'HOME']]
+
+# Super Matchups: Drop unnecessary columns and keep only the relevant details
 super_matchups_expanded = super_matchups_expanded[['AWAY', 'HOME', 'DATE', 'TIME (ET)', 'All_Players']]
 
+
+
+# ==================================================================================== Create Streamlit Display
 # Streamlit App
 #st.set_page_config(layout="wide")
 st.title("NBA Prospect Schedule")
@@ -179,21 +190,20 @@ with st.expander("More Information", expanded=False):
 # Display full draft board with upcoming games
 st.header("Draft Board with Next Games")
 st.text("2025 NBA Mock Draft board with each NCAA players' upcoming game.")
+st.dataframe(draft_with_games.drop_duplicates(subset=['Rank', 'Player', 'School','Date']), hide_index=True)
 
-draft_with_games = draft_with_games[['Rank', 'Team', 'Player', 'School','DATE', 'TIME (ET)', 'AWAY', 'HOME']]
-st.dataframe(draft_with_games.drop_duplicates(subset=['Rank', 'Player', 'School']), hide_index=True)
 
-# Display in Streamlit
+# Display Super Matchups
 st.header("SUPER MATCHUPS")
 st.text("Games with top 60 NBA draft prospects on both teams.")
 st.dataframe(super_matchups_expanded, hide_index=True)
 
 # Get tomorrow's date as the default selection
-tomorrow = date.today() + timedelta(days=1)
+today = date.today()
 
 # Select a single date using segmented control, default to tomorrow
 date_options = sorted(combined_df['DATE'].unique())
-selected_date = st.segmented_control("Select Date", date_options, selection_mode="single", default=tomorrow)
+selected_date = st.segmented_control("Select Date", date_options, selection_mode="single", default=today)
 
 # Display schedule for the selected date
 st.header(f"Schedule for {selected_date}")
@@ -238,18 +248,14 @@ else:
     st.write("Please select a date.")
 
 
-# -----------------------------------------------------------------------   Chart
+# ==================================================================================== Chart
 
 school_summary = draft_df.groupby(['School'])['Player'].count()
 school_summary =school_summary.reset_index()
 school_summary = school_summary.rename(columns={'School':'School/Country','Player': 'Total'})
 school_summary = school_summary.sort_values(by='Total', ascending=False)
 
-import seaborn as sns
-import matplotlib.pyplot as plt
-import numpy as np
-import seaborn as sns
-import matplotlib.pyplot as plt
+
 
 
 # Create a figure and axis
@@ -289,7 +295,7 @@ st.header("NBA Prospect Distribution by School/Country")
 st.pyplot(fig)
 
 
-
+# ==================================================================================== Footer
 col1, col2, col3 = st.columns(3)
 
 
