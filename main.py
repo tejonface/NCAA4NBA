@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import requests
 from bs4 import BeautifulSoup
+from datetime import date, timedelta
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
