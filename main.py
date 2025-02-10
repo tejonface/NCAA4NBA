@@ -1,18 +1,12 @@
 import streamlit as st
-import bs4
 import pandas as pd
 import requests
 from bs4 import BeautifulSoup
-from datetime import date, timedelta
-import seaborn as sns
-import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
 
 
-from seaborn import color_palette
-from tabulate import tabulate
 
 # =================================================================== Scrape NBA Draft Board
 # Function to scrape NBA draft board tables
@@ -190,7 +184,7 @@ with st.expander("More Information", expanded=False):
 # Display full draft board with upcoming games
 st.header("Draft Board with Next Games")
 st.text("2025 NBA Mock Draft board with each NCAA players' upcoming game.")
-st.dataframe(draft_with_games.drop_duplicates()) #subset=['Rank', 'Player', 'School']), hide_index=True)
+st.dataframe(draft_with_games.drop_duplicates(subset=['Rank', 'Player', 'School', 'Date'], keep="First"), hide_index=True)
 
 
 # Display Super Matchups
