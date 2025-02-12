@@ -1,4 +1,4 @@
-streamlit
+streamlit==1.42.0
 beautifulsoup4==4.9.0
 tabulate
 seaborn
