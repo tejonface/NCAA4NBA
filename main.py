@@ -164,7 +164,7 @@ super_matchups_expanded['All_Players'] = super_matchups_expanded.apply(
     ]),
     axis=1
 )
-
+draft_with_games['Rank'] = draft_with_games['Rank'].astype(int)
 # Draft Board: Drop unnecessary columns and keep only the relevant details
 draft_with_games = draft_with_games[['Rank', 'Team', 'Player', 'School','DATE', 'TIME (ET)', 'AWAY', 'HOME']].sort_values(by=['Rank', 'DATE'], ascending=True)
 
