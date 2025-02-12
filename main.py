@@ -123,6 +123,31 @@ combined_df['AwayTeam'] = combined_df['AwayTeam'].str.replace(r'St\.$', 'State',
 combined_df['AwayTeam'] = combined_df['AwayTeam'].str.replace(r'^St\.', 'Saint', regex=True)
 combined_df['AwayTeam'] = combined_df['AwayTeam'].str.replace("'","")
 
+# ==================================================================================== Add column for Players In Games
+
+# Function to get players from a given school
+def get_players_from_school(school):
+    players = draft_df[draft_df['School_Merge'] == school][['Rank', 'Player', 'School']]
+    return players.to_dict(orient='records')
+
+# Apply get_players_from_school to HomeTeam and AwayTeam
+combined_df['HomeTeam_Players'] = combined_df['HomeTeam'].apply(get_players_from_school)
+combined_df['AwayTeam_Players'] = combined_df['AwayTeam'].apply(get_players_from_school)
+
+# Combine home and away players into a single list
+combined_df['All_Players'] = combined_df.apply(
+    lambda row: row['HomeTeam_Players'] + row['AwayTeam_Players'], axis=1
+)
+
+# Sort players by rank before formatting
+combined_df['All_Players'] = combined_df.apply(
+    lambda row: ', '.join([
+        f"{p['School']}-#{str(p['Rank'])} {p['Player']}"
+        for p in sorted(row['All_Players'], key=lambda x: int(x['Rank']))
+    ]),
+    axis=1
+)
+
 # ==================================================================================== Prepare Tables for Display
 
 # Merge draft board with upcoming games
@@ -141,32 +166,11 @@ super_matchups = super_matchups[['AWAY', 'HOME', 'DATE', 'TIME (ET)','HomeTeam',
 # Merge super_matchups with draft data to get players for each game
 super_matchups_expanded = super_matchups.copy()
 
-# Function to get players from a given school
-def get_players_from_school(school):
-    players = draft_df[draft_df['School_Merge'] == school][['Rank', 'Player', 'School']]
-    return players.to_dict(orient='records')
 
-# Add players from both home and away teams
-super_matchups_expanded['HomeTeam_Players'] = super_matchups_expanded['HomeTeam'].apply(lambda x: get_players_from_school(x))
-super_matchups_expanded['AwayTeam_Players'] = super_matchups_expanded['AwayTeam'].apply(lambda x: get_players_from_school(x))
-
-# Combine home and away players into a single list
-super_matchups_expanded['All_Players'] = super_matchups_expanded.apply(
-    lambda row: row['HomeTeam_Players'] + row['AwayTeam_Players'], axis=1
-)
+# Super Matchups: Drop unnecessary columns and keep only the relevant details
+super_matchups_expanded = super_matchups_expanded[['AWAY', 'HOME', 'DATE', 'TIME (ET)', 'All_Players']]
 
 
-
-# Sort players by rank before formatting and ensure alignment
-super_matchups_expanded['All_Players'] = super_matchups_expanded.apply(
-    lambda row: ', '.join([
-        f"{p['School']}-#{str(p['Rank'])} {p['Player']}"
-        for p in sorted(row['All_Players'], key=lambda x: int(x['Rank']))
-    ]),
-    axis=1
-)
-# Ensure Rank column is numeric before sorting
-draft_with_games['Rank'] = pd.to_numeric(draft_with_games['Rank'], errors='coerce')
 
 # Sort by Rank (ascending) and then by Date
 draft_with_games = draft_with_games.sort_values(by=['Rank', 'DATE'], ascending=[True, True])
@@ -179,10 +183,6 @@ draft_with_games = draft_with_games[['Rank', 'Team', 'Player', 'School','DATE', 
 #drop dupes
 draft_with_games = draft_with_games.drop_duplicates(subset=['Rank', 'Player', 'School'])
 
-
-
-# Super Matchups: Drop unnecessary columns and keep only the relevant details
-super_matchups_expanded = super_matchups_expanded[['AWAY', 'HOME', 'DATE', 'TIME (ET)', 'All_Players']]
 
 
 
