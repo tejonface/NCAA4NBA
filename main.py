@@ -160,7 +160,7 @@ draft_with_games = draft_with_games[['Rank', 'Team', 'Player', 'School','DATE', 
 super_matchups = combined_df[
     (combined_df['HomeTeam'].isin(draft_df['School_Merge'])) & (combined_df['AwayTeam'].isin(draft_df['School_Merge']))]
 
-super_matchups = super_matchups[['AWAY', 'HOME', 'DATE', 'TIME (ET)','HomeTeam', 'AwayTeam']].drop_duplicates()
+super_matchups = super_matchups[['AWAY', 'HOME', 'DATE', 'TIME (ET)','HomeTeam', 'AwayTeam', 'All_Players']].drop_duplicates()
 
 #print(tabulate(super_matchups, headers='keys', tablefmt='psql'))
 # Merge super_matchups with draft data to get players for each game
