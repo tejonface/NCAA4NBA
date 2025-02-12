@@ -168,10 +168,14 @@ super_matchups_expanded['All_Players'] = super_matchups_expanded.apply(
 draft_with_games['Rank'] = pd.to_numeric(draft_with_games['Rank'], errors='coerce')
 
 # Sort by Rank (ascending) and then by Date
-draft_with_games = draft_with_games.sort_values(by=['Rank', 'DATE'], ascending=[True, True])
+draft_with_games = draft_with_games.sort_values(by=['DATE'], ascending=[True])
 
 # Draft Board: Drop unnecessary columns and keep only the relevant details
 draft_with_games = draft_with_games[['Rank', 'Team', 'Player', 'School','DATE', 'TIME (ET)', 'AWAY', 'HOME']]
+
+#drop dupes
+draft_with_games = draft_with_games.drop_duplicates(subset=['Rank', 'Player', 'School'])
+
 
 # Super Matchups: Drop unnecessary columns and keep only the relevant details
 super_matchups_expanded = super_matchups_expanded[['AWAY', 'HOME', 'DATE', 'TIME (ET)', 'All_Players']]
@@ -190,7 +194,7 @@ with st.expander("More Information", expanded=False):
 # Display full draft board with upcoming games
 st.header("Draft Board with Next Games")
 st.text("2025 NBA Mock Draft board with each NCAA players' upcoming game.")
-st.dataframe(draft_with_games.drop_duplicates(subset=['Rank', 'Player', 'School']), hide_index=True) #
+st.dataframe(draft_with_games, hide_index=True)
 
 
 # Display Super Matchups
@@ -315,3 +319,6 @@ with col2:
 
 with col3:
     st.image("static/logo.png", width=200)
+
+print(draft_with_games['Rank'].dtype)
+print(draft_with_games[['Rank']].head(10))
