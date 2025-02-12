@@ -166,7 +166,7 @@ super_matchups_expanded['All_Players'] = super_matchups_expanded.apply(
 )
 
 # Draft Board: Drop unnecessary columns and keep only the relevant details
-draft_with_games = draft_with_games[['Rank', 'Team', 'Player', 'School','DATE', 'TIME (ET)', 'AWAY', 'HOME']]
+draft_with_games = draft_with_games[['Rank', 'Team', 'Player', 'School','DATE', 'TIME (ET)', 'AWAY', 'HOME']].sort_values(by=['Rank', 'DATE'], ascending=True)
 
 # Super Matchups: Drop unnecessary columns and keep only the relevant details
 super_matchups_expanded = super_matchups_expanded[['AWAY', 'HOME', 'DATE', 'TIME (ET)', 'All_Players']]
@@ -185,7 +185,7 @@ with st.expander("More Information", expanded=False):
 # Display full draft board with upcoming games
 st.header("Draft Board with Next Games")
 st.text("2025 NBA Mock Draft board with each NCAA players' upcoming game.")
-st.dataframe(draft_with_games.drop_duplicates(), hide_index=True) # subset=['Rank', 'Player', 'School']
+st.dataframe(draft_with_games.drop_duplicates(subset=['Rank', 'Player', 'School']), hide_index=True) #
 
 
 # Display Super Matchups
