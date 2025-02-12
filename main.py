@@ -170,6 +170,8 @@ draft_with_games['Rank'] = pd.to_numeric(draft_with_games['Rank'], errors='coerc
 # Sort by Rank (ascending) and then by Date
 draft_with_games = draft_with_games.sort_values(by=['Rank', 'DATE'], ascending=[True, True])
 
+draft_with_games = draft_with_games.reset_index(drop=True)
+
 # Draft Board: Drop unnecessary columns and keep only the relevant details
 draft_with_games = draft_with_games[['Rank', 'Team', 'Player', 'School','DATE', 'TIME (ET)', 'AWAY', 'HOME']]
 
