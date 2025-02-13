@@ -7,8 +7,6 @@ import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-
-
 # =================================================================== Scrape NBA Draft Board
 # Function to scrape NBA draft board tables
 def scrape_nba_mock_draft(url):
@@ -170,8 +168,6 @@ super_matchups_expanded = super_matchups.copy()
 # Super Matchups: Drop unnecessary columns and keep only the relevant details
 super_matchups_expanded = super_matchups_expanded[['AWAY', 'HOME', 'DATE', 'TIME (ET)', 'All_Players']]
 
-
-
 # Sort by Rank (ascending) and then by Date
 draft_with_games = draft_with_games.sort_values(by=['Rank', 'DATE'], ascending=[True, True])
 
@@ -180,7 +176,7 @@ draft_with_games = draft_with_games.reset_index(drop=True)
 # Draft Board: Drop unnecessary columns and keep only the relevant details
 draft_with_games = draft_with_games[['Rank', 'Team', 'Player', 'School','DATE', 'TIME (ET)', 'AWAY', 'HOME']]
 
-#drop dupes
+# Drop dupes
 draft_with_games = draft_with_games.drop_duplicates(subset=['Rank', 'Player', 'School'])
 
 
