@@ -225,23 +225,6 @@ if selected_date:
     # Merge filtered games with draft data to add player info
     filtered_games_expanded = filtered_games.copy()
 
-    # Get players from both home and away teams
-#    filtered_games_expanded['HomeTeam_Players'] = filtered_games_expanded['HomeTeam'].apply(lambda x: get_players_from_school(x))
-#    filtered_games_expanded['AwayTeam_Players'] = filtered_games_expanded['AwayTeam'].apply(lambda x: get_players_from_school(x))#
-
-    # Combine home and away players into a single list
-#    filtered_games_expanded['All_Players'] = filtered_games_expanded.apply(
-#        lambda row: row['HomeTeam_Players'] + row['AwayTeam_Players'], axis=1
-#    )
-
-    # Sort players by rank before formatting
-#    filtered_games_expanded['All_Players'] = filtered_games_expanded.apply(
-#        lambda row: ', '.join([
-#            f"{p['School']}-#{str(p['Rank'])} {p['Player']}"
-#            for p in sorted(row['All_Players'], key=lambda x: int(x['Rank']))
-#        ]),
-#        axis=1
-#    )
 
     # Drop unnecessary columns and keep only relevant details
     filtered_games_expanded = filtered_games_expanded[['AWAY', 'HOME', 'DATE', 'TIME (ET)', 'All_Players']]
