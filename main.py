@@ -285,7 +285,7 @@ plt.xticks(rotation=30)
 st.header("NBA Prospect Distribution by School/Country")
 st.pyplot(fig)
 
-
+st.divider()
 # ==================================================================================== Footer
 col1, col2, col3 = st.columns(3)
 
