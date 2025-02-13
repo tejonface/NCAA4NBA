@@ -190,7 +190,7 @@ draft_with_games = draft_with_games.drop_duplicates(subset=['Rank', 'Player', 'S
 # ==================================================================================== Create Streamlit Display
 # Streamlit App
 
-col1, col2 = st.columns(2)
+col1, col2 = st.columns([1, 2])
 #st.set_page_config(layout="wide")
 with col1:
     st.title("NBA Prospect Schedule")
