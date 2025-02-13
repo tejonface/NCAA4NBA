@@ -35,8 +35,6 @@ def scrape_nba_mock_draft(url):
 draft_url = "https://www.nbadraft.net/nba-mock-drafts/?year-mock=2025"
 draft_df = scrape_nba_mock_draft(draft_url)
 #print(draft_df)
-draft_df["Rank"] = draft_df["Rank"].astype(int)
-
 
 
 # =================================================================== Scrape NCAA Schedule
@@ -76,8 +74,21 @@ combined_df = scrape_ncaa_schedule()
 
 
 
-# =================================================================== Clean Data
-# Rename columns
+# =================================================================== Clean Draft Data
+
+# Convert Draft Rank to Int for Sorting purposes
+draft_df["Rank"] = draft_df["Rank"].astype(int)
+
+#Clean Draft Board Schools
+#Create duplicate column for cleaning and merging
+draft_df['School_Merge'] = draft_df['School']
+draft_df['School_Merge'] = draft_df['School_Merge'].str.replace(r'St\.$', 'State', regex=True)
+draft_df['School_Merge'] = draft_df['School_Merge'].str.replace(r'^St\.', 'Saint', regex=True)
+draft_df['School_Merge'] = draft_df['School_Merge'].str.replace("'","")
+
+# =================================================================== Clean Schedule Data
+
+# Rename schedule columns
 combined_df = combined_df.rename(columns={
     combined_df.columns[0]: "AWAY",
     combined_df.columns[1]: "HOME",
@@ -90,15 +101,6 @@ combined_df = combined_df.rename(columns={
     "DATE": "DATE"
 })
 
-#Create duplicate column for cleaning and merging
-#Clean Draft Board Schools
-
-draft_df['School_Merge'] = draft_df['School']
-draft_df['School_Merge'] = draft_df['School_Merge'].str.replace(r'St\.$', 'State', regex=True)
-draft_df['School_Merge'] = draft_df['School_Merge'].str.replace(r'^St\.', 'Saint', regex=True)
-draft_df['School_Merge'] = draft_df['School_Merge'].str.replace("'","")
-
-
 # Create duplicate df to join on home or away team.
 combined_df_home = combined_df.copy()
 combined_df_away = combined_df.copy()
@@ -107,7 +109,7 @@ combined_df_away = combined_df.copy()
 combined_df_home['TEAM'] = combined_df_home['HOME'].str.replace(r'[@0-9]', '', regex=True).str.strip()
 combined_df_away['TEAM'] = combined_df_away['AWAY'].str.replace(r'[@0-9]', '', regex=True).str.strip()
 
-
+# Concatenate home and away df
 combined_df = pd.concat([combined_df_home, combined_df_away])
 
 combined_df['TEAM'] = combined_df['TEAM'].str.replace("'","")
@@ -224,22 +226,22 @@ if selected_date:
     filtered_games_expanded = filtered_games.copy()
 
     # Get players from both home and away teams
-    filtered_games_expanded['HomeTeam_Players'] = filtered_games_expanded['HomeTeam'].apply(lambda x: get_players_from_school(x))
-    filtered_games_expanded['AwayTeam_Players'] = filtered_games_expanded['AwayTeam'].apply(lambda x: get_players_from_school(x))
+#    filtered_games_expanded['HomeTeam_Players'] = filtered_games_expanded['HomeTeam'].apply(lambda x: get_players_from_school(x))
+#    filtered_games_expanded['AwayTeam_Players'] = filtered_games_expanded['AwayTeam'].apply(lambda x: get_players_from_school(x))#
 
     # Combine home and away players into a single list
-    filtered_games_expanded['All_Players'] = filtered_games_expanded.apply(
-        lambda row: row['HomeTeam_Players'] + row['AwayTeam_Players'], axis=1
-    )
+#    filtered_games_expanded['All_Players'] = filtered_games_expanded.apply(
+#        lambda row: row['HomeTeam_Players'] + row['AwayTeam_Players'], axis=1
+#    )
 
     # Sort players by rank before formatting
-    filtered_games_expanded['All_Players'] = filtered_games_expanded.apply(
-        lambda row: ', '.join([
-            f"{p['School']}-#{str(p['Rank'])} {p['Player']}"
-            for p in sorted(row['All_Players'], key=lambda x: int(x['Rank']))
-        ]),
-        axis=1
-    )
+#    filtered_games_expanded['All_Players'] = filtered_games_expanded.apply(
+#        lambda row: ', '.join([
+#            f"{p['School']}-#{str(p['Rank'])} {p['Player']}"
+#            for p in sorted(row['All_Players'], key=lambda x: int(x['Rank']))
+#        ]),
+#        axis=1
+#    )
 
     # Drop unnecessary columns and keep only relevant details
     filtered_games_expanded = filtered_games_expanded[['AWAY', 'HOME', 'DATE', 'TIME (ET)', 'All_Players']]
