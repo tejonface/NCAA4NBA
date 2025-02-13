@@ -191,10 +191,12 @@ draft_with_games = draft_with_games.drop_duplicates(subset=['Rank', 'Player', 'S
 # Streamlit App
 #st.set_page_config(layout="wide")
 st.title("NBA Prospect Schedule")
-st.text("Upcoming NCAA games featuring top 60 NBA draft prospects.")
 
-with st.expander("More Information", expanded=False):
-    st.text("This page helps basketball fans keep track of upcoming NCAA games featuring top prospects for the 2025 NBA Draft. If you don’t follow college basketball but want to know when the next potential stars are playing, this is your go-to schedule. Check back for updates on key matchups and players to watch.")
+with st.expander("Upcoming NCAA games featuring top 60 NBA draft prospects.", expanded=False):
+    st.text("This page helps basketball fans keep track of upcoming NCAA games featuring "
+            "top prospects for the 2025 NBA Draft. If you don’t follow college basketball "
+            "but want to know when the next potential NBA stars are playing, this is your "
+            "go-to schedule. Check back for updates on key matchups and players to watch.")
 
 # Display full draft board with upcoming games
 st.header("Draft Board with Next Games")
