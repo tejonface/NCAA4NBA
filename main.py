@@ -35,6 +35,9 @@ def scrape_nba_mock_draft(url):
 draft_url = "https://www.nbadraft.net/nba-mock-drafts/?year-mock=2025"
 draft_df = scrape_nba_mock_draft(draft_url)
 #print(draft_df)
+draft_df["Rank"] = draft_df["Rank"].astype(int)
+
+
 
 # =================================================================== Scrape NCAA Schedule
 
