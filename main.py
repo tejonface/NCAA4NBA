@@ -243,9 +243,6 @@ school_summary =school_summary.reset_index()
 school_summary = school_summary.rename(columns={'School':'School/Country','Player': 'Total'})
 school_summary = school_summary.sort_values(by='Total', ascending=False)
 
-
-
-
 # Create a figure and axis
 fig, ax = plt.subplots(figsize=(12, 12))
 
@@ -286,7 +283,6 @@ st.pyplot(fig)
 # ==================================================================================== Footer
 col1, col2, col3 = st.columns(3)
 
-
 with col1:
     st.header("Sources")
     url = "https://www.nbadraft.net/nba-mock-drafts/?year-mock=2025"
@@ -303,6 +299,3 @@ with col2:
 
 with col3:
     st.image("static/logo.png", width=200)
-
-print(draft_with_games['Rank'].dtype)
-print(draft_with_games[['Rank']].head(10))
