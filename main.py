@@ -7,6 +7,7 @@ import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
 
+
 # =================================================================== Scrape NBA Draft Board
 # Function to scrape NBA draft board tables
 def scrape_nba_mock_draft(url):
@@ -34,7 +35,9 @@ def scrape_nba_mock_draft(url):
 # Scrape draft data
 draft_url = "https://www.nbadraft.net/nba-mock-drafts/?year-mock=2025"
 draft_df = scrape_nba_mock_draft(draft_url)
-#print(draft_df)
+
+
+# print(draft_df)
 
 
 # =================================================================== Scrape NCAA Schedule
@@ -72,19 +75,17 @@ def scrape_ncaa_schedule():
 # Scrape NCAA schedule
 combined_df = scrape_ncaa_schedule()
 
-
-
 # =================================================================== Clean Draft Data
 
 # Convert Draft Rank to Int for Sorting purposes
 draft_df["Rank"] = draft_df["Rank"].astype(int)
 
-#Clean Draft Board Schools
-#Create duplicate column for cleaning and merging
+# Clean Draft Board Schools
+# Create duplicate column for cleaning and merging
 draft_df['School_Merge'] = draft_df['School']
 draft_df['School_Merge'] = draft_df['School_Merge'].str.replace(r'St\.$', 'State', regex=True)
 draft_df['School_Merge'] = draft_df['School_Merge'].str.replace(r'^St\.', 'Saint', regex=True)
-draft_df['School_Merge'] = draft_df['School_Merge'].str.replace("'","")
+draft_df['School_Merge'] = draft_df['School_Merge'].str.replace("'", "")
 
 # =================================================================== Clean Schedule Data
 
@@ -112,19 +113,20 @@ combined_df_away['TEAM'] = combined_df_away['AWAY'].str.replace(r'[@0-9]', '', r
 # Concatenate home and away df
 combined_df = pd.concat([combined_df_home, combined_df_away])
 
-combined_df['TEAM'] = combined_df['TEAM'].str.replace("'","")
+combined_df['TEAM'] = combined_df['TEAM'].str.replace("'", "")
 combined_df['TEAM'] = combined_df['TEAM'].str.replace(r'St\.$', 'State', regex=True)
 combined_df['TEAM'] = combined_df['TEAM'].str.replace(r'^St\.', 'Saint', regex=True)
 
 combined_df['HomeTeam'] = combined_df['HOME'].str.replace(r'[@0-9]', '', regex=True).str.strip()
 combined_df['HomeTeam'] = combined_df['HomeTeam'].str.replace(r'St\.$', 'State', regex=True)
 combined_df['HomeTeam'] = combined_df['HomeTeam'].str.replace(r'^St\.', 'Saint', regex=True)
-combined_df['HomeTeam'] = combined_df['HomeTeam'].str.replace("'","")
+combined_df['HomeTeam'] = combined_df['HomeTeam'].str.replace("'", "")
 
 combined_df['AwayTeam'] = combined_df['AWAY'].str.replace(r'[@0-9]', '', regex=True).str.strip()
 combined_df['AwayTeam'] = combined_df['AwayTeam'].str.replace(r'St\.$', 'State', regex=True)
 combined_df['AwayTeam'] = combined_df['AwayTeam'].str.replace(r'^St\.', 'Saint', regex=True)
-combined_df['AwayTeam'] = combined_df['AwayTeam'].str.replace("'","")
+combined_df['AwayTeam'] = combined_df['AwayTeam'].str.replace("'", "")
+
 
 # ==================================================================================== Add column for Players In Games
 
@@ -132,6 +134,7 @@ combined_df['AwayTeam'] = combined_df['AwayTeam'].str.replace("'","")
 def get_players_from_school(school):
     players = draft_df[draft_df['School_Merge'] == school][['Rank', 'Player', 'School']]
     return players.to_dict(orient='records')
+
 
 # Apply get_players_from_school to HomeTeam and AwayTeam
 combined_df['HomeTeam_Players'] = combined_df['HomeTeam'].apply(get_players_from_school)
@@ -157,18 +160,19 @@ combined_df['All_Players'] = combined_df.apply(
 upcoming_games_df = combined_df[combined_df['TEAM'].isin(draft_df['School_Merge'])]
 draft_with_games = pd.merge(draft_df, upcoming_games_df, left_on='School_Merge', right_on='TEAM', how='left')
 
-draft_with_games = draft_with_games[['Rank', 'Team', 'Player', 'School','DATE', 'TIME (ET)', 'AWAY', 'HOME', 'HomeTeam', 'AwayTeam']]
+draft_with_games = draft_with_games[
+    ['Rank', 'Team', 'Player', 'School', 'DATE', 'TIME (ET)', 'AWAY', 'HOME', 'HomeTeam', 'AwayTeam']]
 
 # Highlight matchups with NBA prospects on both teams
 super_matchups = combined_df[
     (combined_df['HomeTeam'].isin(draft_df['School_Merge'])) & (combined_df['AwayTeam'].isin(draft_df['School_Merge']))]
 
-super_matchups = super_matchups[['AWAY', 'HOME', 'DATE', 'TIME (ET)','HomeTeam', 'AwayTeam', 'All_Players']].drop_duplicates()
+super_matchups = super_matchups[
+    ['AWAY', 'HOME', 'DATE', 'TIME (ET)', 'HomeTeam', 'AwayTeam', 'All_Players']].drop_duplicates()
 
-#print(tabulate(super_matchups, headers='keys', tablefmt='psql'))
+# print(tabulate(super_matchups, headers='keys', tablefmt='psql'))
 # Merge super_matchups with draft data to get players for each game
 super_matchups_expanded = super_matchups.copy()
-
 
 # Super Matchups: Drop unnecessary columns and keep only the relevant details
 super_matchups_expanded = super_matchups_expanded[['AWAY', 'HOME', 'DATE', 'TIME (ET)', 'All_Players']]
@@ -179,24 +183,21 @@ draft_with_games = draft_with_games.sort_values(by=['Rank', 'DATE'], ascending=[
 draft_with_games = draft_with_games.reset_index(drop=True)
 
 # Draft Board: Drop unnecessary columns and keep only the relevant details
-draft_with_games = draft_with_games[['Rank', 'Team', 'Player', 'School','DATE', 'TIME (ET)', 'AWAY', 'HOME']]
+draft_with_games = draft_with_games[['Rank', 'Team', 'Player', 'School', 'DATE', 'TIME (ET)', 'AWAY', 'HOME']]
 
 # Drop dupes
 draft_with_games = draft_with_games.drop_duplicates(subset=['Rank', 'Player', 'School'])
-
-
-
 
 # ==================================================================================== Create Streamlit Display
 # Streamlit App
 
 col1, col2 = st.columns([1, 2], vertical_alignment="center")
-#st.set_page_config(layout="wide")
+# st.set_page_config(layout="wide")
 with col1:
     st.title("NBA Prospect Schedule")
 
 with col2:
-    #with st.expander("Upcoming NCAA games featuring top 60 NBA draft prospects.", expanded=False):
+    # with st.expander("Upcoming NCAA games featuring top 60 NBA draft prospects.", expanded=False):
     st.text("This page helps basketball fans keep track of upcoming NCAA games featuring "
             "top prospects for the 2025 NBA Draft. If you don’t follow college basketball "
             "but want to know when the next potential NBA stars are playing, this is your "
@@ -206,7 +207,6 @@ with col2:
 st.header("Draft Board with Next Games")
 st.text("2025 NBA Mock Draft board with each NCAA players' upcoming game.")
 st.dataframe(draft_with_games, hide_index=True)
-
 
 # Display Super Matchups
 st.header("SUPER MATCHUPS")
@@ -231,7 +231,6 @@ if selected_date:
     # Merge filtered games with draft data to add player info
     filtered_games_expanded = filtered_games.copy()
 
-
     # Drop unnecessary columns and keep only relevant details
     filtered_games_expanded = filtered_games_expanded[['AWAY', 'HOME', 'DATE', 'TIME (ET)', 'All_Players']]
 
@@ -241,12 +240,11 @@ if selected_date:
 else:
     st.write("Please select a date.")
 
-
 # ==================================================================================== Chart
 
 school_summary = draft_df.groupby(['School'])['Player'].count()
-school_summary =school_summary.reset_index()
-school_summary = school_summary.rename(columns={'School':'School/Country','Player': 'Total'})
+school_summary = school_summary.reset_index()
+school_summary = school_summary.rename(columns={'School': 'School/Country', 'Player': 'Total'})
 school_summary = school_summary.sort_values(by='Total', ascending=False)
 
 # Create a figure and axis
@@ -276,7 +274,7 @@ sns.barplot(
 # Set labels and title
 ax.set_xlabel("Number of NBA Prospects")
 ax.set_ylabel("School/Country")
-#ax.set_title("Schools with Most NBA Prospects in 2025 Draft")
+# ax.set_title("Schools with Most NBA Prospects in 2025 Draft")
 
 # Rotate the labels for better readability if needed
 plt.xticks(rotation=30)
