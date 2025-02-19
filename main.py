@@ -203,6 +203,16 @@ with col2:
             "but want to know when the next potential NBA stars are playing, this is your "
             "go-to schedule. Check back for updates on key matchups and players to watch.")
 
+# Display full draft board with upcoming games
+st.header("Draft Board with Next Games")
+st.text("2025 NBA Mock Draft board with each NCAA players' upcoming game.")
+st.dataframe(draft_with_games, hide_index=True)
+
+# Display Super Matchups
+st.header("SUPER MATCHUPS")
+st.text("Games with top 60 NBA draft prospects on both teams.")
+st.dataframe(super_matchups_expanded, hide_index=True)
+
 # Get tomorrow's date as the default selection
 today = date.today()
 
@@ -229,18 +239,6 @@ if selected_date:
 
 else:
     st.write("Please select a date.")
-
-
-# Display full draft board with upcoming games
-st.header("Draft Board with Next Games")
-st.text("2025 NBA Mock Draft board with each NCAA players' upcoming game.")
-st.dataframe(draft_with_games, hide_index=True)
-
-# Display Super Matchups
-st.header("SUPER MATCHUPS")
-st.text("Games with top 60 NBA draft prospects on both teams.")
-st.dataframe(super_matchups_expanded, hide_index=True)
-
 
 # ==================================================================================== Chart
 
