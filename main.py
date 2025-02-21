@@ -8,6 +8,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 
 
+
 # =================================================================== Scrape NBA Draft Board
 # Function to scrape NBA draft board tables
 def scrape_nba_mock_draft(url):
