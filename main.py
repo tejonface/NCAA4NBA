@@ -212,7 +212,7 @@ st.dataframe(draft_with_games, hide_index=True)
 # Display Super Matchups
 st.header("SUPER MATCHUPS")
 st.text("Games with top 60 NBA draft prospects on both teams.")
-st.dataframe(super_matchups_expanded, hide_index=True)
+st.table(super_matchups_expanded) #, hide_index=True)
 
 # Get tomorrow's date as the default selection
 today = date.today()
