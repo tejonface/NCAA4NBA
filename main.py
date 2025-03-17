@@ -217,9 +217,14 @@ st.dataframe(super_matchups_expanded, hide_index=True)
 # Get tomorrow's date as the default selection
 today = date.today()
 
-# Select a single date using segmented control, default to tomorrow
-date_options = sorted(combined_df['DATE'].unique())
-selected_date = st.segmented_control("Select Date", date_options, selection_mode="single", default=today)
+# Select a single date using segmented control, default to the closest available date
+date_options = sorted(combined_df['DATE'].dropna().unique())
+
+# Ensure the default value exists in the list of options
+default_date = today if today in date_options else date_options[0]  # Pick the first available date if not found
+
+selected_date = st.segmented_control("Select Date", date_options, selection_mode="single", default=default_date)
+
 
 # Display schedule for the selected date
 st.header(f"Schedule for {selected_date}")
