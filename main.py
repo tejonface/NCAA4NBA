@@ -225,7 +225,7 @@ date_options = sorted(combined_df['DATE'].dropna().unique())
 # Ensure the default value exists in the list of options
 default_date = today if today in date_options else date_options[0]  # Pick the first available date if not found
 
-selected_date = st.selectbox("Select Date", date_options, index=0)
+selected_date = st.segmented_control("Select Date", date_options, selection_mode="single", default=default_date)
 
 
 # Display schedule for the selected date
