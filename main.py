@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 
 # =================================================================== Scrape NBA Draft Board
 # Function to scrape NBA draft board tables
-@st.cache_data
+@st.cache_data(ttl=3600)
 def scrape_nba_mock_draft(url):
     response = requests.get(url)
     response.raise_for_status()
@@ -45,7 +45,7 @@ draft_df = scrape_nba_mock_draft(draft_url)
 # =================================================================== Scrape NCAA Schedule
 
 # Function to scrape NCAA schedule
-@st.cache_data
+@st.cache_data(ttl=3600)
 def scrape_ncaa_schedule():
     combined_df = pd.DataFrame()
 
