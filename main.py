@@ -207,7 +207,7 @@ with col2:
             "go-to schedule. Check back for updates on key matchups and players to watch.")
 
 # Display full draft board with upcoming games
-st.subheader("Sample using first round 2025 until 25-26 schedules are released.")
+st.subheader("Displaying first round 2025 until 25-26 schedules are released.")
 st.divider()
 st.header("Draft Board with Next Games")
 st.text("2025 NBA Mock Draft board with each NCAA players' upcoming game.")
