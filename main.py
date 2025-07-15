@@ -52,7 +52,7 @@ def scrape_ncaa_schedule():
     for i in range(7):  # Loop through the next 3 days
         single_date = date.today() + timedelta(days=0 + i)  # Start with today
         date_str = single_date.strftime("%Y%m%d")
-        url = f"https://www.espn.com/mens-college-basketball/schedule/_/date/20250308"#"https://www.espn.com/mens-college-basketball/schedule/_/date/{date_str}"
+        url = f"https://www.espn.com/mens-college-basketball/schedule/_/date/20250405"#"https://www.espn.com/mens-college-basketball/schedule/_/date/{date_str}"
         headers = {"User-Agent": "Mozilla/5.0"}
         response = requests.get(url, headers=headers)
         soup = BeautifulSoup(response.content, "html.parser")
@@ -207,6 +207,8 @@ with col2:
             "go-to schedule. Check back for updates on key matchups and players to watch.")
 
 # Display full draft board with upcoming games
+st.subheader("Displaying Final 4 from March 5, 2025 for sample until 25-26 schedules are released.")
+st.divider()
 st.header("Draft Board with Next Games")
 st.text("2025 NBA Mock Draft board with each NCAA players' upcoming game.")
 st.dataframe(draft_with_games, hide_index=True)
