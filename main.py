@@ -35,7 +35,7 @@ def scrape_nba_mock_draft(url):
 
 
 # Scrape draft data
-draft_url = "https://www.nbadraft.net/nba-mock-drafts/?year-mock=2026"
+draft_url = "https://www.nbadraft.net/nba-mock-drafts/?year-mock=2025"
 draft_df = scrape_nba_mock_draft(draft_url)
 
 
