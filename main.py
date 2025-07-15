@@ -52,7 +52,7 @@ def scrape_ncaa_schedule():
     for i in range(7):  # Loop through the next 3 days
         single_date = date.today() + timedelta(days=0 + i)  # Start with today
         date_str = single_date.strftime("%Y%m%d")
-        url = f"https://www.espn.com/mens-college-basketball/schedule/_/date/{date_str}"
+        url = f"https://www.espn.com/mens-college-basketball/schedule/_/date/20250308"#"https://www.espn.com/mens-college-basketball/schedule/_/date/{date_str}"
         headers = {"User-Agent": "Mozilla/5.0"}
         response = requests.get(url, headers=headers)
         soup = BeautifulSoup(response.content, "html.parser")
