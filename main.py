@@ -100,7 +100,7 @@ combined_df = combined_df.rename(columns={
     combined_df.columns[3]: "TV",
     combined_df.columns[4]: "TICKETS",
     combined_df.columns[5]: "LOCATION",
-    combined_df.columns[6]: "ODDS BY",
+#    combined_df.columns[6]: "ODDS BY",
     combined_df.columns[7]: "DATE",
     "DATE": "DATE"
 })
