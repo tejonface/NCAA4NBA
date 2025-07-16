@@ -6,6 +6,7 @@ from datetime import date, timedelta
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
+from tabulate import tabulate as tab
 
 
 
@@ -52,7 +53,7 @@ def scrape_ncaa_schedule():
     for i in range(7):  # Loop through the next 3 days
         single_date = date.today() + timedelta(days=0 + i)  # Start with today
         date_str = single_date.strftime("%Y%m%d")
-        url = f"https://www.espn.com/mens-college-basketball/schedule/_/date/20250320"#"https://www.espn.com/mens-college-basketball/schedule/_/date/{date_str}"
+        url = f"https://www.espn.com/mens-college-basketball/schedule/_/date/20250308"#"https://www.espn.com/mens-college-basketball/schedule/_/date/{date_str}"
         headers = {"User-Agent": "Mozilla/5.0"}
         response = requests.get(url, headers=headers)
         soup = BeautifulSoup(response.content, "html.parser")
@@ -156,7 +157,7 @@ combined_df['All_Players'] = combined_df.apply(
     ]),
     axis=1
 )
-
+print(tab(combined_df.head(),headers="firstrow", tablefmt="grid"))
 # ==================================================================================== Prepare Tables for Display
 
 # Merge draft board with upcoming games
@@ -207,7 +208,7 @@ with col2:
             "go-to schedule. Check back for updates on key matchups and players to watch.")
 
 # Display full draft board with upcoming games
-st.subheader("Displaying first round 2025 until 25-26 schedules are released.")
+st.subheader("Displaying March 8, 2025 until 25-26 schedules are released.")
 st.divider()
 st.header("Draft Board with Next Games")
 st.text("2025 NBA Mock Draft board with each NCAA players' upcoming game.")
