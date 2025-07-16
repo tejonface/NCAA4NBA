@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import requests
 from bs4 import BeautifulSoup
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
@@ -51,8 +51,10 @@ def scrape_ncaa_schedule():
     combined_df = pd.DataFrame()
 
     for i in range(7):  # Loop through the next 3 days
-        single_date = date.today() + timedelta(days=0 + i)  # Start with today
-        date_str = single_date.strftime("%Y%m%d")
+        #single_date = date.today() + timedelta(days=0 + i)  # Start with today
+        sample_date = datetime(2025, 3, 8) + timedelta(days=i)
+        #date_str = single_date.strftime("%Y%m%d")
+        date_str = sample_date.strftime("%Y%m%d")
         url = f"https://www.espn.com/mens-college-basketball/schedule/_/date/20250308"#"https://www.espn.com/mens-college-basketball/schedule/_/date/{date_str}"
         headers = {"User-Agent": "Mozilla/5.0"}
         response = requests.get(url, headers=headers)
@@ -70,7 +72,8 @@ def scrape_ncaa_schedule():
             df.columns = df.iloc[0]
             df = df.drop(0).reset_index(drop=True)
             df.columns = [df.columns[0]] + [''] + list(df.columns[1:-1])  # Shift columns
-            df["DATE"] = single_date
+            #df["DATE"] = single_date
+            df["DATE"] = sample_date
             combined_df = pd.concat([combined_df, df], ignore_index=True)
 
     return combined_df
@@ -213,12 +216,12 @@ st.divider()
 st.header("Draft Board with Next Games")
 st.text("2025 NBA Mock Draft board with each NCAA players' upcoming game.")
 st.dataframe(draft_with_games, hide_index=True)
-
+print(tab(draft_with_games))
 # Display Super Matchups
 st.header("SUPER MATCHUPS")
 st.text("Games with top 60 NBA draft prospects on both teams.")
 st.dataframe(super_matchups_expanded, hide_index=True)
-
+print(tab(super_matchups_expanded))
 # Get tomorrow's date as the default selection
 today = date.today()
 
