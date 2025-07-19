@@ -98,8 +98,7 @@ draft_df['School_Merge'] = draft_df['School_Merge'].str.replace("'", "")
 combined_df = combined_df.rename(columns={
     combined_df.columns[0]: "AWAY",
     combined_df.columns[1]: "HOME",
-    #combined_df.columns[2]: "TIME (ET)",
-    combined_df.columns[2]: "Score",
+    combined_df.columns[2]: "TIME (ET)",
     combined_df.columns[3]: "TV",
     combined_df.columns[4]: "TICKETS",
     combined_df.columns[5]: "LOCATION",
@@ -167,8 +166,8 @@ upcoming_games_df = combined_df[combined_df['TEAM'].isin(draft_df['School_Merge'
 draft_with_games = pd.merge(draft_df, upcoming_games_df, left_on='School_Merge', right_on='TEAM', how='left')
 
 draft_with_games = draft_with_games[
-    ['Rank', 'Team', 'Player', 'School', 'DATE', 'Score', 'AWAY', 'HOME', 'HomeTeam', 'AwayTeam']]
-    #['Rank', 'Team', 'Player', 'School', 'DATE', 'TIME (ET)', 'AWAY', 'HOME', 'HomeTeam', 'AwayTeam']]
+    ['Rank', 'Team', 'Player', 'School', 'DATE', 'TIME (ET)', 'AWAY', 'HOME', 'HomeTeam', 'AwayTeam']]
+
 # Highlight matchups with NBA prospects on both teams
 super_matchups = combined_df[
     (combined_df['HomeTeam'].isin(draft_df['School_Merge'])) & (combined_df['AwayTeam'].isin(draft_df['School_Merge']))]
