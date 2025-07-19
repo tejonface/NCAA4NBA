@@ -50,11 +50,12 @@ draft_df = scrape_nba_mock_draft(draft_url)
 def scrape_ncaa_schedule():
     combined_df = pd.DataFrame()
 
-    for i in range(7):  # Loop through the next 3 days
+    for i in range(7):  # Loop through the next 7 days
         #single_date = date.today() + timedelta(days=0 + i)  # Start with today
-        sample_date = datetime(2025, 3, 8) + timedelta(days=i)
+        sample_date = date(2025, 3,8) + timedelta(days=i)
         #date_str = single_date.strftime("%Y%m%d")
         date_str = sample_date.strftime("%Y%m%d")
+        print(sample_date)
         url = f"https://www.espn.com/mens-college-basketball/schedule/_/date/{date_str}"
         headers = {"User-Agent": "Mozilla/5.0"}
         response = requests.get(url, headers=headers)
@@ -77,7 +78,6 @@ def scrape_ncaa_schedule():
             combined_df = pd.concat([combined_df, df], ignore_index=True)
 
     return combined_df
-
 
 # Scrape NCAA schedule
 combined_df = scrape_ncaa_schedule()
