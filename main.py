@@ -41,8 +41,16 @@ draft_df = scrape_nba_mock_draft(draft_url)
 
 
 # print(draft_df)
-
-
+sample_date = date(2025, 3,8)
+start_date = date(2024, 11,1)
+end_date = date(2025, 4,7)
+d = st.date_input(
+    "Select date",
+    sample_date,
+    start_date,
+    end_date,
+    format="YYYY-MM-DD",
+)
 # =================================================================== Scrape NCAA Schedule
 
 # Function to scrape NCAA schedule
@@ -52,7 +60,7 @@ def scrape_ncaa_schedule():
 
     for i in range(7):  # Loop through the next 7 days
         #single_date = date.today() + timedelta(days=0 + i)  # Start with today
-        sample_date = date(2025, 3,8) + timedelta(days=i)
+        sample_date + timedelta(days=i) #= date(2025, 3,8) + timedelta(days=i)
         #date_str = single_date.strftime("%Y%m%d")
         date_str = sample_date.strftime("%Y%m%d")
         print(sample_date)
