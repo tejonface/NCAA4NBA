@@ -36,7 +36,7 @@ def scrape_nba_mock_draft(url):
 
 
 # Scrape draft data
-draft_url = "https://www.nbadraft.net/nba-mock-drafts/?year-mock=2025"
+draft_url = "https://www.nbadraft.net/nba-mock-drafts/?year-mock=2026"
 draft_df = scrape_nba_mock_draft(draft_url)
 
 
@@ -49,10 +49,10 @@ def scrape_ncaa_schedule():
     combined_df = pd.DataFrame()
 
     for i in range(7):  # Loop through the next 7 days
-        #single_date = date.today() + timedelta(days=0 + i)  # Start with today
-        sample_date = date(2025, 3,8) + timedelta(days=i)
-        #date_str = single_date.strftime("%Y%m%d")
-        date_str = sample_date.strftime("%Y%m%d")
+        single_date = date.today() + timedelta(days=0 + i)  # Start with today
+        ## sample_date = date(2025, 3,8) + timedelta(days=i)
+        date_str = single_date.strftime("%Y%m%d")
+        ## date_str = sample_date.strftime("%Y%m%d")
         print(sample_date)
         url = f"https://www.espn.com/mens-college-basketball/schedule/_/date/{date_str}"
         headers = {"User-Agent": "Mozilla/5.0"}
@@ -71,8 +71,8 @@ def scrape_ncaa_schedule():
             df.columns = df.iloc[0]
             df = df.drop(0).reset_index(drop=True)
             df.columns = [df.columns[0]] + [''] + list(df.columns[1:-1])  # Shift columns
-            #df["DATE"] = single_date
-            df["DATE"] = sample_date
+            df["DATE"] = single_date
+            ## df["DATE"] = sample_date
             combined_df = pd.concat([combined_df, df], ignore_index=True)
 
     return combined_df
@@ -301,7 +301,8 @@ col1, col2, col3 = st.columns(3)
 
 with col1:
     st.header("Sources")
-    url = "https://www.nbadraft.net/nba-mock-drafts/?year-mock=2025"
+    url = "https://www.nbadraft.net/nba-mock-drafts/?year-mock=2026"
+    ## url = "https://www.nbadraft.net/nba-mock-drafts/?year-mock=2025"
     st.write("[nbadraft.net mock draft board](%s)" % url)
     single_date = date.today() + timedelta(days=1)  # Start with tomorrow
     date_str = single_date.strftime("%Y%m%d")
