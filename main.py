@@ -53,7 +53,7 @@ def scrape_ncaa_schedule():
         ## sample_date = date(2025, 3,8) + timedelta(days=i)
         date_str = single_date.strftime("%Y%m%d")
         ## date_str = sample_date.strftime("%Y%m%d")
-        print(sample_date)
+        ## print(sample_date)
         url = f"https://www.espn.com/mens-college-basketball/schedule/_/date/{date_str}"
         headers = {"User-Agent": "Mozilla/5.0"}
         response = requests.get(url, headers=headers)
