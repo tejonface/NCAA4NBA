@@ -98,7 +98,7 @@ draft_df['School_Merge'] = draft_df['School_Merge'].str.replace("'", "")
 combined_df = combined_df.rename(columns={
     combined_df.columns[0]: "AWAY",
     combined_df.columns[1]: "HOME",
-    combined_df.columns[2]: "Score",
+    combined_df.columns[2]: "TIME",
     combined_df.columns[3]: "TV",
     combined_df.columns[4]: "TICKETS",
     combined_df.columns[5]: "LOCATION",
@@ -166,21 +166,21 @@ upcoming_games_df = combined_df[combined_df['TEAM'].isin(draft_df['School_Merge'
 draft_with_games = pd.merge(draft_df, upcoming_games_df, left_on='School_Merge', right_on='TEAM', how='left')
 
 draft_with_games = draft_with_games[
-    ['Rank', 'Team', 'Player', 'School', 'DATE', 'Score', 'AWAY', 'HOME', 'HomeTeam', 'AwayTeam']]
+    ['Rank', 'Team', 'Player', 'School', 'DATE', 'TIME', 'AWAY', 'HOME', 'HomeTeam', 'AwayTeam']]
 
 # Highlight matchups with NBA prospects on both teams
 super_matchups = combined_df[
     (combined_df['HomeTeam'].isin(draft_df['School_Merge'])) & (combined_df['AwayTeam'].isin(draft_df['School_Merge']))]
 
 super_matchups = super_matchups[
-    ['AWAY', 'HOME', 'DATE', 'Score', 'HomeTeam', 'AwayTeam', 'All_Players']].drop_duplicates()
+    ['AWAY', 'HOME', 'DATE', 'TIME', 'HomeTeam', 'AwayTeam', 'All_Players']].drop_duplicates()
 
 # print(tabulate(super_matchups, headers='keys', tablefmt='psql'))
 # Merge super_matchups with draft data to get players for each game
 super_matchups_expanded = super_matchups.copy()
 
 # Super Matchups: Drop unnecessary columns and keep only the relevant details
-super_matchups_expanded = super_matchups_expanded[['AWAY', 'HOME', 'DATE', 'Score', 'All_Players']]
+super_matchups_expanded = super_matchups_expanded[['AWAY', 'HOME', 'DATE', 'TIME', 'All_Players']]
 
 # Sort by Rank (ascending) and then by Date
 draft_with_games = draft_with_games.sort_values(by=['Rank', 'DATE'], ascending=[True, True])
@@ -188,7 +188,7 @@ draft_with_games = draft_with_games.sort_values(by=['Rank', 'DATE'], ascending=[
 draft_with_games = draft_with_games.reset_index(drop=True)
 
 # Draft Board: Drop unnecessary columns and keep only the relevant details
-draft_with_games = draft_with_games[['Rank', 'Team', 'Player', 'School', 'DATE', 'Score', 'AWAY', 'HOME']]
+draft_with_games = draft_with_games[['Rank', 'Team', 'Player', 'School', 'DATE', 'TIME', 'AWAY', 'HOME']]
 
 # Drop dupes
 draft_with_games = draft_with_games.drop_duplicates(subset=['Rank', 'Player', 'School'])
@@ -244,7 +244,7 @@ if selected_date:
     filtered_games_expanded = filtered_games.copy()
 
     # Drop unnecessary columns and keep only relevant details
-    filtered_games_expanded = filtered_games_expanded[['AWAY', 'HOME', 'DATE', 'Score', 'All_Players']]
+    filtered_games_expanded = filtered_games_expanded[['AWAY', 'HOME', 'DATE', 'TIME', 'All_Players']]
 
     # Display in Streamlit
     st.dataframe(filtered_games_expanded, hide_index=True)
