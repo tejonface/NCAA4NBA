@@ -204,7 +204,7 @@ with col1:
 with col2:
     # with st.expander("Upcoming NCAA games featuring top 60 NBA draft prospects.", expanded=False):
     st.text("This page helps basketball fans keep track of upcoming NCAA games featuring "
-            "top prospects for the 2025 NBA Draft. If you don’t follow college basketball "
+            "top prospects for the 2026 NBA Draft. If you don’t follow college basketball "
             "but want to know when the next potential NBA stars are playing, this is your "
             "go-to schedule. Check back for updates on key matchups and players to watch.")
 
@@ -212,7 +212,7 @@ with col2:
 #st.subheader(":red[Displaying week of March 8, 2025 until 2025-2026 schedules are released.]", divider="red")
 st.divider()
 st.header("Draft Board with Next Games")
-st.text("2025 NBA Mock Draft board with each NCAA players' upcoming game.")
+st.text("2026 NBA Mock Draft board with each NCAA players' upcoming game.")
 st.dataframe(draft_with_games, hide_index=True)
 print(tab(draft_with_games))
 # Display Super Matchups
