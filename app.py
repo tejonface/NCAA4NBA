@@ -193,8 +193,9 @@ draft_with_games = draft_with_games.drop_duplicates(subset=['Rank', 'Player', 'S
 # ==================================================================================== Create Streamlit Display
 # Streamlit App
 
+st.set_page_config(layout="wide")
+
 col1, col2 = st.columns([1, 2], vertical_alignment="center")
-# st.set_page_config(layout="wide")
 with col1:
     st.title("NBA Prospect Schedule")
 
@@ -210,12 +211,12 @@ with col2:
 st.divider()
 st.header("Draft Board with Next Games")
 st.text("2026 NBA Mock Draft board with each NCAA players' upcoming game.")
-st.dataframe(draft_with_games, hide_index=True)
+st.dataframe(draft_with_games, hide_index=True, use_container_width=True, height=600)
 print(tab(draft_with_games))
 # Display Super Matchups
 st.header("SUPER MATCHUPS")
 st.text("Games with top 60 NBA draft prospects on both teams.")
-st.dataframe(super_matchups_expanded, hide_index=True)
+st.dataframe(super_matchups_expanded, hide_index=True, use_container_width=True, height=400)
 print(tab(super_matchups_expanded))
 # Get tomorrow's date as the default selection
 today = date.today()
@@ -244,7 +245,7 @@ if selected_date:
     filtered_games_expanded = filtered_games_expanded[['AWAY', 'HOME', 'DATE', 'TIME', 'All_Players']]
 
     # Display in Streamlit
-    st.dataframe(filtered_games_expanded, hide_index=True)
+    st.dataframe(filtered_games_expanded, hide_index=True, use_container_width=True, height=400)
 
 else:
     st.write("Please select a date.")
