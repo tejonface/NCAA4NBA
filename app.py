@@ -609,7 +609,7 @@ tab1, tab2, tab3, tab4 = st.tabs(["📋 Draft Board", "⭐ Super Matchups", "�
 
 with tab1:
     st.header("Draft Board with Next Games")
-    st.caption("2026 NBA Mock Draft board with each NCAA player's upcoming game.")
+    st.caption("Top 60 prospects ranked with their next scheduled game.")
     
     # Select columns to display (use Game Time instead of separate DATE and TIME)
     display_df = draft_with_games.copy()
@@ -647,7 +647,7 @@ with tab1:
 
 with tab2:
     st.header("Super Matchups")
-    st.caption("Games with top 60 NBA draft prospects on both teams.")
+    st.caption("Games featuring prospects on both teams.")
     
     # Select columns to display
     super_df = super_matchups_expanded.copy()
@@ -658,12 +658,14 @@ with tab2:
 
 with tab3:
     st.header("Games by Date")
+    st.caption("Browse games by date for the next 30 days.")
     
     # Call the fragment (defined at module scope to avoid redecorating on every rerun)
     games_by_date_fragment(combined_df, upcoming_games_df)
 
 with tab4:
     st.header("NBA Prospect Distribution by School/Country")
+    st.caption("Which schools produce the most NBA prospects.")
     
     # ==================================================================================== Chart
     
