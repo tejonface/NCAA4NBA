@@ -753,8 +753,8 @@ with tab4:
     school_summary = school_summary.rename(columns={'School': 'School/Country', 'Player': 'Total'})
     school_summary = school_summary.sort_values(by='Total', ascending=False)
     
-    # Create a figure and axis with increased height to prevent overlap
-    fig, ax = plt.subplots(figsize=(8, 12))
+    # Create a figure and axis
+    fig, ax = plt.subplots(figsize=(10, 6))
     
     # Set colors
     fig.patch.set_facecolor('white')
@@ -765,12 +765,12 @@ with tab4:
     border_color = '#e2e8f0'
 
     # Create a modern blue gradient color palette
-    from matplotlib.colors import LinearSegmentedColormap
+    from matplotlib.colors import LinearSegmentedColormap, Normalize
     n_bins = len(school_summary)
     cmap = LinearSegmentedColormap.from_list('blue_gradient', colors_list, N=n_bins)
     
     values = np.array(school_summary['Total'])
-    norm = plt.Normalize(values.min(), values.max())
+    norm = Normalize(values.min(), values.max())
     colors = [cmap(norm(value)) for value in values]
     
     # Create a bar plot of Schools with the most prospects

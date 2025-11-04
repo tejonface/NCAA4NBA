@@ -44,7 +44,7 @@ Preferred communication style: Simple, everyday language.
 - **Partial Updates**: Background jobs use `scrape_date_range()` to update only specific date ranges, avoiding full season re-scrapes and minimizing load time.
 
 ## Data Visualization
-- **Libraries**: Matplotlib and Seaborn are used for generating charts, specifically a bar chart for prospect distribution by school/country, displayed in the "Prospect Distribution" tab. Charts are sized 8x12 inches for readability with white value labels inside bars.
+- **Libraries**: Matplotlib and Seaborn are used for generating charts, specifically a bar chart for prospect distribution by school/country, displayed in the "Prospect Distribution" tab. Charts are sized 10x6 inches for a compact display with white value labels inside bars.
 
 ## Code Organization
 - **Separation of Concerns**: `scraper.py` handles all web scraping logic, while `app.py` manages the Streamlit UI, data presentation, and caching. This modularity enhances reusability and maintainability.
