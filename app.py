@@ -83,9 +83,9 @@ def load_nearfuture_schedule(file_mtime, date_range_key):
     else:
         return pd.DataFrame()
 
-@st.cache_data(ttl=86400)  # 24 hours TTL for far-future games
+@st.cache_data(ttl=172800)  # 48 hours TTL for far-future games
 def load_farfuture_schedule(file_mtime, date_range_key):
-    """Load 8-30 days schedule with infrequent refresh
+    """Load 8+ days schedule with infrequent refresh
     
     Args:
         file_mtime: File modification time
@@ -590,7 +590,7 @@ with col_info:
             st.write(f"Draft prospects: {metadata.get('draft_prospects_count', 'N/A')} • Games: {metadata.get('games_count', 'N/A')}")
             
             st.markdown("**Smart Refresh**")
-            st.write("🔄 Today: 30 min • Next 7 days: 12 hr • Future: 24 hr")
+            st.write("🔄 Today's Games: 30 min • Next 7 days: 12 hr • Future: 48 hr")
             
             if st.button("🔄 Force Refresh", help="Clear all caches and reload immediately"):
                 st.cache_data.clear()

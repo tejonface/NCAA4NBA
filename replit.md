@@ -14,7 +14,7 @@ Preferred communication style: Simple, everyday language.
   - **Tab Organization**: Four distinct tabs: "Draft Board" (main table with team logos and upcoming games), "Super Matchups" (games with multiple top prospects), "Games by Date" (date-filtered schedule using `@st.fragment` for partial reruns), and "Prospect Distribution" (bar chart of prospect origins). Each tab includes descriptive captions and uses `use_container_width=True` for responsiveness.
   - **Professional Formatting**: Consistent title case for headers and column names, visual hierarchy using `st.caption()`, and clear footer links.
   - **Tab Styling**: Custom CSS for larger tabs (60px height, 16px font), a modern blue theme (#f8fafc inactive, #3b82f6 active), hover effects, rounded corners, and box shadows.
-  - **Header Layout**: Clean title with an info popover (ℹ️ icon) for "About" and "Data Info" sections, including refresh options.
+  - **Header Layout**: Clean title with an info popover (ℹ️ icon) for "About", "Data Info", "Smart Refresh" sections, and "Created by" attribution with clickable logo linking to jstew.info.
   - **Design System**: Cohesive blue/gray color palette (`#3b82f6`, `#2563eb`, `#60a5fa` for primary; `#f8fafc`, `#ffffff`, `#e2e8f0` for neutral) for consistent UI elements, including table enhancements (blue headers, alternating row colors, hover effects) and interactive elements (loading spinners, button hover states, focus states).
   - **Chart Styling**: Modern blue gradient palette for charts, clean background, subtle grid lines, and improved typography.
 - **Timezone Handling**: All date and time calculations use Eastern Time (America/New_York), with helper functions `get_eastern_now()` and `get_eastern_today()`. Game times are displayed in a concise format (e.g., "Nov 8, 9:00 PM").
@@ -24,7 +24,7 @@ Preferred communication style: Simple, everyday language.
   - **Output**: Saves `draft_data.csv`, `schedule_data.csv`, and `scrape_metadata.json` to the `data/` directory.
   - **Reliability**: Features atomic writes, automatic backups, validation checks (minimum data thresholds), and robust error handling to preserve existing data if scraping fails.
   - **Technology**: Uses `BeautifulSoup4` for HTML parsing. Includes smart TV network extraction from ESPN cells, handling both text and image elements.
-  - **Efficiency**: Employs `ThreadPoolExecutor` with 10 workers for parallel scraping of 30 days of NCAA schedule data.
+  - **Efficiency**: Employs `ThreadPoolExecutor` with 10 workers for parallel scraping in 30-day batches. Scraping continues until 10 consecutive days with no games are found, ensuring complete season coverage.
   - **Normalization**: Renames columns for consistency before saving.
 - **Data Loading (`app.py`)**: Loads pre-scraped data from CSV files.
   - **Caching**: Uses `@st.cache_data` for in-memory caching of DataFrames.
@@ -48,9 +48,9 @@ Preferred communication style: Simple, everyday language.
 - **Super Matchups**: Identifies and highlights games featuring top draft prospects from opposing teams.
 - **Date Selection**: Provides an interactive calendar with game counts for selected dates and handles empty states.
 - **Prospect Tracking**: Matches NCAA players with their NBA draft rankings.
-- **Smart Caching**: Tiered refresh intervals (30 min, 12 hr, 24 hr) for schedule data.
+- **Smart Caching**: Tiered refresh intervals (30 min for today's games, 12 hr for next 7 days, 48 hr for future games) optimizes performance while ensuring fresh data.
 - **Manual Refresh**: User-triggered button to clear cache and reload data.
-- **Extended Coverage**: 30-day NCAA schedule coverage.
+- **Extended Coverage**: NCAA schedule coverage through end of season (scraper continues until 10 consecutive days with no games).
 
 # External Dependencies
 

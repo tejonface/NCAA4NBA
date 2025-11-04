@@ -151,31 +151,67 @@ def scrape_single_date(single_date):
 
 
 # Main function to scrape NCAA schedule
-def scrape_ncaa_schedule(days=30):
-    """Scrape NCAA schedule for the next N days"""
-    print(f"Scraping NCAA schedule for next {days} days...")
+def scrape_ncaa_schedule(max_consecutive_empty=10):
+    """Scrape NCAA schedule until we hit max_consecutive_empty days with no games
     
-    dates_to_scrape = []
-    for i in range(days):
-        single_date = get_eastern_today() + timedelta(days=i)
-        dates_to_scrape.append(single_date)
+    This ensures we capture the entire season without hardcoding an end date.
+    The season typically ends in early April, but this approach handles variations.
+    """
+    print(f"Scraping NCAA schedule until {max_consecutive_empty} consecutive days with no games...")
     
-    # Scrape dates in parallel
     all_data = {}
-    print(f"Scraping {len(dates_to_scrape)} dates in parallel...")
-    with ThreadPoolExecutor(max_workers=10) as executor:
-        future_to_date = {executor.submit(scrape_single_date, d): d for d in dates_to_scrape}
+    all_dates_scraped = []
+    batch_size = 30
+    day_offset = 0
+    consecutive_empty = 0
+    
+    # Keep scraping in batches until we hit the consecutive empty threshold
+    while consecutive_empty < max_consecutive_empty and day_offset < 365:
+        # Prepare next batch of dates
+        batch_dates = []
+        for i in range(batch_size):
+            single_date = get_eastern_today() + timedelta(days=day_offset)
+            batch_dates.append(single_date)
+            day_offset += 1
         
-        for future in as_completed(future_to_date):
-            single_date = future_to_date[future]
-            try:
-                result = future.result()
-                if result:
+        print(f"Scraping batch starting at day {day_offset - batch_size} ({len(batch_dates)} dates)...")
+        
+        # Scrape this batch in parallel
+        with ThreadPoolExecutor(max_workers=10) as executor:
+            future_to_date = {executor.submit(scrape_single_date, d): d for d in batch_dates}
+            
+            for future in as_completed(future_to_date):
+                single_date = future_to_date[future]
+                try:
+                    result = future.result()
                     date_str = single_date.strftime("%Y-%m-%d")
-                    all_data[date_str] = result
-                    print(f"✓ Scraped {date_str}")
-            except Exception as e:
-                print(f"✗ Error processing {single_date}: {e}")
+                    all_dates_scraped.append(date_str)
+                    
+                    if result:
+                        all_data[date_str] = result
+                        print(f"✓ Scraped {date_str} ({len(result)} games)")
+                except Exception as e:
+                    print(f"✗ Error processing {single_date}: {e}")
+        
+        # Check consecutive empty days at the END of what we've scraped so far
+        # Sort all dates we've checked
+        sorted_dates = sorted(all_dates_scraped)
+        consecutive_empty = 0
+        
+        # Count consecutive empty days from the most recent dates
+        for date_str in reversed(sorted_dates):
+            if date_str not in all_data:
+                consecutive_empty += 1
+            else:
+                # Found a date with games, reset counter
+                consecutive_empty = 0
+        
+        if consecutive_empty >= max_consecutive_empty:
+            print(f"✓ Found {consecutive_empty} consecutive days with no games - stopping scrape")
+            break
+    
+    if day_offset >= 365:
+        print("⚠ Reached 365-day safety limit")
     
     # Convert to DataFrame
     all_records = []
@@ -194,7 +230,7 @@ def scrape_ncaa_schedule(days=30):
             'logo espnbet': 'ODDS_BY'
         })
     
-    print(f"✓ Total games scraped: {len(combined_df)}")
+    print(f"✓ Total games scraped: {len(combined_df)} across {len(all_data)} dates with games")
     return combined_df
 
 
@@ -223,10 +259,10 @@ def run_scraper():
         save_with_atomic_write(draft_df, DRAFT_DATA_FILE, "draft data")
         print()
         
-        # Scrape NCAA Schedule
-        schedule_df = scrape_ncaa_schedule(days=30)
+        # Scrape NCAA Schedule (continues until 10 consecutive days with no games)
+        schedule_df = scrape_ncaa_schedule(max_consecutive_empty=10)
         
-        # Validate schedule data (expect at least 100 games over 30 days)
+        # Validate schedule data (expect at least 100 games for the season)
         validate_data(schedule_df, min_rows=100, data_type="Schedule games")
         
         # Backup existing schedule file before overwriting
