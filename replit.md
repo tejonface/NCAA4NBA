@@ -18,7 +18,7 @@ Preferred communication style: Simple, everyday language.
   - Chosen for rapid prototyping and built-in interactive components
   - Simplifies deployment and user interface creation without HTML/CSS/JS
   - Trade-off: Less flexibility than traditional web frameworks but much faster development
-  - Layout: Centered layout (max-width ~980px) to prevent excessive stretching on large external monitors
+  - Layout: Wide mode with custom centered container (max-width 1400px) - wide enough to display all table columns without cutoff while staying compact and centered on the page
   - **Tab Organization**: Four tabs organize different views with custom CSS styling
     - Draft Board: Main table with team logos (medium size) and upcoming games
     - Super Matchups: Games with prospects on both teams
