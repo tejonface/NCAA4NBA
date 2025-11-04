@@ -408,9 +408,21 @@ super_matchups_expanded['Game Time (ET)'] = super_matchups_expanded.apply(format
 
 st.set_page_config(layout="centered")
 
-# Add custom CSS for larger, styled tabs
+# Add custom CSS for larger, styled tabs and tighter spacing
 st.markdown("""
 <style>
+    /* Reduce whitespace around title */
+    .main .block-container {
+        padding-top: 2rem;
+        padding-bottom: 1rem;
+    }
+    
+    /* Reduce spacing around dividers */
+    hr {
+        margin-top: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+    
     /* Make tabs larger with better spacing */
     .stTabs [data-baseweb="tab-list"] {
         gap: 8px;
