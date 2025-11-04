@@ -35,7 +35,13 @@ Preferred communication style: Simple, everyday language.
 ## Data Storage Strategy
 - **File-Based Storage**: All scraped data is stored in CSV files within the `data/` directory (`draft_data.csv`, `schedule_data.csv`, `scrape_metadata.json`). This ensures persistent storage and decouples web scraping from app loading.
 - **Streamlit Caching**: `@st.cache_data` combined with file modification time tracking ensures fast data access and automatic data refresh when underlying files change. A manual refresh button is also available.
-- **Update Workflow**: Supports both scheduled (e.g., daily via Replit Scheduled Deployment) and manual execution of `scraper.py`.
+- **Background Scheduler**: Uses APScheduler (`background_scheduler.py`) to automatically refresh data with tiered intervals:
+  - Today's games: Every 30 minutes (catches live game status changes)
+  - Next 7 days: Every 6 hours (for schedule updates)
+  - Draft board: Daily at 6:00 AM ET (for ranking changes)
+  - Far-future games: Daily at 6:30 AM ET (for long-term schedule)
+- **Thread Safety**: All file updates use threading.Lock to prevent race conditions when concurrent background jobs update the same data files.
+- **Partial Updates**: Background jobs use `scrape_date_range()` to update only specific date ranges, avoiding full season re-scrapes and minimizing load time.
 
 ## Data Visualization
 - **Libraries**: Matplotlib and Seaborn are used for generating charts, specifically a bar chart for prospect distribution by school/country, displayed in the "Prospect Distribution" tab. Charts are sized 8x12 inches for readability with white value labels inside bars.
@@ -48,9 +54,11 @@ Preferred communication style: Simple, everyday language.
 - **Super Matchups**: Identifies and highlights games featuring top draft prospects from opposing teams.
 - **Date Selection**: Provides an interactive calendar with game counts for selected dates and handles empty states.
 - **Prospect Tracking**: Matches NCAA players with their NBA draft rankings.
+- **Live Game Detection**: Automatically detects and displays live games with "🔴 Live" status for today's games that are currently in progress (within game window: 15 min before start to 3 hours after). Shows "Final" for completed games and formatted times for upcoming/future games.
 - **Smart Caching**: Tiered refresh intervals (30 min for today's games, 12 hr for next 7 days, 48 hr for future games) optimizes performance while ensuring fresh data.
 - **Manual Refresh**: User-triggered button to clear cache and reload data.
 - **Extended Coverage**: NCAA schedule coverage through end of season (scraper continues until 10 consecutive days with no games).
+- **Zero Load Delays**: Background scheduler keeps data fresh automatically, so the app loads instantly from cached data without waiting for scraping operations.
 
 # External Dependencies
 
@@ -62,6 +70,7 @@ Preferred communication style: Simple, everyday language.
 - **numpy**: Numerical computing.
 - **seaborn**: Statistical data visualization.
 - **matplotlib**: Plotting and charting.
+- **APScheduler**: Background job scheduler for automatic data refreshes with tiered intervals.
 
 ## External Data Sources
 - **nbadraft.net**: Primary source for NBA mock draft data (player rankings, teams, stats, schools).
