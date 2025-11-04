@@ -439,17 +439,10 @@ st.markdown("""
         color: white !important;
     }
     
-    /* Align popover button with title on same line */
-    [data-testid="stPopoverButton"] {
-        vertical-align: middle;
-        margin-left: 0.5rem;
-    }
-    
-    /* Make title and popover appear on same line */
-    .element-container:has(h1) + .element-container:has([data-testid="stPopoverButton"]) {
-        display: inline-block !important;
-        vertical-align: bottom !important;
-        margin-left: 10px !important;
+    /* Make header row use flexbox to align title and icon */
+    .element-container:has(> div[data-testid="column"]) {
+        display: flex !important;
+        align-items: flex-end !important;
     }
     
     /* Minimize whitespace in popover */
@@ -466,31 +459,30 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Header with info popover
-st.markdown('<h1 style="display: inline-block; margin-bottom: 0;">NBA Prospect Schedule</h1>', unsafe_allow_html=True)
-
-# Popover positioned next to title
-with st.popover("ℹ️"):
-    st.markdown("**About**")
-    st.caption("This page helps basketball fans keep track of upcoming NCAA games featuring "
-               "top prospects for the 2026 NBA Draft. If you don't follow college basketball "
-               "but want to know when the next potential NBA stars are playing, this is your "
-               "go-to schedule. Check back for updates on key matchups and players to watch.")
-    
-    st.markdown("---")
-    
-    # Show data info with refresh button
-    min_date = combined_df['DATE'].min() if not combined_df.empty else None
-    max_date = combined_df['DATE'].max() if not combined_df.empty else None
-    if min_date and max_date:
-        st.markdown("**Data Info**")
-        st.info(f"📅 Showing games from {min_date.strftime('%b %d, %Y')} to {max_date.strftime('%b %d, %Y')}")
-        st.caption("Data refreshes every hour")
+col1, col2 = st.columns([20, 1])
+with col1:
+    st.title("NBA Prospect Schedule")
+with col2:
+    with st.popover("ℹ️"):
+        st.markdown("**About**")
+        st.caption("This page helps basketball fans keep track of upcoming NCAA games featuring "
+                   "top prospects for the 2026 NBA Draft. If you don't follow college basketball "
+                   "but want to know when the next potential NBA stars are playing, this is your "
+                   "go-to schedule. Check back for updates on key matchups and players to watch.")
         
-        if st.button("🔄 Refresh Data", help="Clear cache and reload latest games"):
-            st.cache_data.clear()
-            st.rerun()
-
-st.divider()
+        st.markdown("---")
+        
+        # Show data info with refresh button
+        min_date = combined_df['DATE'].min() if not combined_df.empty else None
+        max_date = combined_df['DATE'].max() if not combined_df.empty else None
+        if min_date and max_date:
+            st.markdown("**Data Info**")
+            st.info(f"📅 Showing games from {min_date.strftime('%b %d, %Y')} to {max_date.strftime('%b %d, %Y')}")
+            st.caption("Data refreshes every hour")
+            
+            if st.button("🔄 Refresh Data", help="Clear cache and reload latest games"):
+                st.cache_data.clear()
+                st.rerun()
 
 # Create tabs for different sections
 tab1, tab2, tab3, tab4 = st.tabs(["📋 Draft Board", "⭐ Super Matchups", "📅 Games by Date", "📊 Prospect Distribution"])
