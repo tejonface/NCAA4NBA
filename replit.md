@@ -1,6 +1,11 @@
 # Overview
 
-This project is a **Streamlit web application** for scraping and analyzing NBA draft data and NCAA basketball schedules. The application fetches live data from external sources (nbadraft.net) and presents NBA mock draft information with player rankings, teams, physical attributes, and school affiliations. The application is designed to provide basketball analytics and scouting information with data visualization capabilities using matplotlib and seaborn.
+This project is a **Streamlit web application** for analyzing NBA draft data and NCAA basketball schedules. The application consists of two main components:
+
+1. **scraper.py**: A standalone web scraper that fetches data from external sources (nbadraft.net and ESPN) and saves it to CSV files
+2. **app.py**: A Streamlit web application that loads pre-scraped data and presents NBA mock draft information with player rankings, teams, physical attributes, and school affiliations
+
+This separation ensures the Streamlit app loads instantly without waiting for web scraping on every page load. The application provides basketball analytics and scouting information with data visualization capabilities using matplotlib and seaborn.
 
 # User Preferences
 
@@ -50,17 +55,6 @@ Preferred communication style: Simple, everyday language.
       - Improved typography and spacing
       - Subtle grid lines for easier reading
       - Minimalist spine styling (top/right removed)
-  - **Dark Mode Support**: Light/Dark toggle (November 2025)
-    - **Light Mode** (☀️): Bright theme with blue accents
-    - **Dark Mode** (🌙): Dark theme with lighter blue accents for better contrast
-    - Theme toggle button in header switches between modes
-    - Theme preference persists in session state across interactions
-    - JavaScript applies theme classes to DOM for instant switching
-    - All UI elements adapt: backgrounds, text, tables, tabs, buttons, inputs, popovers
-    - Matplotlib charts dynamically adjust colors based on active theme
-    - Complete visual consistency: UI and charts both change together
-    - Dark colors: #0f172a (card bg), #1e293b (light bg), #60a5fa (primary blue), #f1f5f9 (text)
-    - Light colors: #ffffff (card bg), #f8fafc (light bg), #3b82f6 (primary blue), #1e293b (text)
 - **Timezone Handling**: Eastern Time (America/New_York)
   - All date calculations use Eastern timezone (standard for US college basketball)
   - Helper functions: `get_eastern_now()` and `get_eastern_today()`
@@ -70,41 +64,57 @@ Preferred communication style: Simple, everyday language.
   - Footer displays current Eastern time for user reference
 
 ## Data Processing Pipeline
-- **Web Scraping**: BeautifulSoup4 with requests library
-  - Scrapes HTML tables from nbadraft.net for mock draft data
-  - Targets specific table IDs (`nba_mock_consensus_table` and `nba_mock_consensus_table2`)
-  - Combines data from multiple tables into single DataFrame
-  - **TV Network Extraction**: Smart extraction from ESPN schedule cells
-    - `extract_cell_content()` helper function handles both text and image elements
-    - Extracts alt text from TV network logo images (e.g., ESPN, FOX, FS1, BTN)
-    - Filters out ESPN's base64 lazy-load placeholders (strings starting with "YH5")
-    - Falls back to parsing image src URLs when alt text is unavailable
-    - Final fallback to text content for cells without images
-  - Rationale: Direct data extraction from source ensures real-time accuracy
+
+### Web Scraping (scraper.py)
+- **Standalone Scraper**: Runs independently from the Streamlit app
+  - Execute with: `python scraper.py`
+  - Saves data to `data/` directory with three files:
+    - `draft_data.csv`: NBA draft prospects (60 players)
+    - `schedule_data.csv`: NCAA basketball schedule (30 days, ~1500 games)
+    - `scrape_metadata.json`: Last scrape time and data counts
+  - **Web Scraping with BeautifulSoup4**:
+    - Scrapes HTML tables from nbadraft.net for mock draft data
+    - Targets specific table IDs (`nba_mock_consensus_table` and `nba_mock_consensus_table2`)
+    - Combines data from multiple tables into single DataFrame
+    - **TV Network Extraction**: Smart extraction from ESPN schedule cells
+      - `extract_cell_content()` helper function handles both text and image elements
+      - Extracts alt text from TV network logo images (e.g., ESPN, FOX, FS1, BTN)
+      - Filters out ESPN's base64 lazy-load placeholders (strings starting with "YH5")
+      - Falls back to parsing image src URLs when alt text is unavailable
+      - Final fallback to text content for cells without images
+  - **Parallel Scraping**: ThreadPoolExecutor with 10 workers for 30 concurrent date requests
+  - **Column Normalization**: Renames columns before saving to ensure consistent CSV format
+    - MATCHUP → AWAY, '' → HOME, tickets → TICKETS, location → LOCATION, logo espnbet → ODDS_BY
+
+### Data Loading (app.py)
+- **File-Based Loading**: Loads pre-scraped data from CSV files in `data/` directory
+  - Fast page loads (no web scraping on user visits)
+  - `@st.cache_data` decorator caches loaded DataFrames in memory
+  - Graceful error handling if data files are missing (prompts user to run scraper)
+  - Manual refresh button clears cache and reloads from disk
 
 - **Data Manipulation**: Pandas DataFrames
   - Primary data structure for storing and manipulating scraped data
   - Provides efficient tabular data operations
   - Standard columns: Rank, Team, Player, Height, Weight, Position, School, Conference
 
-## Caching Strategy
-- **Two-Layer Caching System**:
-  1. **File-based Cache**: Persistent JSON storage in `schedule_cache/` directory
-     - `ncaa_schedule.json`: Stores all scraped game data
-     - `metadata.json`: Tracks last update timestamps for each date
-     - Tiered refresh intervals based on game timing:
-       - Within 7 days: Every 30 minutes (games happening soon, schedules change frequently)
-       - 7-30 days: Every 12 hours (schedules more stable)
-       - 30+ days: Every 24 hours (minimal changes expected)
-     - Survives app restarts and provides significant performance boost
-  2. **Streamlit Cache**: `@st.cache_data` decorator with 1800-second TTL (30 minutes)
-     - Second layer on top of file cache for in-memory speed
-     - Manual refresh button clears both caches for immediate updates
-- **Parallel Scraping**: ThreadPoolExecutor with 10 workers
-  - Only scrapes missing or stale dates based on file cache metadata
-  - First load: ~5-10 seconds (all 30 dates in parallel)
-  - Subsequent loads: ~1-2 seconds (only recent dates need refresh)
-  - Optimized from 150 days to 30 days for faster page load and refresh times
+## Data Storage Strategy
+- **File-Based Storage**: All scraped data saved to CSV files in `data/` directory
+  - **draft_data.csv**: 60 NBA draft prospects with ranks, schools, physical stats
+  - **schedule_data.csv**: 30 days of NCAA basketball games (~1500 games)
+  - **scrape_metadata.json**: Tracks last scrape time and data counts for user reference
+  - Persistent storage survives app restarts
+  - Decouples web scraping from app loading for instant page loads
+  
+- **Streamlit Caching**: `@st.cache_data` decorator for in-memory performance
+  - Caches loaded DataFrames to avoid repeated disk reads
+  - Manual refresh button clears cache and reloads from disk
+  - User can see last scrape time in the info popover
+  
+- **Update Workflow**: 
+  1. Run `python scraper.py` to fetch fresh data (takes ~10-15 seconds)
+  2. Streamlit app automatically uses updated files on next page load
+  3. Users can click "Refresh Data" button to reload from updated files without restarting app
 
 ## Data Visualization
 - **Libraries**: Matplotlib and Seaborn
@@ -115,11 +125,18 @@ Preferred communication style: Simple, everyday language.
   - Displayed in dedicated "Prospect Distribution" tab
 
 ## Code Organization
-- **Modular Functions**: Separate functions for each scraping task
-  - `scrape_nba_mock_draft()`: Handles NBA draft data extraction from nbadraft.net
-  - `scrape_ncaa_schedule()`: Scrapes 30 days of NCAA basketball schedules from ESPN (covers ~1 month)
-  - `get_players_from_school()`: Matches draft prospects with their upcoming games
-  - Promotes code reusability and maintainability
+- **Separation of Concerns**: Web scraping and UI are completely decoupled
+  - **scraper.py**: All web scraping logic (BeautifulSoup4, requests, parallel processing)
+    - `scrape_nba_mock_draft()`: Handles NBA draft data extraction from nbadraft.net
+    - `scrape_ncaa_schedule()`: Scrapes 30 days of NCAA basketball schedules from ESPN
+    - `extract_cell_content()`: Helper for extracting TV network info from HTML
+    - `run_scraper()`: Main orchestrator that runs all scrapers and saves files
+  - **app.py**: Streamlit UI and data presentation
+    - `load_draft_data()`: Loads draft prospects from CSV with caching
+    - `load_schedule_data()`: Loads game schedule from CSV with caching
+    - `get_players_from_school()`: Matches draft prospects with their upcoming games
+    - Data transformation, table building, and visualization
+  - Promotes code reusability, maintainability, and faster page loads
 
 ## Application Features
 - **Draft Board Display**: Shows 2026 NBA Mock Draft rankings with upcoming game schedules
