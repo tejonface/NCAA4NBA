@@ -14,11 +14,16 @@ Preferred communication style: Simple, everyday language.
   - Simplifies deployment and user interface creation without HTML/CSS/JS
   - Trade-off: Less flexibility than traditional web frameworks but much faster development
   - Layout: Centered layout (max-width ~980px) to prevent excessive stretching on large external monitors
-  - **Tab Organization**: Four tabs organize different views
+  - **Tab Organization**: Four tabs organize different views with custom CSS styling
     - Draft Board: Main table with team logos (medium size) and upcoming games
     - Super Matchups: Games with prospects on both teams
-    - Games by Date: Calendar picker for viewing specific dates
+    - Games by Date: Calendar picker with quick-jump buttons and game counts
     - Prospect Distribution: Bar chart (8x12 inches for readability)
+  - **Tab Styling**: Custom CSS for enhanced UX
+    - Larger tabs (60px height) for easier clicking
+    - Background colors: #f0f2f6 (inactive), #4CAF50 green (active)
+    - Hover effects (#e0e3e9) for better interactivity
+    - Rounded corners and 8px spacing between tabs
 - **Timezone Handling**: Eastern Time (America/New_York)
   - All date calculations use Eastern timezone (standard for US college basketball)
   - Helper functions: `get_eastern_now()` and `get_eastern_today()`
@@ -81,9 +86,15 @@ Preferred communication style: Simple, everyday language.
   - **NBA Team Logos**: Displays official NBA team logos from ESPN's CDN instead of text team names
   - Logo mapping handles all 30 NBA teams with variations (e.g., "Golden State" vs "Golden St.")
   - Automatically strips asterisks from projected picks (e.g., "*Utah" → Utah logo)
-  - ImageColumn configuration shows logos at optimal "small" size for table readability
+  - ImageColumn configuration shows logos at optimal "medium" size for table readability
 - **Super Matchups**: Highlights games featuring top draft prospects on both teams
-- **Date-Based Filtering**: Interactive calendar date picker for viewing games on any specific day within the 60-day range
+- **Smart Date Selection**: Interactive calendar with enhanced UX features
+  - **Quick-Jump Buttons**: "📅 Today" and "⏭️ Next Game" for easy navigation
+  - **Game Counts**: Displays number of games for selected date (e.g., "🏀 5 games scheduled for Monday, November 4")
+  - **Empty State Handling**: Shows friendly message when no games scheduled
+  - **Next Game Suggestions**: Suggests next available date when selected date has no games
+  - **Deduplication**: Accurately counts unique matchups (prevents double-counting when prospects on both teams)
+  - Session state management ensures consistent behavior across interactions
 - **Prospect Tracking**: Automatically matches NCAA players with their draft rankings
 - **Data Visualization**: Bar chart showing prospect distribution by school/country with white value labels
 - **Real-Time Data**: 1-hour cache refresh for up-to-date information
