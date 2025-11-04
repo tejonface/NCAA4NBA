@@ -15,6 +15,12 @@ Preferred communication style: Simple, everyday language.
   - Trade-off: Less flexibility than traditional web frameworks but much faster development
   - Layout: Centered layout (max-width ~980px) to prevent excessive stretching on large external monitors
   - Tables use container width for optimal display within centered layout
+- **Timezone Handling**: Pacific Time (America/Los_Angeles)
+  - All date calculations use Pacific timezone (not server UTC time)
+  - Helper functions: `get_pacific_now()` and `get_pacific_today()`
+  - Cache metadata stores timestamps with Pacific timezone offset
+  - Ensures game schedules align with West Coast sports viewing times
+  - Footer displays current Pacific time for user reference
 
 ## Data Processing Pipeline
 - **Web Scraping**: BeautifulSoup4 with requests library
