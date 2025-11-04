@@ -607,7 +607,7 @@ with tab3:
         with col_count:
             if not filtered_games.empty:
                 game_count = game_counts.get(selected_date, 0)
-                st.markdown(f"**{game_count} game{'s' if game_count != 1 else ''} on {selected_date.strftime('%A, %B %d, %Y')}**")
+                st.subheader(f"{game_count} game{'s' if game_count != 1 else ''} on {selected_date.strftime('%A, %B %d, %Y')}")
         
         if not filtered_games.empty:
             
