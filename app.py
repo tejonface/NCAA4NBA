@@ -579,14 +579,18 @@ with col_title:
     st.title("NBA Prospect Schedule")
 with col_info:
     with st.popover("ℹ️"):
-        st.caption("Track upcoming NCAA games featuring top 2026 NBA Draft prospects.")
+        st.markdown("**About**")
+        st.write("Track upcoming NCAA games featuring top prospects for the 2026 NBA Draft.")
         
         # Show data info with metadata
         if metadata:
-            st.divider()
+            st.markdown("**Data Info**")
             last_scrape = datetime.fromisoformat(metadata['last_scrape_time'])
-            st.caption(f"**Data:** {last_scrape.strftime('%b %d at %I:%M %p ET')} • {metadata.get('draft_prospects_count', 'N/A')} prospects • {metadata.get('games_count', 'N/A')} games")
-            st.caption("**Refresh:** 30 min (today) • 12 hr (week) • 24 hr (future)")
+            st.write(f"📅 Last updated: {last_scrape.strftime('%b %d, %Y at %I:%M %p ET')}")
+            st.write(f"Draft prospects: {metadata.get('draft_prospects_count', 'N/A')} • Games: {metadata.get('games_count', 'N/A')}")
+            
+            st.markdown("**Smart Refresh**")
+            st.write("🔄 Today: 30 min • Next 7 days: 12 hr • Future: 24 hr")
             
             if st.button("🔄 Force Refresh", help="Clear all caches and reload immediately"):
                 st.cache_data.clear()
@@ -600,7 +604,7 @@ with col_info:
         
         st.markdown(
             f'<div style="text-align: center;">'
-            f'<p style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">Created by</p>'
+            f'<p style="font-size: 12px; color: #1f2937; margin-bottom: 8px; font-weight: 500;">Created by</p>'
             f'<a href="https://www.jstew.info/" target="_blank">'
             f'<img src="data:image/png;base64,{img_data}" width="120">'
             f'</a>'
