@@ -44,11 +44,11 @@ draft_df = scrape_nba_mock_draft(draft_url)
 # =================================================================== Scrape NCAA Schedule
 
 # Function to scrape NCAA schedule
-@st.cache_data(ttl=1800)
+@st.cache_data(ttl=3600)  # 1 hour cache for better performance with larger date range
 def scrape_ncaa_schedule():
     combined_df = pd.DataFrame()
 
-    for i in range(8):  # Loop through 8 days to ensure coverage
+    for i in range(60):  # Scrape 60 days to cover rest of season
         single_date = date.today() + timedelta(days=-1 + i)  # Start from yesterday to account for timezone differences
         date_str = single_date.strftime("%Y%m%d")
         print(single_date)
@@ -219,7 +219,7 @@ st.divider()
 min_date = combined_df['DATE'].min() if not combined_df.empty else None
 max_date = combined_df['DATE'].max() if not combined_df.empty else None
 if min_date and max_date:
-    st.info(f"📅 Showing games from {min_date.strftime('%b %d, %Y')} to {max_date.strftime('%b %d, %Y')} | Data refreshes every 30 minutes")
+    st.info(f"📅 Showing games from {min_date.strftime('%b %d, %Y')} to {max_date.strftime('%b %d, %Y')} | Data refreshes every hour")
 
 st.header("Draft Board with Next Games")
 st.text("2026 NBA Mock Draft board with each NCAA players' upcoming game.")

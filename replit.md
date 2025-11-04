@@ -27,11 +27,11 @@ Preferred communication style: Simple, everyday language.
   - Standard columns: Rank, Team, Player, Height, Weight, Position, School, Conference
 
 ## Caching Strategy
-- **Streamlit Cache**: `@st.cache_data` decorator with 1800-second TTL (30 minutes)
+- **Streamlit Cache**: `@st.cache_data` decorator with 3600-second TTL (1 hour)
   - Reduces redundant HTTP requests to external sources
   - Improves application performance and reduces load on scraped websites
-  - 30-minute refresh ensures reasonably fresh data while minimizing requests
-  - Rationale: Balances data freshness with performance optimization
+  - 1-hour refresh ensures reasonably fresh data while minimizing requests
+  - Rationale: Balances data freshness with performance optimization, especially with extended 60-day scraping range
 
 ## Data Visualization
 - **Libraries**: Matplotlib and Seaborn
@@ -42,17 +42,19 @@ Preferred communication style: Simple, everyday language.
 ## Code Organization
 - **Modular Functions**: Separate functions for each scraping task
   - `scrape_nba_mock_draft()`: Handles NBA draft data extraction from nbadraft.net
-  - `scrape_ncaa_schedule()`: Scrapes upcoming 7 days of NCAA basketball schedules from ESPN
+  - `scrape_ncaa_schedule()`: Scrapes 60 days of NCAA basketball schedules from ESPN (covers ~2 months)
   - `get_players_from_school()`: Matches draft prospects with their upcoming games
   - Promotes code reusability and maintainability
 
 ## Application Features
 - **Draft Board Display**: Shows 2026 NBA Mock Draft rankings with upcoming game schedules
 - **Super Matchups**: Highlights games featuring top draft prospects on both teams
-- **Date-Based Filtering**: Interactive date selector for viewing specific game days
+- **Date-Based Filtering**: Interactive segmented date selector for viewing games on any specific day within the 60-day range
 - **Prospect Tracking**: Automatically matches NCAA players with their draft rankings
-- **Data Visualization**: Bar chart showing prospect distribution by school/country
-- **Real-Time Data**: 30-minute cache refresh for up-to-date information
+- **Data Visualization**: Bar chart showing prospect distribution by school/country with white value labels
+- **Real-Time Data**: 1-hour cache refresh for up-to-date information
+- **Manual Refresh**: User-triggered data refresh button to clear cache and reload latest schedules
+- **Extended Coverage**: 60-day schedule coverage allows users to plan ahead for the rest of the season
 
 # External Dependencies
 
@@ -76,7 +78,7 @@ Preferred communication style: Simple, everyday language.
 - **ESPN**: NCAA basketball schedule data
   - URL pattern: `https://www.espn.com/mens-college-basketball/schedule/_/date/{YYYYMMDD}`
   - Provides daily NCAA basketball game schedules
-  - Scrapes upcoming 7 days starting from current date
+  - Scrapes upcoming 60 days starting from yesterday (to account for timezone differences)
   - Data includes team matchups, game times, TV coverage, and venue information
   - Note: Requires User-Agent header for successful requests
 
