@@ -27,6 +27,12 @@ Preferred communication style: Simple, everyday language.
   - Scrapes HTML tables from nbadraft.net for mock draft data
   - Targets specific table IDs (`nba_mock_consensus_table` and `nba_mock_consensus_table2`)
   - Combines data from multiple tables into single DataFrame
+  - **TV Network Extraction**: Smart extraction from ESPN schedule cells
+    - `extract_cell_content()` helper function handles both text and image elements
+    - Extracts alt text from TV network logo images (e.g., ESPN, FOX, FS1, BTN)
+    - Filters out ESPN's base64 lazy-load placeholders (strings starting with "YH5")
+    - Falls back to parsing image src URLs when alt text is unavailable
+    - Final fallback to text content for cells without images
   - Rationale: Direct data extraction from source ensures real-time accuracy
 
 - **Data Manipulation**: Pandas DataFrames
