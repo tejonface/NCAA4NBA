@@ -323,6 +323,7 @@ NBA_TEAM_LOGOS = {
     "Denver": "https://a.espncdn.com/i/teamlogos/nba/500/den.png",
     "Detroit": "https://a.espncdn.com/i/teamlogos/nba/500/det.png",
     "Golden St.": "https://a.espncdn.com/i/teamlogos/nba/500/gs.png",
+    "Golden State": "https://a.espncdn.com/i/teamlogos/nba/500/gs.png",
     "Houston": "https://a.espncdn.com/i/teamlogos/nba/500/hou.png",
     "Indiana": "https://a.espncdn.com/i/teamlogos/nba/500/ind.png",
     "LA Clippers": "https://a.espncdn.com/i/teamlogos/nba/500/lac.png",
@@ -334,6 +335,7 @@ NBA_TEAM_LOGOS = {
     "New Orleans": "https://a.espncdn.com/i/teamlogos/nba/500/no.png",
     "New York": "https://a.espncdn.com/i/teamlogos/nba/500/ny.png",
     "Oklahoma Cty": "https://a.espncdn.com/i/teamlogos/nba/500/okc.png",
+    "Oklahoma City": "https://a.espncdn.com/i/teamlogos/nba/500/okc.png",
     "Orlando": "https://a.espncdn.com/i/teamlogos/nba/500/orl.png",
     "Philadelphia": "https://a.espncdn.com/i/teamlogos/nba/500/phi.png",
     "Phoenix": "https://a.espncdn.com/i/teamlogos/nba/500/phx.png",
@@ -345,8 +347,17 @@ NBA_TEAM_LOGOS = {
     "Washington": "https://a.espncdn.com/i/teamlogos/nba/500/wsh.png"
 }
 
+# Function to get team logo URL, handling asterisks and variations
+def get_team_logo(team_name):
+    """Get logo URL for a team, stripping asterisks and handling variations"""
+    if pd.isna(team_name) or team_name == "":
+        return ""
+    # Remove asterisks (used for projected picks)
+    clean_name = team_name.strip().replace("*", "")
+    return NBA_TEAM_LOGOS.get(clean_name, "")
+
 # Replace team names with logo URLs
-draft_with_games['Team'] = draft_with_games['Team'].map(lambda team: NBA_TEAM_LOGOS.get(team, ""))
+draft_with_games['Team'] = draft_with_games['Team'].apply(get_team_logo)
 
 # ==================================================================================== Create Streamlit Display
 # Streamlit App
