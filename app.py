@@ -429,42 +429,173 @@ super_matchups_expanded['Game Time (ET)'] = super_matchups_expanded.apply(format
 
 st.set_page_config(layout="centered")
 
-# Add custom CSS for larger, styled tabs and tighter spacing
+# Add custom CSS for modern, cohesive design
 st.markdown("""
 <style>
-    /* Reduce whitespace around title */
+    /* ===== Color Palette ===== */
+    :root {
+        --primary-blue: #3b82f6;
+        --primary-dark: #2563eb;
+        --primary-light: #60a5fa;
+        --accent: #8b5cf6;
+        --bg-light: #f8fafc;
+        --bg-card: #ffffff;
+        --border-color: #e2e8f0;
+        --text-primary: #1e293b;
+        --text-secondary: #64748b;
+        --hover-bg: #f1f5f9;
+    }
+    
+    /* ===== Layout & Spacing ===== */
     .main .block-container {
         padding-top: 2rem;
         padding-bottom: 1rem;
+        max-width: 1200px;
     }
     
-    /* Reduce spacing around dividers */
     hr {
         margin-top: 0.5rem;
         margin-bottom: 0.5rem;
+        border: none;
+        border-top: 1px solid var(--border-color);
     }
     
-    /* Make tabs larger with better spacing */
+    /* ===== Tabs Styling ===== */
     .stTabs [data-baseweb="tab-list"] {
         gap: 8px;
+        background-color: transparent;
     }
     
     .stTabs [data-baseweb="tab"] {
         height: 60px;
         padding: 0px 24px;
-        background-color: #f0f2f6;
+        background-color: var(--bg-light);
+        border: 1px solid var(--border-color);
         border-radius: 8px 8px 0px 0px;
-        font-size: 18px;
+        font-size: 16px;
         font-weight: 600;
+        color: var(--text-secondary);
+        transition: all 0.2s ease;
     }
     
     .stTabs [data-baseweb="tab"]:hover {
-        background-color: #e0e3e9;
+        background-color: var(--hover-bg);
+        border-color: var(--primary-light);
+        color: var(--text-primary);
+        transform: translateY(-2px);
     }
     
     .stTabs [aria-selected="true"] {
-        background-color: #4CAF50 !important;
+        background-color: var(--primary-blue) !important;
+        border-color: var(--primary-blue) !important;
         color: white !important;
+        box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.2);
+    }
+    
+    /* ===== DataFrames & Tables ===== */
+    .stDataFrame {
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Table header styling */
+    .stDataFrame thead tr th {
+        background-color: var(--primary-blue) !important;
+        color: white !important;
+        font-weight: 600 !important;
+        font-size: 14px !important;
+        padding: 12px 8px !important;
+        border: none !important;
+        position: sticky !important;
+        top: 0 !important;
+        z-index: 10 !important;
+    }
+    
+    /* Table body styling */
+    .stDataFrame tbody tr:nth-child(even) {
+        background-color: #f8fafc !important;
+    }
+    
+    .stDataFrame tbody tr:hover {
+        background-color: #e0f2fe !important;
+        transition: background-color 0.15s ease;
+    }
+    
+    .stDataFrame tbody tr td {
+        border-bottom: 1px solid var(--border-color) !important;
+        padding: 10px 8px !important;
+        font-size: 14px !important;
+    }
+    
+    /* ===== Cards & Containers ===== */
+    .element-container {
+        transition: all 0.2s ease;
+    }
+    
+    /* ===== Headers ===== */
+    h1 {
+        color: var(--text-primary) !important;
+        font-weight: 700 !important;
+        letter-spacing: -0.02em !important;
+    }
+    
+    h2, h3 {
+        color: var(--text-primary) !important;
+        font-weight: 600 !important;
+    }
+    
+    /* ===== Buttons ===== */
+    .stButton button {
+        border-radius: 8px;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        border: 1px solid var(--border-color);
+    }
+    
+    .stButton button:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        border-color: var(--primary-blue);
+    }
+    
+    /* ===== Date Input ===== */
+    .stDateInput input {
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+        transition: all 0.2s ease;
+    }
+    
+    .stDateInput input:focus {
+        border-color: var(--primary-blue);
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+    
+    /* ===== Info Boxes ===== */
+    .stAlert {
+        border-radius: 8px;
+        border-left: 4px solid var(--primary-blue);
+    }
+    
+    /* ===== Popover ===== */
+    [data-baseweb="popover"] {
+        border-radius: 12px;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        border: 1px solid var(--border-color);
+    }
+    
+    /* ===== Loading Spinner ===== */
+    .stSpinner > div {
+        border-top-color: var(--primary-blue) !important;
+    }
+    
+    /* ===== Text Styling ===== */
+    .stMarkdown p {
+        color: var(--text-primary);
+    }
+    
+    .stCaption {
+        color: var(--text-secondary) !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -489,7 +620,8 @@ with col_info:
             st.caption(f"📅 {min_date.strftime('%b %d, %Y')} to {max_date.strftime('%b %d, %Y')} • Refreshes: 30min (next week), 12hr (next month), 24hr (beyond)")
             
             if st.button("🔄 Refresh Data", help="Clear cache and reload latest games"):
-                st.cache_data.clear()
+                with st.spinner("Refreshing data..."):
+                    st.cache_data.clear()
                 st.rerun()
 
 st.divider()
@@ -597,16 +729,17 @@ with tab4:
     
     # Create a figure and axis with increased height to prevent overlap
     fig, ax = plt.subplots(figsize=(8, 12))
+    fig.patch.set_facecolor('white')
+    ax.set_facecolor('#f8fafc')
 
-    # Choose a colormap
-    cmap = plt.get_cmap("crest")
+    # Create a modern blue gradient color palette
+    from matplotlib.colors import LinearSegmentedColormap
+    colors_list = ['#93c5fd', '#60a5fa', '#3b82f6', '#2563eb', '#1d4ed8']
+    n_bins = len(school_summary)
+    cmap = LinearSegmentedColormap.from_list('blue_gradient', colors_list, N=n_bins)
     
     values = np.array(school_summary['Total'])
-    
-    # Normalize values
     norm = plt.Normalize(values.min(), values.max())
-    
-    # Generate colors (same values get same colors)
     colors = [cmap(norm(value)) for value in values]
     
     # Create a bar plot of Schools with the most prospects
@@ -617,28 +750,40 @@ with tab4:
         hue="School/Country",
         ax=ax,
         palette=colors,
-        legend=False
+        legend=False,
+        edgecolor='#e2e8f0',
+        linewidth=1
     )
     
     # Add value labels inside the bars in white
     for i, (value, bar) in enumerate(zip(school_summary['Total'], ax.patches)):
         ax.text(
-            bar.get_width() - 0.2,  # Position near the end of the bar
-            bar.get_y() + bar.get_height() / 2,  # Center vertically
-            str(value),  # The value to display
-            ha='right',  # Right-align the text
-            va='center',  # Center vertically
-            color='white',  # White text
-            fontsize=10,
+            bar.get_width() - 0.2,
+            bar.get_y() + bar.get_height() / 2,
+            str(value),
+            ha='right',
+            va='center',
+            color='white',
+            fontsize=11,
             fontweight='bold'
         )
     
-    # Set labels and title
-    ax.set_xlabel("Number of NBA Prospects")
-    ax.set_ylabel("School/Country")
+    # Set labels and title with modern styling
+    ax.set_xlabel("Number of NBA Prospects", fontsize=12, fontweight='600', color='#1e293b')
+    ax.set_ylabel("School/Country", fontsize=12, fontweight='600', color='#1e293b')
     
-    # Set x-axis ticks to only show 0, 1, 2, 3
+    # Style the spines
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.spines['left'].set_color('#e2e8f0')
+    ax.spines['bottom'].set_color('#e2e8f0')
+    
+    # Style the ticks
+    ax.tick_params(colors='#64748b', labelsize=10)
     ax.set_xticks([0, 1, 2, 3])
+    
+    # Add subtle grid
+    ax.grid(axis='x', alpha=0.2, linestyle='--', linewidth=0.5)
     
     # Display the plot in Streamlit
     st.pyplot(fig)
