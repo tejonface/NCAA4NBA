@@ -25,11 +25,13 @@ Preferred communication style: Simple, everyday language.
     - Hover effects (#e0e3e9) for better interactivity
     - Rounded corners and 8px spacing between tabs
   - **Header Layout**: Clean title with info popover (ℹ️ icon)
-    - Info icon aligned with bottom of title text for visual consistency
+    - Uses two-column layout [20, 1] to position title and icon on same row
+    - Info icon positioned to the right of title, aligned with bottom of title text
+    - CSS flexbox with `align-items: flex-end` ensures bottom alignment
     - Popover contains compact "About" section with app description (using caption text)
     - Popover contains "Data Info" section with date range, refresh interval, and refresh button
     - Minimized whitespace in popover with bold headers, caption text, and reduced margins
-    - Minimizes clutter while keeping info accessible
+    - No divider between header and tabs for cleaner appearance
 - **Timezone Handling**: Eastern Time (America/New_York)
   - All date calculations use Eastern timezone (standard for US college basketball)
   - Helper functions: `get_eastern_now()` and `get_eastern_today()`
