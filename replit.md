@@ -22,8 +22,14 @@ Preferred communication style: Simple, everyday language.
   - **Tab Organization**: Four tabs organize different views with custom CSS styling
     - Draft Board: Main table with team logos (medium size) and upcoming games
     - Super Matchups: Games with prospects on both teams
-    - Games by Date: Simple calendar picker for viewing specific dates
+    - Games by Date: Compact date picker layout with game count on same line
     - Prospect Distribution: Bar chart (8x12 inches for readability)
+  - **Professional Formatting** (November 2025):
+    - Consistent title case for all headers ("Super Matchups", not "SUPER MATCHUPS")
+    - Visual hierarchy using st.caption() for descriptions (lighter, smaller text)
+    - Title case column names across all tables (Away, Home, TV, Players)
+    - Proper capitalization in footer links and labels
+    - Two-column layout for date picker: input on left, game count on right
   - **Tab Styling**: Custom CSS for enhanced UX
     - Larger tabs (60px height, 16px font) for easier clicking and readability
     - Modern blue theme: #f8fafc (inactive), #3b82f6 primary blue (active)
