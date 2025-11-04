@@ -20,14 +20,36 @@ Preferred communication style: Simple, everyday language.
     - Games by Date: Simple calendar picker for viewing specific dates
     - Prospect Distribution: Bar chart (8x12 inches for readability)
   - **Tab Styling**: Custom CSS for enhanced UX
-    - Larger tabs (60px height, 18px font) for easier clicking and readability
-    - Background colors: #f0f2f6 (inactive), #4CAF50 green (active)
-    - Hover effects (#e0e3e9) for better interactivity
-    - Rounded corners and 8px spacing between tabs
+    - Larger tabs (60px height, 16px font) for easier clicking and readability
+    - Modern blue theme: #f8fafc (inactive), #3b82f6 primary blue (active)
+    - Smooth hover effects with subtle lift animation (translateY(-2px))
+    - Rounded corners, borders, and box shadows for depth
+    - 8px spacing between tabs
   - **Header Layout**: Clean title with info popover (ℹ️ icon)
     - Popover contains "About" section with app description
     - Popover contains "Data Info" section with date range, refresh interval, and refresh button
     - Minimizes clutter while keeping info accessible
+  - **Design System**: Modern, cohesive blue/gray color palette (November 2025)
+    - **Primary Colors**: #3b82f6 (blue), #2563eb (dark blue), #60a5fa (light blue)
+    - **Neutral Colors**: #f8fafc (bg-light), #ffffff (bg-card), #e2e8f0 (borders)
+    - **Text Colors**: #1e293b (primary), #64748b (secondary)
+    - **Table Enhancements**:
+      - Blue header backgrounds (#3b82f6) with white text, sticky positioning
+      - Alternating row colors (#f8fafc for even rows) for better scanability
+      - Hover effects (#e0f2fe background) with smooth transitions
+      - Subtle shadows and borders for depth
+    - **Interactive Elements**:
+      - Loading spinner with blue color matching theme
+      - Smooth transitions (0.2s ease) on all interactive elements
+      - Enhanced button hover states with lift effect (translateY(-1px))
+      - Focus states on date inputs with blue border and shadow
+      - Polished popover styling with shadows and borders
+    - **Chart Styling**:
+      - Modern blue gradient palette (5 shades: #93c5fd to #1d4ed8)
+      - Clean background (#f8fafc), subtle borders on bars
+      - Improved typography and spacing
+      - Subtle grid lines for easier reading
+      - Minimalist spine styling (top/right removed)
 - **Timezone Handling**: Eastern Time (America/New_York)
   - All date calculations use Eastern timezone (standard for US college basketball)
   - Helper functions: `get_eastern_now()` and `get_eastern_today()`
