@@ -23,6 +23,13 @@ Preferred communication style: Simple, everyday language.
     - Draft Board: Main table with team logos (medium size) and upcoming games
     - Super Matchups: Games with prospects on both teams
     - Games by Date: Compact date picker layout with game count on same line
+      - **Fragment-Based Partial Reruns** (November 2025): Uses `@st.fragment` to isolate date selection
+        - Fragment defined at module scope (line 322) for optimal performance
+        - Only the Games by Date section reruns when date changes (not entire app)
+        - User stays on Games by Date tab during date changes (no tab switching)
+        - Includes safety check to reset selected date if it falls outside available range
+        - Date picker has proper accessibility label ("Select Date" with collapsed visibility)
+        - Parameters passed: combined_df, upcoming_games_df for data access
     - Prospect Distribution: Bar chart (8x12 inches for readability)
   - **Professional Formatting** (November 2025):
     - Consistent title case for all headers ("Super Matchups", not "SUPER MATCHUPS")
