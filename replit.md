@@ -1,6 +1,6 @@
 # Overview
 
-This project is a **Streamlit web application** for scraping and analyzing NBA draft data and NCAA basketball schedules. The application fetches live data from external sources (nbadraft.net) and presents NBA mock draft information with player rankings, teams, physical attributes, and school affiliations. The application is designed to provide basketball analytics and scouting information with data visualization capabilities using matplotlib and seaborn.
+This project is a **Flask web application with PostgreSQL backend** for scraping and analyzing NBA draft data and NCAA basketball schedules. The application scrapes live data from external sources (nbadraft.net and ESPN), stores it in a PostgreSQL database, and presents NBA mock draft information with player rankings, teams, physical attributes, and school affiliations through custom HTML/CSS templates. Originally built with Streamlit, the app was fully migrated to Flask to achieve complete design freedom and better performance through database persistence.
 
 # User Preferences
 
@@ -9,11 +9,16 @@ Preferred communication style: Simple, everyday language.
 # System Architecture
 
 ## Application Framework
-- **Frontend/UI**: Streamlit framework for building interactive web applications with Python
-  - Chosen for rapid prototyping and built-in interactive components
-  - Simplifies deployment and user interface creation without HTML/CSS/JS
-  - Trade-off: Less flexibility than traditional web frameworks but much faster development
-  - Layout: Centered layout (max-width ~980px) to prevent excessive stretching on large external monitors
+- **Backend**: Flask web framework with PostgreSQL database
+  - Chosen for complete control over HTML/CSS design (vs Streamlit constraints)
+  - Separates data layer (database) from presentation layer (templates)
+  - Connection pooling (psycopg2.pool.SimpleConnectionPool) for scalability
+  - Context managers ensure no connection leaks
+  - All routes use nested `with` blocks for safe resource cleanup
+- **Frontend/UI**: Custom HTML templates with Jinja2 and CSS
+  - Full design freedom - complete control over layout, styling, interactivity
+  - No framework limitations - custom card layouts, hover effects, transitions
+  - Layout: Centered card-based design with shadows and modern styling
   - **Tab Organization**: Four tabs organize different views with custom CSS styling
     - Draft Board: Main table with team logos (medium size) and upcoming games
     - Super Matchups: Games with prospects on both teams
@@ -37,10 +42,18 @@ Preferred communication style: Simple, everyday language.
   - Footer displays current Eastern time for user reference
 
 ## Data Processing Pipeline
-- **Web Scraping**: BeautifulSoup4 with requests library
+- **Database**: PostgreSQL with three tables
+  - `prospects`: Stores draft prospect data (rank, team, player info, school)
+  - `games`: Stores NCAA game schedule (date, time, teams, TV network)
+  - `game_prospects`: Junction table linking prospects to their games
+  - Schema defined in `schema.sql` for version control
+  - Proper indexes on frequently queried columns (rank, school, game_date)
+  - CASCADE constraints for referential integrity
+- **Web Scraping**: BeautifulSoup4 with requests library (standalone `scraper.py`)
   - Scrapes HTML tables from nbadraft.net for mock draft data
   - Targets specific table IDs (`nba_mock_consensus_table` and `nba_mock_consensus_table2`)
-  - Combines data from multiple tables into single DataFrame
+  - Populates PostgreSQL database instead of returning DataFrames
+  - Can be run independently on schedule to keep data fresh
   - **TV Network Extraction**: Smart extraction from ESPN schedule cells
     - `extract_cell_content()` helper function handles both text and image elements
     - Extracts alt text from TV network logo images (e.g., ESPN, FOX, FS1, BTN)
@@ -54,21 +67,17 @@ Preferred communication style: Simple, everyday language.
   - Provides efficient tabular data operations
   - Standard columns: Rank, Team, Player, Height, Weight, Position, School, Conference
 
-## Caching Strategy
-- **Two-Layer Caching System**:
-  1. **File-based Cache**: Persistent JSON storage in `schedule_cache/` directory
-     - `ncaa_schedule.json`: Stores all scraped game data
-     - `metadata.json`: Tracks last update timestamps for each date
-     - Smart refresh: Recent games (within 7 days) refresh every 30 minutes; future games refresh every 6 hours
-     - Survives app restarts and provides significant performance boost
-  2. **Streamlit Cache**: `@st.cache_data` decorator with 1800-second TTL (30 minutes)
-     - Second layer on top of file cache for in-memory speed
-     - Manual refresh button clears both caches for immediate updates
-- **Parallel Scraping**: ThreadPoolExecutor with 10 workers
-  - Only scrapes missing or stale dates based on file cache metadata
-  - First load: ~15 seconds (all 60 dates in parallel)
-  - Subsequent loads: ~2-3 seconds (only 2-3 dates need refresh)
-  - 95% performance improvement on typical reloads
+## Data Persistence Strategy
+- **PostgreSQL Database**: Primary data storage
+  - No caching needed - instant page loads from database
+  - Scraper runs independently to populate/update data
+  - Connection pooling handles concurrent requests efficiently
+  - Database queries optimized with proper indexes
+  - Data persists across app restarts
+- **Scraper Execution**: Manual or scheduled runs
+  - Run `python scraper.py` to refresh prospect and game data
+  - Can be scheduled with cron for automatic daily updates
+  - Separate from web app - no scraping delays during page loads
 
 ## Data Visualization
 - **Libraries**: Matplotlib and Seaborn
@@ -79,11 +88,22 @@ Preferred communication style: Simple, everyday language.
   - Displayed in dedicated "Prospect Distribution" tab
 
 ## Code Organization
-- **Modular Functions**: Separate functions for each scraping task
-  - `scrape_nba_mock_draft()`: Handles NBA draft data extraction from nbadraft.net
-  - `scrape_ncaa_schedule()`: Scrapes 60 days of NCAA basketball schedules from ESPN (covers ~2 months)
-  - `get_players_from_school()`: Matches draft prospects with their upcoming games
-  - Promotes code reusability and maintainability
+- **Separation of Concerns**:
+  - `schema.sql`: Database schema definition (version controlled)
+  - `scraper.py`: Standalone data collection script
+    - `scrape_nba_mock_draft()`: Extracts draft data from nbadraft.net
+    - `scrape_ncaa_schedule()`: Scrapes 60 days of NCAA schedules from ESPN
+    - Populates PostgreSQL tables
+  - `flask_app.py`: Web application
+    - 5 routes: Draft Board, Super Matchups, Games by Date, Distribution, API endpoint
+    - Connection pooling for scalability
+    - Context managers for safe resource cleanup
+  - `templates/`: Jinja2 HTML templates
+    - `base.html`: Common layout with header, nav, footer, info popover
+    - Individual page templates for each route
+  - `static/`: CSS and JavaScript assets
+    - `css/style.css`: Complete custom styling
+    - `js/main.js`: Client-side interactivity
 
 ## Application Features
 - **Draft Board Display**: Shows 2026 NBA Mock Draft rankings with upcoming game schedules
