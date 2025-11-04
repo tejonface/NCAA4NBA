@@ -408,7 +408,7 @@ super_matchups_expanded['Game Time (ET)'] = super_matchups_expanded.apply(format
 
 st.set_page_config(layout="centered")
 
-# Add custom CSS for larger, styled tabs
+# Add custom CSS for larger, styled tabs and popover alignment
 st.markdown("""
 <style>
     /* Make tabs larger with better spacing */
@@ -421,7 +421,7 @@ st.markdown("""
         padding: 0px 24px;
         background-color: #f0f2f6;
         border-radius: 8px 8px 0px 0px;
-        font-size: 18px;
+        font-size: 22px;
         font-weight: 600;
     }
     
@@ -433,6 +433,23 @@ st.markdown("""
         background-color: #4CAF50 !important;
         color: white !important;
     }
+    
+    /* Align popover button with bottom of title */
+    [data-testid="stPopoverButton"] {
+        align-self: flex-end;
+        margin-bottom: 0.5rem;
+    }
+    
+    /* Minimize whitespace in popover */
+    [data-testid="stPopover"] h3 {
+        margin-top: 0;
+        margin-bottom: 0.5rem;
+        font-size: 1.1rem;
+    }
+    
+    [data-testid="stPopover"] .element-container {
+        margin-bottom: 0.5rem;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -442,19 +459,19 @@ with col_title:
     st.title("NBA Prospect Schedule")
 with col_info:
     with st.popover("ℹ️"):
-        st.markdown("### About")
-        st.text("This page helps basketball fans keep track of upcoming NCAA games featuring "
-                "top prospects for the 2026 NBA Draft. If you don't follow college basketball "
-                "but want to know when the next potential NBA stars are playing, this is your "
-                "go-to schedule. Check back for updates on key matchups and players to watch.")
+        st.markdown("**About**")
+        st.caption("This page helps basketball fans keep track of upcoming NCAA games featuring "
+                   "top prospects for the 2026 NBA Draft. If you don't follow college basketball "
+                   "but want to know when the next potential NBA stars are playing, this is your "
+                   "go-to schedule. Check back for updates on key matchups and players to watch.")
         
-        st.divider()
+        st.markdown("---")
         
         # Show data info with refresh button
         min_date = combined_df['DATE'].min() if not combined_df.empty else None
         max_date = combined_df['DATE'].max() if not combined_df.empty else None
         if min_date and max_date:
-            st.markdown("### Data Info")
+            st.markdown("**Data Info**")
             st.info(f"📅 Showing games from {min_date.strftime('%b %d, %Y')} to {max_date.strftime('%b %d, %Y')}")
             st.caption("Data refreshes every hour")
             
