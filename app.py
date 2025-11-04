@@ -27,9 +27,19 @@ def get_eastern_today():
 
 # =================================================================== Load Data from Files
 
+def get_file_mtime(filepath):
+    """Get file modification time for cache invalidation"""
+    if os.path.exists(filepath):
+        return os.path.getmtime(filepath)
+    return 0
+
 @st.cache_data
-def load_draft_data():
-    """Load draft board data from CSV file"""
+def load_draft_data(file_mtime):
+    """Load draft board data from CSV file
+    
+    Args:
+        file_mtime: File modification time (used to invalidate cache when file updates)
+    """
     if os.path.exists(DRAFT_DATA_FILE):
         return pd.read_csv(DRAFT_DATA_FILE)
     else:
@@ -37,8 +47,12 @@ def load_draft_data():
         return pd.DataFrame()
 
 @st.cache_data
-def load_schedule_data():
-    """Load schedule data from CSV file"""
+def load_schedule_data(file_mtime):
+    """Load schedule data from CSV file
+    
+    Args:
+        file_mtime: File modification time (used to invalidate cache when file updates)
+    """
     if os.path.exists(SCHEDULE_DATA_FILE):
         df = pd.read_csv(SCHEDULE_DATA_FILE)
         if not df.empty:
@@ -55,9 +69,9 @@ def load_metadata():
             return json.load(f)
     return None
 
-# Load data
-draft_df = load_draft_data()
-combined_df = load_schedule_data()
+# Load data (passing file modification times to trigger cache refresh when files update)
+draft_df = load_draft_data(get_file_mtime(DRAFT_DATA_FILE))
+combined_df = load_schedule_data(get_file_mtime(SCHEDULE_DATA_FILE))
 metadata = load_metadata()
 
 # Exit early if data is missing
