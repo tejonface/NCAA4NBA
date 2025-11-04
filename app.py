@@ -640,7 +640,7 @@ with tab1:
         draft_display, 
         hide_index=True, 
         height=400, 
-        use_container_width=True,
+        width='stretch',
         column_config={
             "Team": st.column_config.ImageColumn(
                 "Team",
@@ -658,7 +658,7 @@ with tab2:
     # Select columns to display
     super_display = super_matchups_expanded[['AWAY', 'HOME', 'Game Time (ET)', 'TV', 'All_Players']]
     
-    st.dataframe(super_display, hide_index=True, height=300, use_container_width=True)
+    st.dataframe(super_display, hide_index=True, height=300, width='stretch')
     print(tab(super_matchups_expanded))
 
 with tab3:
@@ -713,7 +713,7 @@ with tab3:
             filtered_games_display = filtered_games_expanded[['AWAY', 'HOME', 'Game Time (ET)', 'TV', 'All_Players']]
         
             # Display in Streamlit
-            st.dataframe(filtered_games_display, hide_index=True, height=350, use_container_width=True)
+            st.dataframe(filtered_games_display, hide_index=True, height=350, width='stretch')
         else:
             st.info(f"No games scheduled for {selected_date.strftime('%A, %B %d, %Y')}")
 
