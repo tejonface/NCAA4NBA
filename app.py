@@ -314,6 +314,85 @@ draft_with_games['Game Time (ET)'] = draft_with_games.apply(format_game_time, ax
 # Create formatted Game Time column for super matchups
 super_matchups_expanded['Game Time (ET)'] = super_matchups_expanded.apply(format_game_time, axis=1)
 
+# ==================================================================================== Fragment Definition
+# Fragment for Games by Date tab to prevent full app reruns on date changes
+@st.fragment
+def games_by_date_fragment(combined_df, upcoming_games_df):
+    """Fragment that handles date selection and displays games for selected date.
+    
+    Only this fragment reruns when the date changes, not the entire app.
+    """
+    # Get date range for calendar
+    today = get_eastern_today()
+    date_options = sorted(combined_df['DATE'].dropna().unique())
+    
+    # Handle empty date options gracefully
+    if not date_options:
+        st.warning("No schedule data available. Please run `python scraper.py` to generate data.")
+    else:
+        # Deduplicate games (remove duplicate rows for games with prospects on both teams)
+        unique_games = upcoming_games_df.drop_duplicates(subset=['DATE', 'AWAY', 'HOME'])
+        
+        # Calculate game counts for each date using unique matchups
+        game_counts = unique_games.groupby('DATE').size().to_dict()
+        
+        min_cal_date = date_options[0]
+        max_cal_date = date_options[-1]
+        
+        # Initialize session state for selected date
+        if 'selected_date' not in st.session_state:
+            st.session_state['selected_date'] = today if today in date_options else date_options[0]
+        
+        # Safety check: reset selected date if it falls outside available range
+        if st.session_state['selected_date'] not in date_options:
+            st.session_state['selected_date'] = today if today in date_options else date_options[0]
+        
+        # Date picker and game count on same line
+        col_date, col_count = st.columns([1, 2])
+        
+        with col_date:
+            selected_date = st.date_input(
+                "Select Date",
+                value=st.session_state['selected_date'],
+                min_value=min_cal_date,
+                max_value=max_cal_date,
+                label_visibility="collapsed"
+            )
+        
+        # Update session state
+        st.session_state['selected_date'] = selected_date
+        
+        # Filter unique games for the selected date (deduplicated)
+        filtered_games = unique_games[unique_games['DATE'] == selected_date]
+        
+        # Display game count in the right column
+        with col_count:
+            if not filtered_games.empty:
+                game_count = game_counts.get(selected_date, 0)
+                st.markdown(f"""
+                <div style="margin-top: -0.5rem;">
+                    <h3 style="margin-top: 0; margin-bottom: 0;">{game_count} game{'s' if game_count != 1 else ''} on {selected_date.strftime('%a, %b %d, %Y')}</h3>
+                </div>
+                """, unsafe_allow_html=True)
+        
+        if not filtered_games.empty:
+            
+            # Merge filtered games with draft data to add player info
+            filtered_games_expanded = filtered_games.copy()
+            
+            # Format game time for filtered games
+            filtered_games_expanded['Game Time (ET)'] = filtered_games_expanded.apply(format_game_time, axis=1)
+        
+            # Drop unnecessary columns and keep only relevant details
+            filtered_df = filtered_games_expanded.copy()
+            filtered_df = filtered_df.rename(columns={'AWAY': 'Away', 'HOME': 'Home', 'All_Players': 'Players'})
+            filtered_games_display = filtered_df[['Away', 'Home', 'Game Time (ET)', 'TV', 'Players']]
+        
+            # Display in Streamlit
+            st.dataframe(filtered_games_display, hide_index=True, height=350, width='stretch')
+        else:
+            st.info(f"No games scheduled for {selected_date.strftime('%A, %B %d, %Y')}")
+
 # ==================================================================================== Create Streamlit Display
 # Streamlit App
 
@@ -564,72 +643,8 @@ with tab2:
 with tab3:
     st.header("Games by Date")
     
-    # Get date range for calendar
-    today = get_eastern_today()
-    date_options = sorted(combined_df['DATE'].dropna().unique())
-    
-    # Handle empty date options gracefully
-    if not date_options:
-        st.warning("No schedule data available. Please run `python scraper.py` to generate data.")
-    else:
-        # Deduplicate games (remove duplicate rows for games with prospects on both teams)
-        unique_games = upcoming_games_df.drop_duplicates(subset=['DATE', 'AWAY', 'HOME'])
-        
-        # Calculate game counts for each date using unique matchups
-        game_counts = unique_games.groupby('DATE').size().to_dict()
-        
-        min_cal_date = date_options[0]
-        max_cal_date = date_options[-1]
-        
-        # Initialize session state for selected date
-        if 'selected_date' not in st.session_state:
-            st.session_state['selected_date'] = today if today in date_options else date_options[0]
-        
-        # Date picker and game count on same line
-        col_date, col_count = st.columns([1, 2])
-        
-        with col_date:
-            selected_date = st.date_input(
-                "",
-                value=st.session_state['selected_date'],
-                min_value=min_cal_date,
-                max_value=max_cal_date,
-                label_visibility="collapsed"
-            )
-        
-        # Update session state
-        st.session_state['selected_date'] = selected_date
-        
-        # Filter unique games for the selected date (deduplicated)
-        filtered_games = unique_games[unique_games['DATE'] == selected_date]
-        
-        # Display game count in the right column
-        with col_count:
-            if not filtered_games.empty:
-                game_count = game_counts.get(selected_date, 0)
-                st.markdown(f"""
-                <div style="margin-top: -0.5rem;">
-                    <h3 style="margin-top: 0; margin-bottom: 0;">{game_count} game{'s' if game_count != 1 else ''} on {selected_date.strftime('%a, %b %d, %Y')}</h3>
-                </div>
-                """, unsafe_allow_html=True)
-        
-        if not filtered_games.empty:
-            
-            # Merge filtered games with draft data to add player info
-            filtered_games_expanded = filtered_games.copy()
-            
-            # Format game time for filtered games
-            filtered_games_expanded['Game Time (ET)'] = filtered_games_expanded.apply(format_game_time, axis=1)
-        
-            # Drop unnecessary columns and keep only relevant details
-            filtered_df = filtered_games_expanded.copy()
-            filtered_df = filtered_df.rename(columns={'AWAY': 'Away', 'HOME': 'Home', 'All_Players': 'Players'})
-            filtered_games_display = filtered_df[['Away', 'Home', 'Game Time (ET)', 'TV', 'Players']]
-        
-            # Display in Streamlit
-            st.dataframe(filtered_games_display, hide_index=True, height=350, width='stretch')
-        else:
-            st.info(f"No games scheduled for {selected_date.strftime('%A, %B %d, %Y')}")
+    # Call the fragment (defined at module scope to avoid redecorating on every rerun)
+    games_by_date_fragment(combined_df, upcoming_games_df)
 
 with tab4:
     st.header("NBA Prospect Distribution by School/Country")
