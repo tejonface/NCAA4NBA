@@ -408,6 +408,34 @@ super_matchups_expanded['Game Time (ET)'] = super_matchups_expanded.apply(format
 
 st.set_page_config(layout="centered")
 
+# Add custom CSS for larger, styled tabs
+st.markdown("""
+<style>
+    /* Make tabs larger with better spacing */
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 8px;
+    }
+    
+    .stTabs [data-baseweb="tab"] {
+        height: 60px;
+        padding: 0px 24px;
+        background-color: #f0f2f6;
+        border-radius: 8px 8px 0px 0px;
+        font-size: 16px;
+        font-weight: 600;
+    }
+    
+    .stTabs [data-baseweb="tab"]:hover {
+        background-color: #e0e3e9;
+    }
+    
+    .stTabs [aria-selected="true"] {
+        background-color: #4CAF50 !important;
+        color: white !important;
+    }
+</style>
+""", unsafe_allow_html=True)
+
 col1, col2, col3 = st.columns([2, 3, 1], vertical_alignment="center")
 with col1:
     st.title("NBA Prospect Schedule")
@@ -481,39 +509,77 @@ with tab3:
         st.warning("No schedule data available. Please try refreshing the data.")
         selected_date = None
     else:
+        # Deduplicate games (remove duplicate rows for games with prospects on both teams)
+        unique_games = upcoming_games_df.drop_duplicates(subset=['DATE', 'AWAY', 'HOME'])
+        
+        # Calculate game counts for each date using unique matchups
+        game_counts = unique_games.groupby('DATE').size().to_dict()
+        
+        # Find next game date
+        future_dates = [d for d in date_options if d >= today]
+        next_game_date = future_dates[0] if future_dates else date_options[0]
+        
+        # Quick-jump buttons
+        col1, col2, col3 = st.columns([1, 1, 2])
+        with col1:
+            if st.button("📅 Today", use_container_width=True):
+                selected_date = today if today in date_options else next_game_date
+                st.session_state['selected_date'] = selected_date
+        with col2:
+            if st.button("⏭️ Next Game", use_container_width=True):
+                st.session_state['selected_date'] = next_game_date
+        
+        # Initialize session state for selected date
+        if 'selected_date' not in st.session_state:
+            st.session_state['selected_date'] = today if today in date_options else date_options[0]
+        
         min_cal_date = date_options[0]
         max_cal_date = date_options[-1]
-        default_value = today if today in date_options else date_options[0]
         
         # Calendar date picker
         selected_date = st.date_input(
             "Choose a date to view games",
-            value=default_value,
+            value=st.session_state['selected_date'],
             min_value=min_cal_date,
             max_value=max_cal_date,
             help="Select any date to view scheduled games"
         )
+        
+        # Update session state
+        st.session_state['selected_date'] = selected_date
+        
+        # Display game count info
+        game_count = game_counts.get(selected_date, 0)
+        if game_count > 0:
+            st.info(f"🏀 {game_count} game{'s' if game_count != 1 else ''} scheduled for {selected_date.strftime('%A, %B %d')}")
+        else:
+            st.warning(f"No games scheduled for {selected_date.strftime('%A, %B %d, %Y')}")
+            # Suggest next available date
+            next_available = [d for d in date_options if d > selected_date and game_counts.get(d, 0) > 0]
+            if next_available:
+                next_date = next_available[0]
+                next_count = game_counts[next_date]
+                st.info(f"💡 Next games: {next_date.strftime('%A, %B %d')} ({next_count} game{'s' if next_count != 1 else ''})")
     
     # Display schedule for the selected date
     if selected_date:
-        st.subheader(f"Schedule for {selected_date.strftime('%A, %B %d, %Y')}")
-        # Filter upcoming games for the selected date
-        filtered_games = upcoming_games_df[upcoming_games_df['DATE'] == selected_date]
-    
-        # Merge filtered games with draft data to add player info
-        filtered_games_expanded = filtered_games.copy()
+        # Filter unique games for the selected date (deduplicated)
+        filtered_games = unique_games[unique_games['DATE'] == selected_date]
         
-        # Format game time for filtered games
-        filtered_games_expanded['Game Time (ET)'] = filtered_games_expanded.apply(format_game_time, axis=1)
-    
-        # Drop unnecessary columns and keep only relevant details
-        filtered_games_display = filtered_games_expanded[['AWAY', 'HOME', 'Game Time (ET)', 'TV', 'All_Players']]
-    
-        # Display in Streamlit
-        st.dataframe(filtered_games_display, hide_index=True, height=350, use_container_width=True)
-    
-    else:
-        st.write("Please select a date.")
+        if not filtered_games.empty:
+            st.subheader(f"Schedule for {selected_date.strftime('%A, %B %d, %Y')}")
+            
+            # Merge filtered games with draft data to add player info
+            filtered_games_expanded = filtered_games.copy()
+            
+            # Format game time for filtered games
+            filtered_games_expanded['Game Time (ET)'] = filtered_games_expanded.apply(format_game_time, axis=1)
+        
+            # Drop unnecessary columns and keep only relevant details
+            filtered_games_display = filtered_games_expanded[['AWAY', 'HOME', 'Game Time (ET)', 'TV', 'All_Players']]
+        
+            # Display in Streamlit
+            st.dataframe(filtered_games_display, hide_index=True, height=350, use_container_width=True)
 
 with tab4:
     st.header("NBA Prospect Distribution by School/Country")
