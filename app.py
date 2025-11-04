@@ -310,6 +310,44 @@ draft_with_games = draft_with_games[['Rank', 'Team', 'Player', 'School', 'DATE',
 # Drop dupes
 draft_with_games = draft_with_games.drop_duplicates(subset=['Rank', 'Player', 'School'])
 
+# =================================================================== Add NBA Team Logos
+# NBA team name to logo URL mapping (using ESPN's CDN)
+NBA_TEAM_LOGOS = {
+    "Atlanta": "https://a.espncdn.com/i/teamlogos/nba/500/atl.png",
+    "Boston": "https://a.espncdn.com/i/teamlogos/nba/500/bos.png",
+    "Brooklyn": "https://a.espncdn.com/i/teamlogos/nba/500/bkn.png",
+    "Charlotte": "https://a.espncdn.com/i/teamlogos/nba/500/cha.png",
+    "Chicago": "https://a.espncdn.com/i/teamlogos/nba/500/chi.png",
+    "Cleveland": "https://a.espncdn.com/i/teamlogos/nba/500/cle.png",
+    "Dallas": "https://a.espncdn.com/i/teamlogos/nba/500/dal.png",
+    "Denver": "https://a.espncdn.com/i/teamlogos/nba/500/den.png",
+    "Detroit": "https://a.espncdn.com/i/teamlogos/nba/500/det.png",
+    "Golden St.": "https://a.espncdn.com/i/teamlogos/nba/500/gs.png",
+    "Houston": "https://a.espncdn.com/i/teamlogos/nba/500/hou.png",
+    "Indiana": "https://a.espncdn.com/i/teamlogos/nba/500/ind.png",
+    "LA Clippers": "https://a.espncdn.com/i/teamlogos/nba/500/lac.png",
+    "LA Lakers": "https://a.espncdn.com/i/teamlogos/nba/500/lal.png",
+    "Memphis": "https://a.espncdn.com/i/teamlogos/nba/500/mem.png",
+    "Miami": "https://a.espncdn.com/i/teamlogos/nba/500/mia.png",
+    "Milwaukee": "https://a.espncdn.com/i/teamlogos/nba/500/mil.png",
+    "Minnesota": "https://a.espncdn.com/i/teamlogos/nba/500/min.png",
+    "New Orleans": "https://a.espncdn.com/i/teamlogos/nba/500/no.png",
+    "New York": "https://a.espncdn.com/i/teamlogos/nba/500/ny.png",
+    "Oklahoma Cty": "https://a.espncdn.com/i/teamlogos/nba/500/okc.png",
+    "Orlando": "https://a.espncdn.com/i/teamlogos/nba/500/orl.png",
+    "Philadelphia": "https://a.espncdn.com/i/teamlogos/nba/500/phi.png",
+    "Phoenix": "https://a.espncdn.com/i/teamlogos/nba/500/phx.png",
+    "Portland": "https://a.espncdn.com/i/teamlogos/nba/500/por.png",
+    "Sacramento": "https://a.espncdn.com/i/teamlogos/nba/500/sac.png",
+    "San Antonio": "https://a.espncdn.com/i/teamlogos/nba/500/sa.png",
+    "Toronto": "https://a.espncdn.com/i/teamlogos/nba/500/tor.png",
+    "Utah": "https://a.espncdn.com/i/teamlogos/nba/500/utah.png",
+    "Washington": "https://a.espncdn.com/i/teamlogos/nba/500/wsh.png"
+}
+
+# Replace team names with logo URLs
+draft_with_games['Team'] = draft_with_games['Team'].map(lambda team: NBA_TEAM_LOGOS.get(team, ""))
+
 # ==================================================================================== Create Streamlit Display
 # Streamlit App
 
@@ -343,7 +381,19 @@ if min_date and max_date:
 
 st.header("Draft Board with Next Games")
 st.text("2026 NBA Mock Draft board with each NCAA players' upcoming game.")
-st.dataframe(draft_with_games, hide_index=True, height=400, use_container_width=True)
+st.dataframe(
+    draft_with_games, 
+    hide_index=True, 
+    height=400, 
+    use_container_width=True,
+    column_config={
+        "Team": st.column_config.ImageColumn(
+            "Team",
+            help="NBA Team Logo",
+            width="small"
+        )
+    }
+)
 print(tab(draft_with_games))
 # Display Super Matchups
 st.header("SUPER MATCHUPS")
