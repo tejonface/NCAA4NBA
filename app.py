@@ -429,28 +429,11 @@ super_matchups_expanded['Game Time (ET)'] = super_matchups_expanded.apply(format
 
 st.set_page_config(layout="centered")
 
-# Initialize theme in session state
-if 'theme' not in st.session_state:
-    st.session_state['theme'] = 'auto'
-
-# Add custom CSS for modern, cohesive design with dark mode support
-theme_class = f"theme-{st.session_state['theme']}"
-
-# Inject theme class into the DOM
-st.markdown(f"""
-<script>
-    // Apply theme class to body/root
-    document.body.classList.remove('theme-auto', 'theme-light', 'theme-dark');
-    document.body.classList.add('{theme_class}');
-    document.querySelector('.stApp').classList.remove('theme-auto', 'theme-light', 'theme-dark');
-    document.querySelector('.stApp').classList.add('{theme_class}');
-</script>
-""", unsafe_allow_html=True)
-
-st.markdown(f"""
+# Add custom CSS for modern, cohesive design
+st.markdown("""
 <style>
-    /* ===== Light Mode Color Palette (Default) ===== */
-    :root {{
+    /* ===== Color Palette ===== */
+    :root {
         --primary-blue: #3b82f6;
         --primary-dark: #2563eb;
         --primary-light: #60a5fa;
@@ -461,74 +444,29 @@ st.markdown(f"""
         --text-primary: #1e293b;
         --text-secondary: #64748b;
         --hover-bg: #f1f5f9;
-    }}
-    
-    /* ===== Dark Mode Color Palette ===== */
-    @media (prefers-color-scheme: dark) {{
-        .theme-auto {{
-            --primary-blue: #60a5fa;
-            --primary-dark: #3b82f6;
-            --primary-light: #93c5fd;
-            --accent: #a78bfa;
-            --bg-light: #1e293b;
-            --bg-card: #0f172a;
-            --border-color: #334155;
-            --text-primary: #f1f5f9;
-            --text-secondary: #94a3b8;
-            --hover-bg: #334155;
-        }}
-    }}
-    
-    /* Manual dark mode */
-    .theme-dark {{
-        --primary-blue: #60a5fa;
-        --primary-dark: #3b82f6;
-        --primary-light: #93c5fd;
-        --accent: #a78bfa;
-        --bg-light: #1e293b;
-        --bg-card: #0f172a;
-        --border-color: #334155;
-        --text-primary: #f1f5f9;
-        --text-secondary: #94a3b8;
-        --hover-bg: #334155;
-    }}
-    
-    /* Apply theme class to root */
-    .{theme_class} {{
-        background-color: var(--bg-card);
-        color: var(--text-primary);
-    }}
-    
-    /* Main background */
-    .main {{
-        background-color: var(--bg-card);
-    }}
-    
-    .stApp {{
-        background-color: var(--bg-card);
-    }}
+    }
     
     /* ===== Layout & Spacing ===== */
-    .main .block-container {{
+    .main .block-container {
         padding-top: 2rem;
         padding-bottom: 1rem;
         max-width: 1200px;
-    }}
+    }
     
-    hr {{
+    hr {
         margin-top: 0.5rem;
         margin-bottom: 0.5rem;
         border: none;
         border-top: 1px solid var(--border-color);
-    }}
+    }
     
     /* ===== Tabs Styling ===== */
-    .stTabs [data-baseweb="tab-list"] {{
+    .stTabs [data-baseweb="tab-list"] {
         gap: 8px;
         background-color: transparent;
-    }}
+    }
     
-    .stTabs [data-baseweb="tab"] {{
+    .stTabs [data-baseweb="tab"] {
         height: 60px;
         padding: 0px 24px;
         background-color: var(--bg-light);
@@ -538,31 +476,31 @@ st.markdown(f"""
         font-weight: 600;
         color: var(--text-secondary);
         transition: all 0.2s ease;
-    }}
+    }
     
-    .stTabs [data-baseweb="tab"]:hover {{
+    .stTabs [data-baseweb="tab"]:hover {
         background-color: var(--hover-bg);
         border-color: var(--primary-light);
         color: var(--text-primary);
         transform: translateY(-2px);
-    }}
+    }
     
-    .stTabs [aria-selected="true"] {{
+    .stTabs [aria-selected="true"] {
         background-color: var(--primary-blue) !important;
         border-color: var(--primary-blue) !important;
         color: white !important;
         box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.2);
-    }}
+    }
     
     /* ===== DataFrames & Tables ===== */
-    .stDataFrame {{
+    .stDataFrame {
         border-radius: 8px;
         overflow: hidden;
         box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
-    }}
+    }
     
     /* Table header styling */
-    .stDataFrame thead tr th {{
+    .stDataFrame thead tr th {
         background-color: var(--primary-blue) !important;
         color: white !important;
         font-weight: 600 !important;
@@ -572,129 +510,100 @@ st.markdown(f"""
         position: sticky !important;
         top: 0 !important;
         z-index: 10 !important;
-    }}
+    }
     
     /* Table body styling */
-    .stDataFrame tbody tr:nth-child(even) {{
-        background-color: var(--bg-light) !important;
-    }}
+    .stDataFrame tbody tr:nth-child(even) {
+        background-color: #f8fafc !important;
+    }
     
-    .stDataFrame tbody tr:nth-child(odd) {{
-        background-color: var(--bg-card) !important;
-    }}
-    
-    .stDataFrame tbody tr:hover {{
-        background-color: var(--hover-bg) !important;
+    .stDataFrame tbody tr:hover {
+        background-color: #e0f2fe !important;
         transition: background-color 0.15s ease;
-    }}
+    }
     
-    .stDataFrame tbody tr td {{
+    .stDataFrame tbody tr td {
         border-bottom: 1px solid var(--border-color) !important;
         padding: 10px 8px !important;
         font-size: 14px !important;
-        color: var(--text-primary) !important;
-    }}
+    }
     
     /* ===== Cards & Containers ===== */
-    .element-container {{
+    .element-container {
         transition: all 0.2s ease;
-    }}
+    }
     
     /* ===== Headers ===== */
-    h1 {{
+    h1 {
         color: var(--text-primary) !important;
         font-weight: 700 !important;
         letter-spacing: -0.02em !important;
-    }}
+    }
     
-    h2, h3 {{
+    h2, h3 {
         color: var(--text-primary) !important;
         font-weight: 600 !important;
-    }}
+    }
     
     /* ===== Buttons ===== */
-    .stButton button {{
+    .stButton button {
         border-radius: 8px;
         font-weight: 500;
         transition: all 0.2s ease;
         border: 1px solid var(--border-color);
-        background-color: var(--bg-card);
-        color: var(--text-primary);
-    }}
+    }
     
-    .stButton button:hover {{
+    .stButton button:hover {
         transform: translateY(-1px);
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         border-color: var(--primary-blue);
-        background-color: var(--hover-bg);
-    }}
+    }
     
     /* ===== Date Input ===== */
-    .stDateInput input {{
+    .stDateInput input {
         border-radius: 8px;
         border: 1px solid var(--border-color);
         transition: all 0.2s ease;
-        background-color: var(--bg-card);
-        color: var(--text-primary);
-    }}
+    }
     
-    .stDateInput input:focus {{
+    .stDateInput input:focus {
         border-color: var(--primary-blue);
         box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-    }}
+    }
     
     /* ===== Info Boxes ===== */
-    .stAlert {{
+    .stAlert {
         border-radius: 8px;
         border-left: 4px solid var(--primary-blue);
-    }}
+    }
     
     /* ===== Popover ===== */
-    [data-baseweb="popover"] {{
+    [data-baseweb="popover"] {
         border-radius: 12px;
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
         border: 1px solid var(--border-color);
-        background-color: var(--bg-card) !important;
-    }}
-    
-    [data-baseweb="popover"] * {{
-        color: var(--text-primary);
-    }}
+    }
     
     /* ===== Loading Spinner ===== */
-    .stSpinner > div {{
+    .stSpinner > div {
         border-top-color: var(--primary-blue) !important;
-    }}
+    }
     
     /* ===== Text Styling ===== */
-    .stMarkdown p {{
+    .stMarkdown p {
         color: var(--text-primary);
-    }}
+    }
     
-    .stCaption {{
+    .stCaption {
         color: var(--text-secondary) !important;
-    }}
+    }
 </style>
 """, unsafe_allow_html=True)
 
-# Header with info popover and theme toggle
-col_title, col_theme, col_info = st.columns([8, 1, 1])
+# Header with info popover
+col_title, col_info = st.columns([10, 1])
 with col_title:
     st.title("NBA Prospect Schedule")
-
-with col_theme:
-    # Theme toggle button
-    theme_options = ['auto', 'light', 'dark']
-    theme_icons = {'auto': '🌓', 'light': '☀️', 'dark': '🌙'}
-    current_theme = st.session_state.get('theme', 'auto')
-    current_idx = theme_options.index(current_theme)
-    
-    if st.button(theme_icons[current_theme], help=f"Theme: {current_theme.capitalize()}", key="theme_toggle"):
-        # Cycle through themes
-        next_idx = (current_idx + 1) % len(theme_options)
-        st.session_state['theme'] = theme_options[next_idx]
-        st.rerun()
-
 with col_info:
     with st.popover("ℹ️"):
         st.markdown("**About**")
@@ -818,36 +727,14 @@ with tab4:
     school_summary = school_summary.rename(columns={'School': 'School/Country', 'Player': 'Total'})
     school_summary = school_summary.sort_values(by='Total', ascending=False)
     
-    # Determine theme-specific colors
-    current_theme = st.session_state.get('theme', 'auto')
-    # For chart purposes, treat auto mode as dark if we can't detect system preference
-    # In a real scenario, auto would need JS detection, but for chart we default to light
-    is_dark_mode = current_theme == 'dark'
-    
     # Create a figure and axis with increased height to prevent overlap
     fig, ax = plt.subplots(figsize=(8, 12))
-    
-    # Theme-adaptive colors
-    if is_dark_mode:
-        fig_bg = '#0f172a'
-        ax_bg = '#1e293b'
-        text_color = '#f1f5f9'
-        secondary_color = '#94a3b8'
-        border_color = '#334155'
-        colors_list = ['#93c5fd', '#60a5fa', '#3b82f6', '#2563eb', '#1d4ed8']
-    else:
-        fig_bg = 'white'
-        ax_bg = '#f8fafc'
-        text_color = '#1e293b'
-        secondary_color = '#64748b'
-        border_color = '#e2e8f0'
-        colors_list = ['#93c5fd', '#60a5fa', '#3b82f6', '#2563eb', '#1d4ed8']
-    
-    fig.patch.set_facecolor(fig_bg)
-    ax.set_facecolor(ax_bg)
+    fig.patch.set_facecolor('white')
+    ax.set_facecolor('#f8fafc')
 
     # Create a modern blue gradient color palette
     from matplotlib.colors import LinearSegmentedColormap
+    colors_list = ['#93c5fd', '#60a5fa', '#3b82f6', '#2563eb', '#1d4ed8']
     n_bins = len(school_summary)
     cmap = LinearSegmentedColormap.from_list('blue_gradient', colors_list, N=n_bins)
     
@@ -864,7 +751,7 @@ with tab4:
         ax=ax,
         palette=colors,
         legend=False,
-        edgecolor=border_color,
+        edgecolor='#e2e8f0',
         linewidth=1
     )
     
@@ -882,21 +769,21 @@ with tab4:
         )
     
     # Set labels and title with modern styling
-    ax.set_xlabel("Number of NBA Prospects", fontsize=12, fontweight='600', color=text_color)
-    ax.set_ylabel("School/Country", fontsize=12, fontweight='600', color=text_color)
+    ax.set_xlabel("Number of NBA Prospects", fontsize=12, fontweight='600', color='#1e293b')
+    ax.set_ylabel("School/Country", fontsize=12, fontweight='600', color='#1e293b')
     
     # Style the spines
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
-    ax.spines['left'].set_color(border_color)
-    ax.spines['bottom'].set_color(border_color)
+    ax.spines['left'].set_color('#e2e8f0')
+    ax.spines['bottom'].set_color('#e2e8f0')
     
     # Style the ticks
-    ax.tick_params(colors=secondary_color, labelsize=10)
+    ax.tick_params(colors='#64748b', labelsize=10)
     ax.set_xticks([0, 1, 2, 3])
     
     # Add subtle grid
-    ax.grid(axis='x', alpha=0.2, linestyle='--', linewidth=0.5, color=secondary_color)
+    ax.grid(axis='x', alpha=0.2, linestyle='--', linewidth=0.5)
     
     # Display the plot in Streamlit
     st.pyplot(fig)
