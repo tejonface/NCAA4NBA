@@ -17,13 +17,14 @@ Preferred communication style: Simple, everyday language.
   - **Tab Organization**: Four tabs organize different views with custom CSS styling
     - Draft Board: Main table with team logos (medium size) and upcoming games
     - Super Matchups: Games with prospects on both teams
-    - Games by Date: Calendar picker with quick-jump buttons and game counts
+    - Games by Date: Simple calendar picker for viewing specific dates
     - Prospect Distribution: Bar chart (8x12 inches for readability)
   - **Tab Styling**: Custom CSS for enhanced UX
-    - Larger tabs (60px height) for easier clicking
+    - Larger tabs (60px height, 18px font) for easier clicking and readability
     - Background colors: #f0f2f6 (inactive), #4CAF50 green (active)
     - Hover effects (#e0e3e9) for better interactivity
     - Rounded corners and 8px spacing between tabs
+  - **Header Layout**: Title and description with refresh button positioned inline next to data info banner
 - **Timezone Handling**: Eastern Time (America/New_York)
   - All date calculations use Eastern timezone (standard for US college basketball)
   - Helper functions: `get_eastern_now()` and `get_eastern_today()`
@@ -88,13 +89,11 @@ Preferred communication style: Simple, everyday language.
   - Automatically strips asterisks from projected picks (e.g., "*Utah" → Utah logo)
   - ImageColumn configuration shows logos at optimal "medium" size for table readability
 - **Super Matchups**: Highlights games featuring top draft prospects on both teams
-- **Smart Date Selection**: Interactive calendar with enhanced UX features
-  - **Quick-Jump Buttons**: "📅 Today" and "⏭️ Next Game" for easy navigation
-  - **Game Counts**: Displays number of games for selected date (e.g., "🏀 5 games scheduled for Monday, November 4")
-  - **Empty State Handling**: Shows friendly message when no games scheduled
-  - **Next Game Suggestions**: Suggests next available date when selected date has no games
+- **Date Selection**: Simple interactive calendar with clean UX
+  - **Game Counts**: Displays number of unique matchups for selected date (e.g., "5 games on Monday, November 4, 2025")
+  - **Empty State Handling**: Shows clear message when no games scheduled
   - **Deduplication**: Accurately counts unique matchups (prevents double-counting when prospects on both teams)
-  - Session state management ensures consistent behavior across interactions
+  - **Session State**: Selected date persists across page interactions and refreshes
 - **Prospect Tracking**: Automatically matches NCAA players with their draft rankings
 - **Data Visualization**: Bar chart showing prospect distribution by school/country with white value labels
 - **Real-Time Data**: 1-hour cache refresh for up-to-date information
