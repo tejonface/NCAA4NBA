@@ -141,16 +141,29 @@ def scrape_single_date(single_date):
             # Skip header row
             for row in data[1:]:
                 if len(row) >= 2:
-                    matchup = row[0]
-                    time = row[1] if len(row) > 1 else ""
-                    tv = row[2] if len(row) > 2 else ""
+                    # ESPN format: Cell 0 = away team, Cell 1 = "@ home_team" (or combined in cell 0)
+                    # Try new format first (separate cells)
+                    away = row[0].strip()
+                    home_cell = row[1] if len(row) > 1 else ""
                     
-                    # Parse matchup
-                    if " @ " in matchup:
-                        parts = matchup.split(" @ ")
+                    # Check if away/home are in separate cells (new ESPN format)
+                    if home_cell.startswith("@"):
+                        # New format: away in cell 0, "@ home" in cell 1
+                        home = home_cell.replace("@", "").strip()
+                        time = row[2] if len(row) > 2 else ""
+                        tv = row[3] if len(row) > 3 else ""
+                    # Check if combined in one cell (old format)
+                    elif " @ " in away:
+                        parts = away.split(" @ ")
                         away = parts[0].strip()
                         home = parts[1].strip() if len(parts) > 1 else ""
-                        
+                        time = row[1] if len(row) > 1 else ""
+                        tv = row[2] if len(row) > 2 else ""
+                    else:
+                        # Skip rows that don't have proper matchup format
+                        continue
+                    
+                    if away and home:
                         games.append({
                             'game_date': single_date,
                             'game_time': time,
@@ -205,10 +218,20 @@ def save_to_database(prospects, games):
             VALUES %s
         """, prospect_data)
         
+        # Deduplicate games before inserting
+        # Use a dict with (date, away, home) as key to keep only unique games
+        unique_games = {}
+        for g in games:
+            key = (g['game_date'], g['away_team'], g['home_team'])
+            if key not in unique_games:
+                unique_games[key] = g
+        
+        print(f"Deduplication: {len(games)} -> {len(unique_games)} unique games")
+        
         # Insert games
         game_data = [(
             g['game_date'], g['game_time'], g['away_team'], g['home_team'], g['tv_network']
-        ) for g in games]
+        ) for g in unique_games.values()]
         
         execute_values(cur, """
             INSERT INTO games (game_date, game_time, away_team, home_team, tv_network)

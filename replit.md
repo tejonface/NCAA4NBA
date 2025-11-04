@@ -54,6 +54,10 @@ Preferred communication style: Simple, everyday language.
   - Targets specific table IDs (`nba_mock_consensus_table` and `nba_mock_consensus_table2`)
   - Populates PostgreSQL database instead of returning DataFrames
   - Can be run independently on schedule to keep data fresh
+  - **ESPN Schedule Parsing**: Handles ESPN's table format where away/home teams are in separate cells
+    - Checks if home_cell starts with "@" for new ESPN format (cell 0 = away, cell 1 = "@ home")
+    - Falls back to old format detection (single cell with " @ " separator)
+    - Deduplicates games before database insertion (2823 → 2752 unique games)
   - **TV Network Extraction**: Smart extraction from ESPN schedule cells
     - `extract_cell_content()` helper function handles both text and image elements
     - Extracts alt text from TV network logo images (e.g., ESPN, FOX, FS1, BTN)
