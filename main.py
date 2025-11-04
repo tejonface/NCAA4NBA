@@ -49,8 +49,8 @@ def scrape_ncaa_schedule():
     combined_df = pd.DataFrame()
 
     for i in range(7):  # Loop through the next 7 days
-        sample_date = date.today() + timedelta(days=0 + i)  # Start with today
-        single_date = date(2025, 11,3) + timedelta(days=i)
+        single_date = date.today() + timedelta(days=0 + i)  # Start with today
+        # single_date = date(2025, 11,3) + timedelta(days=i)
         date_str = single_date.strftime("%Y%m%d")
         #  date_str = sample_date.strftime("%Y%m%d")
         print(sample_date)
