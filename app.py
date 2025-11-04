@@ -590,10 +590,11 @@ with tab3:
         
         with col_date:
             selected_date = st.date_input(
-                "Select Date",
+                "",
                 value=st.session_state['selected_date'],
                 min_value=min_cal_date,
-                max_value=max_cal_date
+                max_value=max_cal_date,
+                label_visibility="collapsed"
             )
         
         # Update session state
@@ -606,11 +607,7 @@ with tab3:
         with col_count:
             if not filtered_games.empty:
                 game_count = game_counts.get(selected_date, 0)
-                st.markdown(f"""
-                <div style="display: flex; align-items: flex-end; height: 100%; padding-bottom: 0.5rem;">
-                    <h4 style="margin: 0;">{game_count} game{'s' if game_count != 1 else ''} on {selected_date.strftime('%A, %B %d, %Y')}</h4>
-                </div>
-                """, unsafe_allow_html=True)
+                st.markdown(f"**{game_count} game{'s' if game_count != 1 else ''} on {selected_date.strftime('%A, %B %d, %Y')}**")
         
         if not filtered_games.empty:
             
