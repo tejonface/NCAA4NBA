@@ -346,15 +346,17 @@ st.markdown("""
     }
     
     hr {
-        margin-top: 0.5rem;
-        margin-bottom: 0.5rem;
+        margin-top: 0.25rem;
+        margin-bottom: 0.75rem;
         border: none;
         border-top: 1px solid var(--border-color);
     }
     
     h1 {
-        margin-top: 0.5rem !important;
-        margin-bottom: 0.5rem !important;
+        margin-top: 0.25rem !important;
+        margin-bottom: 0.25rem !important;
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
     }
     
     /* ===== Tabs Styling ===== */
