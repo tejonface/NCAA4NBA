@@ -223,12 +223,12 @@ if min_date and max_date:
 
 st.header("Draft Board with Next Games")
 st.text("2026 NBA Mock Draft board with each NCAA players' upcoming game.")
-st.dataframe(draft_with_games, hide_index=True, width="stretch", height=600)
+st.dataframe(draft_with_games, hide_index=True, height=450)
 print(tab(draft_with_games))
 # Display Super Matchups
 st.header("SUPER MATCHUPS")
 st.text("Games with top 60 NBA draft prospects on both teams.")
-st.dataframe(super_matchups_expanded, hide_index=True, use_container_width=True, height=400)
+st.dataframe(super_matchups_expanded, hide_index=True, height=300)
 print(tab(super_matchups_expanded))
 # Get tomorrow's date as the default selection
 today = date.today()
@@ -257,7 +257,7 @@ if selected_date:
     filtered_games_expanded = filtered_games_expanded[['AWAY', 'HOME', 'DATE', 'TIME', 'TV', 'All_Players']]
 
     # Display in Streamlit
-    st.dataframe(filtered_games_expanded, hide_index=True, use_container_width=True, height=400)
+    st.dataframe(filtered_games_expanded, hide_index=True, height=350)
 
 else:
     st.write("Please select a date.")
