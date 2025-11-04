@@ -389,7 +389,7 @@ def games_by_date_fragment(combined_df, upcoming_games_df):
             filtered_games_display = filtered_df[['Away', 'Home', 'Game Time (ET)', 'TV', 'Players']]
         
             # Display in Streamlit
-            st.dataframe(filtered_games_display, hide_index=True, height=350, width='stretch')
+            st.dataframe(filtered_games_display, hide_index=True, height=350, use_container_width=True)
         else:
             st.info(f"No games scheduled for {selected_date.strftime('%A, %B %d, %Y')}")
 
@@ -609,7 +609,7 @@ tab1, tab2, tab3, tab4 = st.tabs(["📋 Draft Board", "⭐ Super Matchups", "�
 
 with tab1:
     st.header("Draft Board with Next Games")
-    st.caption("2026 NBA Mock Draft board with each NCAA player's upcoming game.")
+    st.caption("View the top 60 prospects for the 2026 NBA Draft ranked by consensus mock drafts. Each player's next scheduled NCAA game is shown with date, time, TV network, and matchup details. Click column headers to sort by any field.")
     
     # Select columns to display (use Game Time instead of separate DATE and TIME)
     display_df = draft_with_games.copy()
@@ -620,35 +620,52 @@ with tab1:
         draft_display, 
         hide_index=True, 
         height=400, 
-        width='stretch',
+        use_container_width=True,
         column_config={
             "Team": st.column_config.ImageColumn(
                 "Team",
                 help="NBA Team Logo",
                 width="small"
+            ),
+            "Rank": st.column_config.NumberColumn(
+                "Rank",
+                help="Mock draft ranking (consensus)",
+                width="small"
+            ),
+            "Player": st.column_config.TextColumn(
+                "Player",
+                help="Player name",
+                width="medium"
+            ),
+            "School": st.column_config.TextColumn(
+                "School",
+                help="College or country",
+                width="medium"
             )
         }
     )
 
 with tab2:
     st.header("Super Matchups")
-    st.caption("Games with top 60 NBA draft prospects on both teams.")
+    st.caption("Must-watch games featuring multiple top-60 draft prospects. These matchups showcase head-to-head battles between future NBA players, making them ideal scouting opportunities. The 'Players' column lists all ranked prospects participating in each game.")
     
     # Select columns to display
     super_df = super_matchups_expanded.copy()
     super_df = super_df.rename(columns={'AWAY': 'Away', 'HOME': 'Home', 'All_Players': 'Players'})
     super_display = super_df[['Away', 'Home', 'Game Time (ET)', 'TV', 'Players']]
     
-    st.dataframe(super_display, hide_index=True, height=300, width='stretch')
+    st.dataframe(super_display, hide_index=True, height=300, use_container_width=True)
 
 with tab3:
     st.header("Games by Date")
+    st.caption("Browse all upcoming games by date featuring top-60 draft prospects. Use the date picker to select any day in the next 30 days and see which ranked players will be competing. Perfect for planning which games to watch throughout the season.")
     
     # Call the fragment (defined at module scope to avoid redecorating on every rerun)
     games_by_date_fragment(combined_df, upcoming_games_df)
 
 with tab4:
     st.header("NBA Prospect Distribution by School/Country")
+    st.caption("See which colleges and countries are producing the most top-60 NBA prospects for 2026. This chart helps identify scouting hotspots and programs with the strongest draft pipeline. Taller bars indicate schools/countries with more highly-ranked prospects.")
     
     # ==================================================================================== Chart
     

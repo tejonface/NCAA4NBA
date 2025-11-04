@@ -5,6 +5,7 @@ from datetime import date, timedelta, datetime
 from zoneinfo import ZoneInfo
 import json
 import os
+import shutil
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 # File paths for saving data
@@ -24,6 +25,43 @@ def get_eastern_now():
 def get_eastern_today():
     """Get today's date in Eastern timezone"""
     return get_eastern_now().date()
+
+
+# =================================================================== Data Management Helpers
+
+def backup_file(filepath):
+    """Create a backup of an existing file before overwriting"""
+    if os.path.exists(filepath):
+        backup_path = filepath + ".backup"
+        shutil.copy2(filepath, backup_path)
+        print(f"✓ Created backup: {backup_path}")
+        return backup_path
+    return None
+
+def save_with_atomic_write(df, filepath, description="data"):
+    """Save DataFrame with atomic write (save to temp, then rename)
+    
+    This prevents partial/corrupted files if the script crashes during write.
+    """
+    temp_path = filepath + ".tmp"
+    
+    # Save to temporary file first
+    df.to_csv(temp_path, index=False)
+    
+    # Rename temp file to final destination (atomic operation)
+    os.replace(temp_path, filepath)
+    print(f"✓ Saved {description} to {filepath}")
+
+def validate_data(df, min_rows=1, data_type="data"):
+    """Validate that scraped data meets basic quality checks"""
+    if df is None or df.empty:
+        raise ValueError(f"{data_type} is empty - scraping may have failed")
+    
+    if len(df) < min_rows:
+        raise ValueError(f"{data_type} has only {len(df)} rows (expected at least {min_rows})")
+    
+    print(f"✓ Validation passed: {data_type} has {len(df)} rows")
+    return True
 
 
 # =================================================================== Scrape NBA Draft Board
@@ -163,45 +201,69 @@ def scrape_ncaa_schedule(days=30):
 # =================================================================== Main Scraping Function
 
 def run_scraper():
-    """Run all scrapers and save data to files"""
+    """Run all scrapers and save data to files with validation and atomic writes"""
     print("\n" + "="*60)
     print("Starting Web Scraper")
     print("="*60 + "\n")
     
     scrape_time = get_eastern_now().isoformat()
     
-    # Scrape NBA Draft Board
-    draft_url = "https://www.nbadraft.net/nba-mock-drafts/?year-mock=2026"
-    draft_df = scrape_nba_mock_draft(draft_url)
-    
-    # Save draft data
-    draft_df.to_csv(DRAFT_DATA_FILE, index=False)
-    print(f"✓ Saved draft data to {DRAFT_DATA_FILE}\n")
-    
-    # Scrape NCAA Schedule
-    schedule_df = scrape_ncaa_schedule(days=30)
-    
-    # Save schedule data
-    schedule_df.to_csv(SCHEDULE_DATA_FILE, index=False)
-    print(f"✓ Saved schedule data to {SCHEDULE_DATA_FILE}\n")
-    
-    # Save metadata
-    metadata = {
-        "last_scrape_time": scrape_time,
-        "draft_prospects_count": len(draft_df),
-        "games_count": len(schedule_df),
-        "scraper_version": "1.0"
-    }
-    with open(SCRAPE_METADATA_FILE, 'w') as f:
-        json.dump(metadata, f, indent=2)
-    print(f"✓ Saved metadata to {SCRAPE_METADATA_FILE}\n")
-    
-    print("="*60)
-    print("Scraping Complete!")
-    print(f"Last scraped: {scrape_time}")
-    print(f"Draft prospects: {len(draft_df)}")
-    print(f"Games: {len(schedule_df)}")
-    print("="*60 + "\n")
+    try:
+        # Scrape NBA Draft Board
+        draft_url = "https://www.nbadraft.net/nba-mock-drafts/?year-mock=2026"
+        draft_df = scrape_nba_mock_draft(draft_url)
+        
+        # Validate draft data (expect at least 30 prospects)
+        validate_data(draft_df, min_rows=30, data_type="Draft prospects")
+        
+        # Backup existing draft file before overwriting
+        backup_file(DRAFT_DATA_FILE)
+        
+        # Save draft data with atomic write
+        save_with_atomic_write(draft_df, DRAFT_DATA_FILE, "draft data")
+        print()
+        
+        # Scrape NCAA Schedule
+        schedule_df = scrape_ncaa_schedule(days=30)
+        
+        # Validate schedule data (expect at least 100 games over 30 days)
+        validate_data(schedule_df, min_rows=100, data_type="Schedule games")
+        
+        # Backup existing schedule file before overwriting
+        backup_file(SCHEDULE_DATA_FILE)
+        
+        # Save schedule data with atomic write
+        save_with_atomic_write(schedule_df, SCHEDULE_DATA_FILE, "schedule data")
+        print()
+        
+        # Save metadata with atomic write
+        metadata = {
+            "last_scrape_time": scrape_time,
+            "draft_prospects_count": len(draft_df),
+            "games_count": len(schedule_df),
+            "scraper_version": "1.1"
+        }
+        
+        backup_file(SCRAPE_METADATA_FILE)
+        temp_metadata_path = SCRAPE_METADATA_FILE + ".tmp"
+        with open(temp_metadata_path, 'w') as f:
+            json.dump(metadata, f, indent=2)
+        os.replace(temp_metadata_path, SCRAPE_METADATA_FILE)
+        print(f"✓ Saved metadata to {SCRAPE_METADATA_FILE}\n")
+        
+        print("="*60)
+        print("Scraping Complete!")
+        print(f"Last scraped: {scrape_time}")
+        print(f"Draft prospects: {len(draft_df)}")
+        print(f"Games: {len(schedule_df)}")
+        print("="*60 + "\n")
+        
+    except Exception as e:
+        print(f"\n{'='*60}")
+        print(f"ERROR: Scraping failed - {str(e)}")
+        print(f"{'='*60}\n")
+        print("Previous data files remain intact (not overwritten)")
+        raise
 
 
 if __name__ == "__main__":
