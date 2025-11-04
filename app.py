@@ -763,4 +763,9 @@ with col2:
     st.text("")
 
 with col3:
-    st.image("static/logo.png", width=200)
+    st.markdown(
+        '<a href="https://www.jstew.info/" target="_blank">'
+        '<img src="app/static/logo.png" width="200">'
+        '</a>',
+        unsafe_allow_html=True
+    )
