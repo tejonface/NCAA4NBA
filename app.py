@@ -579,28 +579,34 @@ with col_title:
     st.title("NBA Prospect Schedule")
 with col_info:
     with st.popover("ℹ️"):
-        st.markdown("**About**")
-        st.caption("This page helps basketball fans keep track of upcoming NCAA games featuring "
-                "top prospects for the 2026 NBA Draft. If you don't follow college basketball "
-                "but want to know when the next potential NBA stars are playing, this is your "
-                "go-to schedule. Check back for updates on key matchups and players to watch.")
+        st.caption("Track upcoming NCAA games featuring top 2026 NBA Draft prospects.")
         
         # Show data info with metadata
         if metadata:
-            st.markdown("**Data Info**")
+            st.divider()
             last_scrape = datetime.fromisoformat(metadata['last_scrape_time'])
-            st.caption(f"📅 Source data from: {last_scrape.strftime('%b %d, %Y at %I:%M %p ET')}")
-            st.caption(f"Draft prospects: {metadata.get('draft_prospects_count', 'N/A')}")
-            st.caption(f"Games: {metadata.get('games_count', 'N/A')}")
-            
-            st.markdown("**Smart Refresh**")
-            st.caption("🔄 Today's games refresh every 30 min")
-            st.caption("🔄 Next 7 days refresh every 12 hours")
-            st.caption("🔄 Future games refresh daily")
+            st.caption(f"**Data:** {last_scrape.strftime('%b %d at %I:%M %p ET')} • {metadata.get('draft_prospects_count', 'N/A')} prospects • {metadata.get('games_count', 'N/A')} games")
+            st.caption("**Refresh:** 30 min (today) • 12 hr (week) • 24 hr (future)")
             
             if st.button("🔄 Force Refresh", help="Clear all caches and reload immediately"):
                 st.cache_data.clear()
                 st.rerun()
+        
+        st.divider()
+        # Created by with clickable logo
+        import base64
+        with open("static/logo.png", "rb") as img_file:
+            img_data = base64.b64encode(img_file.read()).decode()
+        
+        st.markdown(
+            f'<div style="text-align: center;">'
+            f'<p style="font-size: 12px; color: #6b7280; margin-bottom: 8px;">Created by</p>'
+            f'<a href="https://www.jstew.info/" target="_blank">'
+            f'<img src="data:image/png;base64,{img_data}" width="120">'
+            f'</a>'
+            f'</div>',
+            unsafe_allow_html=True
+        )
 
 st.divider()
 
