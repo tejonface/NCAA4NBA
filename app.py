@@ -284,7 +284,7 @@ norm = plt.Normalize(values.min(), values.max())
 colors = [cmap(norm(value)) for value in values]
 
 # Create a bar plot of Schools with the most prospects
-sns.barplot(
+bars = sns.barplot(
     data=school_summary,
     x="Total",
     y="School/Country",
@@ -293,6 +293,19 @@ sns.barplot(
     palette=colors,
     legend=False
 )
+
+# Add value labels inside the bars in white
+for i, (value, bar) in enumerate(zip(school_summary['Total'], ax.patches)):
+    ax.text(
+        bar.get_width() - 0.2,  # Position near the end of the bar
+        bar.get_y() + bar.get_height() / 2,  # Center vertically
+        str(value),  # The value to display
+        ha='right',  # Right-align the text
+        va='center',  # Center vertically
+        color='white',  # White text
+        fontsize=10,
+        fontweight='bold'
+    )
 
 # Set labels and title
 ax.set_xlabel("Number of NBA Prospects")
