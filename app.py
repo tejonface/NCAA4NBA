@@ -607,7 +607,11 @@ with tab3:
         with col_count:
             if not filtered_games.empty:
                 game_count = game_counts.get(selected_date, 0)
-                st.markdown(f"### {game_count} game{'s' if game_count != 1 else ''} on {selected_date.strftime('%a, %b %d, %Y')}")
+                st.markdown(f"""
+                <div style="margin-top: -0.5rem;">
+                    <h3 style="margin-top: 0; margin-bottom: 0;">{game_count} game{'s' if game_count != 1 else ''} on {selected_date.strftime('%a, %b %d, %Y')}</h3>
+                </div>
+                """, unsafe_allow_html=True)
         
         if not filtered_games.empty:
             
