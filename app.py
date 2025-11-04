@@ -33,7 +33,7 @@ def get_file_mtime(filepath):
         return os.path.getmtime(filepath)
     return 0
 
-@st.cache_data
+@st.cache_data(ttl=3600)  # 1 hour TTL for draft data
 def load_draft_data(file_mtime):
     """Load draft board data from CSV file
     
@@ -46,21 +46,86 @@ def load_draft_data(file_mtime):
         st.error(f"Draft data file not found. Please run `python scraper.py` to generate data.")
         return pd.DataFrame()
 
-@st.cache_data
-def load_schedule_data(file_mtime):
-    """Load schedule data from CSV file
+@st.cache_data(ttl=1800)  # 30 minutes TTL for today's games
+def load_todays_schedule(file_mtime, today):
+    """Load today's schedule with frequent refresh
     
     Args:
-        file_mtime: File modification time (used to invalidate cache when file updates)
+        file_mtime: File modification time
+        today: Today's date for cache key
     """
     if os.path.exists(SCHEDULE_DATA_FILE):
         df = pd.read_csv(SCHEDULE_DATA_FILE)
         if not df.empty:
             df['DATE'] = pd.to_datetime(df['DATE']).dt.date
-        return df
-    else:
-        st.error(f"Schedule data file not found. Please run `python scraper.py` to generate data.")
+            return df[df['DATE'] == today]
         return pd.DataFrame()
+    else:
+        return pd.DataFrame()
+
+@st.cache_data(ttl=43200)  # 12 hours TTL for near-future games
+def load_nearfuture_schedule(file_mtime, date_range_key):
+    """Load next 7 days schedule with moderate refresh
+    
+    Args:
+        file_mtime: File modification time
+        date_range_key: Date range identifier for cache key
+    """
+    if os.path.exists(SCHEDULE_DATA_FILE):
+        df = pd.read_csv(SCHEDULE_DATA_FILE)
+        if not df.empty:
+            df['DATE'] = pd.to_datetime(df['DATE']).dt.date
+            today = get_eastern_today()
+            tomorrow = today + timedelta(days=1)
+            week_end = today + timedelta(days=7)
+            return df[(df['DATE'] >= tomorrow) & (df['DATE'] <= week_end)]
+        return pd.DataFrame()
+    else:
+        return pd.DataFrame()
+
+@st.cache_data(ttl=86400)  # 24 hours TTL for far-future games
+def load_farfuture_schedule(file_mtime, date_range_key):
+    """Load 8-30 days schedule with infrequent refresh
+    
+    Args:
+        file_mtime: File modification time
+        date_range_key: Date range identifier for cache key
+    """
+    if os.path.exists(SCHEDULE_DATA_FILE):
+        df = pd.read_csv(SCHEDULE_DATA_FILE)
+        if not df.empty:
+            df['DATE'] = pd.to_datetime(df['DATE']).dt.date
+            today = get_eastern_today()
+            week_start = today + timedelta(days=8)
+            month_end = today + timedelta(days=30)
+            return df[(df['DATE'] >= week_start) & (df['DATE'] <= month_end)]
+        return pd.DataFrame()
+    else:
+        return pd.DataFrame()
+
+def load_schedule_data_smart():
+    """Load schedule data with tiered caching strategy
+    
+    Returns combined DataFrame with different TTLs for different date ranges:
+    - Today's games: 30 min refresh
+    - Next 7 days: 12 hour refresh  
+    - 8-30 days out: 24 hour refresh
+    """
+    file_mtime = get_file_mtime(SCHEDULE_DATA_FILE)
+    today = get_eastern_today()
+    
+    # Load data with different cache TTLs
+    todays_games = load_todays_schedule(file_mtime, today)
+    nearfuture_games = load_nearfuture_schedule(file_mtime, today.strftime("%Y-%m-%d"))
+    farfuture_games = load_farfuture_schedule(file_mtime, today.strftime("%Y-%m-%d"))
+    
+    # Combine all DataFrames
+    combined = pd.concat([todays_games, nearfuture_games, farfuture_games], ignore_index=True)
+    
+    if combined.empty:
+        st.error(f"Schedule data file not found. Please run `python scraper.py` to generate data.")
+    
+    return combined
 
 def load_metadata():
     """Load scrape metadata"""
@@ -69,9 +134,9 @@ def load_metadata():
             return json.load(f)
     return None
 
-# Load data (passing file modification times to trigger cache refresh when files update)
+# Load data with smart tiered caching
 draft_df = load_draft_data(get_file_mtime(DRAFT_DATA_FILE))
-combined_df = load_schedule_data(get_file_mtime(SCHEDULE_DATA_FILE))
+combined_df = load_schedule_data_smart()
 metadata = load_metadata()
 
 # Exit early if data is missing
@@ -442,11 +507,16 @@ with col_info:
         if metadata:
             st.markdown("**Data Info**")
             last_scrape = datetime.fromisoformat(metadata['last_scrape_time'])
-            st.caption(f"📅 Last updated: {last_scrape.strftime('%b %d, %Y at %I:%M %p ET')}")
+            st.caption(f"📅 Source data from: {last_scrape.strftime('%b %d, %Y at %I:%M %p ET')}")
             st.caption(f"Draft prospects: {metadata.get('draft_prospects_count', 'N/A')}")
             st.caption(f"Games: {metadata.get('games_count', 'N/A')}")
             
-            if st.button("🔄 Refresh Data", help="Clear cache and reload data from files"):
+            st.markdown("**Smart Refresh**")
+            st.caption("🔄 Today's games refresh every 30 min")
+            st.caption("🔄 Next 7 days refresh every 12 hours")
+            st.caption("🔄 Future games refresh daily")
+            
+            if st.button("🔄 Force Refresh", help="Clear all caches and reload immediately"):
                 st.cache_data.clear()
                 st.rerun()
 
