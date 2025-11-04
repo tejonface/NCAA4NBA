@@ -1,6 +1,6 @@
 # Overview
 
-This is a Streamlit web application that provides NBA draft prospect tracking and scheduling information. The application scrapes data from two primary sources: NBA Draft Net for mock draft consensus data and ESPN for NCAA men's college basketball schedules. The purpose is to help users track top NBA draft prospects and monitor their upcoming college basketball games.
+This project is a **Streamlit web application** for scraping and analyzing NBA draft data and NCAA basketball schedules. The application fetches live data from external sources (nbadraft.net) and presents NBA mock draft information with player rankings, teams, physical attributes, and school affiliations. The application is designed to provide basketball analytics and scouting information with data visualization capabilities using matplotlib and seaborn.
 
 # User Preferences
 
@@ -8,96 +8,84 @@ Preferred communication style: Simple, everyday language.
 
 # System Architecture
 
-## Frontend Architecture
+## Application Framework
+- **Frontend/UI**: Streamlit framework for building interactive web applications with Python
+  - Chosen for rapid prototyping and built-in interactive components
+  - Simplifies deployment and user interface creation without HTML/CSS/JS
+  - Trade-off: Less flexibility than traditional web frameworks but much faster development
 
-**Technology**: Streamlit framework for Python-based web applications
+## Data Processing Pipeline
+- **Web Scraping**: BeautifulSoup4 with requests library
+  - Scrapes HTML tables from nbadraft.net for mock draft data
+  - Targets specific table IDs (`nba_mock_consensus_table` and `nba_mock_consensus_table2`)
+  - Combines data from multiple tables into single DataFrame
+  - Rationale: Direct data extraction from source ensures real-time accuracy
 
-**Rationale**: Streamlit provides a simple, declarative approach to building data-driven web applications without requiring separate frontend development. This allows rapid prototyping and deployment of data visualization and analysis tools with minimal code.
+- **Data Manipulation**: Pandas DataFrames
+  - Primary data structure for storing and manipulating scraped data
+  - Provides efficient tabular data operations
+  - Standard columns: Rank, Team, Player, Height, Weight, Position, School, Conference
 
-**Design Pattern**: Single-page application with reactive components that automatically update when data changes.
+## Caching Strategy
+- **Streamlit Cache**: `@st.cache_data` decorator with 1800-second TTL (30 minutes)
+  - Reduces redundant HTTP requests to external sources
+  - Improves application performance and reduces load on scraped websites
+  - 30-minute refresh ensures reasonably fresh data while minimizing requests
+  - Rationale: Balances data freshness with performance optimization
 
-## Backend Architecture
+## Data Visualization
+- **Libraries**: Matplotlib and Seaborn
+  - Prepared for creating statistical visualizations and charts
+  - Seaborn provides higher-level statistical plotting interface
+  - Matplotlib offers low-level customization capabilities
 
-**Technology**: Python with synchronous request handling
+## Code Organization
+- **Modular Functions**: Separate functions for each scraping task
+  - `scrape_nba_mock_draft()`: Handles NBA draft data extraction from nbadraft.net
+  - `scrape_ncaa_schedule()`: Scrapes upcoming 7 days of NCAA basketball schedules from ESPN
+  - `get_players_from_school()`: Matches draft prospects with their upcoming games
+  - Promotes code reusability and maintainability
 
-**Architecture Pattern**: Monolithic application structure with function-based data processing
-
-**Key Components**:
-- Web scraping functions using BeautifulSoup4 for HTML parsing
-- Data transformation using Pandas DataFrames
-- Caching mechanism via Streamlit's `@st.cache_data` decorator with 30-minute TTL (1800 seconds)
-
-**Rationale**: The synchronous approach is sufficient for this use case since the application serves individual users and doesn't require handling concurrent requests. The caching strategy reduces unnecessary web scraping requests and improves response times.
-
-## Data Storage
-
-**Approach**: In-memory data storage with no persistent database
-
-**Rationale**: The application deals with frequently changing external data (draft rankings, game schedules). Caching scraped data in memory for 30 minutes balances freshness with performance. No user-generated data requires persistence.
-
-**Data Flow**:
-1. Data is scraped from external sources on-demand
-2. Cached in memory for 30 minutes
-3. Transformed into Pandas DataFrames for analysis
-4. Presented directly to users through Streamlit components
-
-## Authentication & Authorization
-
-**Current State**: No authentication mechanism implemented
-
-**Rationale**: The application provides read-only access to publicly available data, eliminating the need for user authentication or authorization controls.
+## Application Features
+- **Draft Board Display**: Shows 2026 NBA Mock Draft rankings with upcoming game schedules
+- **Super Matchups**: Highlights games featuring top draft prospects on both teams
+- **Date-Based Filtering**: Interactive date selector for viewing specific game days
+- **Prospect Tracking**: Automatically matches NCAA players with their draft rankings
+- **Data Visualization**: Bar chart showing prospect distribution by school/country
+- **Real-Time Data**: 30-minute cache refresh for up-to-date information
 
 # External Dependencies
 
-## Third-Party Services & APIs
-
-### NBA Draft Net
-- **URL Pattern**: `https://www.nbadraft.net/nba-mock-drafts/?year-mock={year}`
-- **Purpose**: Source for NBA mock draft consensus data
-- **Data Extracted**: Player rankings, team assignments, physical measurements (height, weight, position), school affiliation, and class year
-- **Tables Scraped**: Two tables identified by IDs `nba_mock_consensus_table` and `nba_mock_consensus_table2`
-- **Method**: HTTP GET requests with BeautifulSoup HTML parsing
-
-### ESPN College Basketball Schedule
-- **URL Pattern**: `https://www.espn.com/mens-college-basketball/schedule/_/date/{YYYYMMDD}`
-- **Purpose**: Source for NCAA men's college basketball game schedules
-- **Data Extracted**: Game matchups and scheduling information
-- **Method**: HTTP GET requests with custom User-Agent headers to avoid blocking
-- **Schedule Range**: Configured to scrape 8 days starting from yesterday to handle timezone differences (ensures users in all timezones see their "today" games)
-
-## Python Libraries
-
-### Core Dependencies
-- **streamlit**: Web application framework
+## Third-Party Libraries
+- **streamlit**: Web application framework and UI rendering
 - **pandas**: Data manipulation and analysis
-- **requests**: HTTP library for web scraping
-- **beautifulsoup4**: HTML parsing library
+- **requests**: HTTP client for web scraping
+- **beautifulsoup4**: HTML/XML parsing for web scraping
 - **numpy**: Numerical computing support
 - **seaborn**: Statistical data visualization
-- **matplotlib**: Plotting library
-- **tabulate**: Table formatting utility
+- **matplotlib**: Plotting and charting library
+- **tabulate**: Table formatting (imported but not yet utilized)
 
-### Development Environment
-- **Python Version**: 3.11 (specified in devcontainer configuration)
-- **Container**: Microsoft Dev Container for Python development
-- **IDE Support**: VS Code with Python and Pylance extensions
+## External Data Sources
+- **nbadraft.net**: Primary data source for NBA mock draft information
+  - URL pattern: `https://www.nbadraft.net/nba-mock-drafts/?year-mock=2026`
+  - Provides consensus mock draft rankings
+  - Data includes player rankings, team assignments, physical stats, schools
+  - Note: Relies on consistent HTML structure; changes to website may break scraping
 
-## Deployment Configuration
+- **ESPN**: NCAA basketball schedule data
+  - URL pattern: `https://www.espn.com/mens-college-basketball/schedule/_/date/{YYYYMMDD}`
+  - Provides daily NCAA basketball game schedules
+  - Scrapes upcoming 7 days starting from current date
+  - Data includes team matchups, game times, TV coverage, and venue information
+  - Note: Requires User-Agent header for successful requests
 
-**Platform**: Replit
+## Python Standard Library
+- **datetime**: Date and time manipulation for scheduling features
+  - Imports: `date`, `timedelta`, `datetime`
+  - Used for time-based data filtering and scheduling operations
 
-**Port Configuration**: Application runs on port 5000
-
-**Streamlit Server Settings**: 
-- CORS disabled to work with Replit's proxy
-- XSRF protection disabled for compatibility
-- Server address set to 0.0.0.0 to accept all hosts
-- Headless mode enabled for production deployment
-
-## Recent Changes
-
-**Date**: November 5, 2025
-**Change**: Fixed timezone handling in schedule scraping
-- Modified `scrape_ncaa_schedule()` to start from yesterday instead of today
-- Extended scraping range from 7 to 8 days
-- **Rationale**: Server runs in UTC timezone, but users may be in different timezones. Starting from yesterday ensures users in all timezones (including those behind UTC) can see their "today" games
+## Deployment Considerations
+- Application designed to run as Streamlit server
+- No database required (data fetched on-demand from external sources)
+- Stateless architecture with caching layer for performance
