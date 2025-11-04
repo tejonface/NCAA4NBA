@@ -107,9 +107,9 @@ def save_cache(cache_data):
     with open(CACHE_FILE, 'w') as f:
         json.dump(cache_data, f)
     
-    # Update metadata
+    # Update metadata with Pacific time
     metadata = {
-        'last_updated': datetime.now().isoformat(),
+        'last_updated': get_pacific_now().isoformat(),
         'dates_cached': list(cache_data.keys())
     }
     with open(CACHE_METADATA_FILE, 'w') as f:
