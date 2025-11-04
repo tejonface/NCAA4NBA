@@ -300,7 +300,7 @@ draft_with_games = draft_with_games.drop_duplicates(subset=['Rank', 'Player', 'S
 # ==================================================================================== Create Streamlit Display
 # Streamlit App
 
-st.set_page_config(layout="wide")
+st.set_page_config(layout="centered")
 
 col1, col2, col3 = st.columns([2, 3, 1], vertical_alignment="center")
 with col1:
@@ -330,12 +330,12 @@ if min_date and max_date:
 
 st.header("Draft Board with Next Games")
 st.text("2026 NBA Mock Draft board with each NCAA players' upcoming game.")
-st.dataframe(draft_with_games, hide_index=True, height=450)
+st.dataframe(draft_with_games, hide_index=True, height=400, use_container_width=True)
 print(tab(draft_with_games))
 # Display Super Matchups
 st.header("SUPER MATCHUPS")
 st.text("Games with top 60 NBA draft prospects on both teams.")
-st.dataframe(super_matchups_expanded, hide_index=True, height=300)
+st.dataframe(super_matchups_expanded, hide_index=True, height=300, use_container_width=True)
 print(tab(super_matchups_expanded))
 # Get date range for calendar
 today = date.today()
@@ -373,7 +373,7 @@ if selected_date:
     filtered_games_expanded = filtered_games_expanded[['AWAY', 'HOME', 'DATE', 'TIME', 'TV', 'All_Players']]
 
     # Display in Streamlit
-    st.dataframe(filtered_games_expanded, hide_index=True, height=350)
+    st.dataframe(filtered_games_expanded, hide_index=True, height=350, use_container_width=True)
 
 else:
     st.write("Please select a date.")
@@ -386,7 +386,7 @@ school_summary = school_summary.rename(columns={'School': 'School/Country', 'Pla
 school_summary = school_summary.sort_values(by='Total', ascending=False)
 
 # Create a figure and axis
-fig, ax = plt.subplots(figsize=(12, 12))
+fig, ax = plt.subplots(figsize=(8, 6))
 
 # Choose a colormap
 cmap = plt.get_cmap("crest")
