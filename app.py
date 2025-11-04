@@ -421,7 +421,7 @@ st.markdown("""
     .main .block-container {
         padding-top: 0.1rem;
         padding-bottom: 1rem;
-        max-width: 1200px;
+        max-width: 1400px;
     }
     
     hr {
