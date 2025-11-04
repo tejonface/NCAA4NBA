@@ -7,6 +7,9 @@ import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
 from tabulate import tabulate as tab
+import json
+import os
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 
 
@@ -43,35 +46,139 @@ draft_df = scrape_nba_mock_draft(draft_url)
 
 # =================================================================== Scrape NCAA Schedule
 
-# Function to scrape NCAA schedule
-@st.cache_data(ttl=3600)  # 1 hour cache for better performance with larger date range
-def scrape_ncaa_schedule():
-    combined_df = pd.DataFrame()
+# File paths for caching
+CACHE_DIR = "schedule_cache"
+CACHE_FILE = os.path.join(CACHE_DIR, "ncaa_schedule.json")
+CACHE_METADATA_FILE = os.path.join(CACHE_DIR, "metadata.json")
 
-    for i in range(60):  # Scrape 60 days to cover rest of season
-        single_date = date.today() + timedelta(days=-1 + i)  # Start from yesterday to account for timezone differences
-        date_str = single_date.strftime("%Y%m%d")
-        print(single_date)
-        url = f"https://www.espn.com/mens-college-basketball/schedule/_/date/{date_str}"
-        headers = {"User-Agent": "Mozilla/5.0"}
-        response = requests.get(url, headers=headers)
+# Create cache directory if it doesn't exist
+os.makedirs(CACHE_DIR, exist_ok=True)
+
+# Function to scrape a single date
+def scrape_single_date(single_date):
+    """Scrape NCAA schedule for a single date"""
+    date_str = single_date.strftime("%Y%m%d")
+    url = f"https://www.espn.com/mens-college-basketball/schedule/_/date/{date_str}"
+    headers = {"User-Agent": "Mozilla/5.0"}
+    
+    try:
+        response = requests.get(url, headers=headers, timeout=10)
         soup = BeautifulSoup(response.content, "html.parser")
-
+        
         table = soup.find("table")
         if not table:
-            continue
-
+            return None
+        
         rows = table.find_all("tr")
         data = [[col.text.strip() for col in row.find_all(["th", "td"])] for row in rows if row.find_all(["th", "td"])]
-
+        
         df = pd.DataFrame(data)
         if not df.empty:
             df.columns = df.iloc[0]
             df = df.drop(0).reset_index(drop=True)
-            df.columns = [df.columns[0]] + [''] + list(df.columns[1:-1])  # Shift columns
-            df["DATE"] = single_date
-            combined_df = pd.concat([combined_df, df], ignore_index=True)
+            df.columns = [df.columns[0]] + [''] + list(df.columns[1:-1])
+            df["DATE"] = single_date.strftime("%Y-%m-%d")
+            return df.to_dict('records')
+    except Exception as e:
+        print(f"Error scraping {date_str}: {e}")
+        return None
 
+# Load cached data
+def load_cache():
+    """Load cached schedule data from file"""
+    if os.path.exists(CACHE_FILE):
+        with open(CACHE_FILE, 'r') as f:
+            return json.load(f)
+    return {}
+
+# Save cache data
+def save_cache(cache_data):
+    """Save schedule data to cache file"""
+    with open(CACHE_FILE, 'w') as f:
+        json.dump(cache_data, f)
+    
+    # Update metadata
+    metadata = {
+        'last_updated': datetime.now().isoformat(),
+        'dates_cached': list(cache_data.keys())
+    }
+    with open(CACHE_METADATA_FILE, 'w') as f:
+        json.dump(metadata, f)
+
+# Check if date needs refresh (older than 30 minutes)
+def needs_refresh(date_str, cache_metadata):
+    """Check if a specific date's data needs refreshing"""
+    if not os.path.exists(CACHE_METADATA_FILE):
+        return True
+    
+    # Recent dates (within 7 days) refresh every 30 minutes
+    # Future dates refresh every 6 hours
+    target_date = datetime.strptime(date_str, "%Y-%m-%d").date()
+    days_diff = (target_date - date.today()).days
+    
+    if days_diff < 7:
+        max_age = timedelta(minutes=30)
+    else:
+        max_age = timedelta(hours=6)
+    
+    if cache_metadata and 'last_updated' in cache_metadata:
+        last_update = datetime.fromisoformat(cache_metadata['last_updated'])
+        return datetime.now() - last_update > max_age
+    
+    return True
+
+# Main function to get NCAA schedule with caching and parallel scraping
+@st.cache_data(ttl=1800)  # 30-minute Streamlit cache on top of file cache
+def scrape_ncaa_schedule():
+    """Scrape NCAA schedule with file caching and parallel processing"""
+    cache_data = load_cache()
+    
+    # Load metadata
+    if os.path.exists(CACHE_METADATA_FILE):
+        with open(CACHE_METADATA_FILE, 'r') as f:
+            cache_metadata = json.load(f)
+    else:
+        cache_metadata = {}
+    
+    # Determine which dates to scrape
+    dates_to_scrape = []
+    for i in range(60):
+        single_date = date.today() + timedelta(days=-1 + i)
+        date_str = single_date.strftime("%Y-%m-%d")
+        
+        # Check if we need to refresh this date
+        if date_str not in cache_data or needs_refresh(date_str, cache_metadata):
+            dates_to_scrape.append(single_date)
+    
+    # Scrape missing dates in parallel
+    if dates_to_scrape:
+        print(f"Scraping {len(dates_to_scrape)} dates in parallel...")
+        with ThreadPoolExecutor(max_workers=10) as executor:
+            future_to_date = {executor.submit(scrape_single_date, d): d for d in dates_to_scrape}
+            
+            for future in as_completed(future_to_date):
+                single_date = future_to_date[future]
+                try:
+                    result = future.result()
+                    if result:
+                        date_str = single_date.strftime("%Y-%m-%d")
+                        cache_data[date_str] = result
+                        print(f"Scraped {date_str}")
+                except Exception as e:
+                    print(f"Error processing {single_date}: {e}")
+        
+        # Save updated cache
+        save_cache(cache_data)
+    
+    # Convert cached data to DataFrame
+    all_records = []
+    for date_str in sorted(cache_data.keys()):
+        all_records.extend(cache_data[date_str])
+    
+    combined_df = pd.DataFrame(all_records)
+    if not combined_df.empty:
+        combined_df['DATE'] = pd.to_datetime(combined_df['DATE']).dt.date
+    
     return combined_df
 
 # Scrape NCAA schedule
@@ -230,23 +337,32 @@ st.header("SUPER MATCHUPS")
 st.text("Games with top 60 NBA draft prospects on both teams.")
 st.dataframe(super_matchups_expanded, hide_index=True, height=300)
 print(tab(super_matchups_expanded))
-# Get tomorrow's date as the default selection
+# Get date range for calendar
 today = date.today()
-
-# Select a single date using segmented control, default to the closest available date
 date_options = sorted(combined_df['DATE'].dropna().unique())
 
-# Ensure the default value exists in the list of options
-default_date = today if today in date_options else date_options[0]  # Pick the first available date if not found
-
-selected_date = st.segmented_control("Select Date", date_options, selection_mode="single", default=default_date)
-
+# Handle empty date options gracefully
+if not date_options:
+    st.warning("No schedule data available. Please try refreshing the data.")
+    selected_date = None
+else:
+    min_cal_date = date_options[0]
+    max_cal_date = date_options[-1]
+    default_value = today if today in date_options else date_options[0]
+    
+    # Calendar date picker
+    st.header("Select Game Date")
+    selected_date = st.date_input(
+        "Choose a date to view games",
+        value=default_value,
+        min_value=min_cal_date,
+        max_value=max_cal_date,
+        help="Select any date to view scheduled games"
+    )
 
 # Display schedule for the selected date
-st.header(f"Schedule for {selected_date}")
-
-# Ensure selected_date is treated as a single value for filtering
 if selected_date:
+    st.header(f"Schedule for {selected_date.strftime('%A, %B %d, %Y')}")
     # Filter upcoming games for the selected date
     filtered_games = upcoming_games_df[upcoming_games_df['DATE'] == selected_date]
 
