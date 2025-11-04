@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block title %}Games by Date - NBA Prospect Schedule{% endblock %}
+{% block nav_games %}active{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>Games by Date</h2>
+</div>
+
+<div class="date-picker-container">
+    <label for="game-date">Select date:</label>
+    <input type="date" id="game-date" class="date-input" value="{{ today.isoformat() }}">
+</div>
+
+<div id="games-display">
+    <p class="loading">Select a date to view games...</p>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('game-date').addEventListener('change', function(e) {
+    const selectedDate = e.target.value;
+    loadGamesForDate(selectedDate);
+});
+
+// Auto-load today's games
+window.addEventListener('DOMContentLoaded', function() {
+    const today = document.getElementById('game-date').value;
+    if (today) {
+        loadGamesForDate(today);
+    }
+});
+
+function loadGamesForDate(dateStr) {
+    const display = document.getElementById('games-display');
+    display.innerHTML = '<p class="loading">Loading games...</p>';
+    
+    fetch(`/api/games/${dateStr}`)
+        .then(response => response.json())
+        .then(games => {
+            if (games.length === 0) {
+                const dateObj = new Date(dateStr);
+                const formattedDate = dateObj.toLocaleDateString('en-US', { 
+                    weekday: 'long', 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                });
+                display.innerHTML = `<p class="no-games">No games scheduled for ${formattedDate}</p>`;
+                return;
+            }
+            
+            const dateObj = new Date(dateStr);
+            const formattedDate = dateObj.toLocaleDateString('en-US', { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+            
+            let html = `<div class="date-header"><strong>${games.length} game${games.length !== 1 ? 's' : ''} on ${formattedDate}</strong></div>`;
+            html += '<div class="games-list">';
+            
+            games.forEach(game => {
+                html += `
+                    <div class="game-card">
+                        <div class="game-card-header">
+                            <h3>${game.away_team} @ ${game.home_team}</h3>
+                            <div class="game-card-info">
+                                <span>${game.game_time}</span>
+                                <span class="tv-badge">${game.tv_network}</span>
+                            </div>
+                        </div>
+                        <div class="players-grid">
+                `;
+                
+                for (const [school, players] of Object.entries(game.schools)) {
+                    html += `
+                        <div class="school-group">
+                            <h4>${school}:</h4>
+                            <ul class="player-list">
+                    `;
+                    players.forEach(player => {
+                        html += `<li>• #${player.rank} ${player.player}</li>`;
+                    });
+                    html += '</ul></div>';
+                }
+                
+                html += '</div></div>';
+            });
+            
+            html += '</div>';
+            display.innerHTML = html;
+        })
+        .catch(error => {
+            display.innerHTML = '<p class="error">Error loading games. Please try again.</p>';
+            console.error('Error:', error);
+        });
+}
+</script>
+{% endblock %}

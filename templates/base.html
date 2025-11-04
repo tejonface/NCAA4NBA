@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}NBA Prospect Schedule{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <h1>NBA Prospect Schedule</h1>
+                <button class="info-btn" onclick="toggleInfo()">ℹ️</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Info Popover -->
+    <div id="info-overlay" class="info-overlay" onclick="toggleInfo()"></div>
+    <div id="info-popover" class="info-popover">
+        <h3>About</h3>
+        <p>This page helps basketball fans keep track of upcoming NCAA games featuring top prospects for the 2026 NBA Draft. If you don't follow college basketball but want to know when the next potential NBA stars are playing, this is your go-to schedule. Check back for updates on key matchups and players to watch.</p>
+        
+        <hr>
+        
+        <h3>Data Info</h3>
+        <p class="info-text">📅 Data updates daily</p>
+        <p class="info-caption">Covering upcoming 60 days of NCAA basketball</p>
+    </div>
+
+    <nav>
+        <div class="container">
+            <ul class="nav-tabs">
+                <li><a href="/" class="{% block nav_draft %}{% endblock %}">📋 Draft Board</a></li>
+                <li><a href="/super-matchups" class="{% block nav_super %}{% endblock %}">⭐ Super Matchups</a></li>
+                <li><a href="/games-by-date" class="{% block nav_games %}{% endblock %}">📅 Games by Date</a></li>
+                <li><a href="/distribution" class="{% block nav_dist %}{% endblock %}">📊 Prospect Distribution</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="container">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>Data from nbadraft.net and ESPN | Eastern Time: {{ now.strftime('%I:%M %p ET') }}</p>
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

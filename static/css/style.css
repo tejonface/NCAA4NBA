@@ -1,0 +1,505 @@
+/* NBA Prospect Schedule - Custom CSS */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --primary-color: #4CAF50;
+    --primary-hover: #45a049;
+    --background: #f5f7fa;
+    --card-bg: #ffffff;
+    --text-primary: #2c3e50;
+    --text-secondary: #7f8c8d;
+    --border-color: #e1e8ed;
+    --shadow: 0 2px 8px rgba(0,0,0,0.1);
+    --shadow-hover: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    background: var(--background);
+    color: var(--text-primary);
+    line-height: 1.6;
+}
+
+.container {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* Header */
+header {
+    background: var(--card-bg);
+    border-bottom: 3px solid var(--primary-color);
+    padding: 20px 0;
+    box-shadow: var(--shadow);
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+header h1 {
+    font-size: 28px;
+    color: var(--text-primary);
+}
+
+.info-btn {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 20px;
+    transition: all 0.3s ease;
+}
+
+.info-btn:hover {
+    background: var(--primary-hover);
+    transform: scale(1.05);
+}
+
+/* Info Popover */
+.info-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+}
+
+.info-overlay.active {
+    display: block;
+}
+
+.info-popover {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: var(--card-bg);
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    max-width: 500px;
+    width: 90%;
+    z-index: 1000;
+}
+
+.info-popover.active {
+    display: block;
+}
+
+.info-popover h3 {
+    margin-bottom: 15px;
+    color: var(--primary-color);
+}
+
+.info-popover p {
+    margin-bottom: 15px;
+    color: var(--text-secondary);
+}
+
+.info-popover hr {
+    margin: 20px 0;
+    border: none;
+    border-top: 1px solid var(--border-color);
+}
+
+.info-text {
+    background: #e8f5e9;
+    padding: 12px;
+    border-radius: 8px;
+    border-left: 4px solid var(--primary-color);
+}
+
+.info-caption {
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+/* Navigation */
+nav {
+    background: var(--card-bg);
+    padding: 0;
+    margin-bottom: 30px;
+    box-shadow: var(--shadow);
+}
+
+.nav-tabs {
+    list-style: none;
+    display: flex;
+    gap: 0;
+}
+
+.nav-tabs li {
+    flex: 1;
+}
+
+.nav-tabs a {
+    display: block;
+    padding: 20px;
+    text-decoration: none;
+    color: var(--text-primary);
+    background: #f0f2f6;
+    text-align: center;
+    font-size: 16px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    border-right: 1px solid var(--border-color);
+}
+
+.nav-tabs li:first-child a {
+    border-radius: 0;
+}
+
+.nav-tabs li:last-child a {
+    border-right: none;
+}
+
+.nav-tabs a:hover {
+    background: #e0e3e9;
+}
+
+.nav-tabs a.active {
+    background: var(--primary-color);
+    color: white;
+}
+
+/* Main Content */
+main {
+    min-height: 60vh;
+    padding: 30px 0;
+}
+
+.page-header {
+    margin-bottom: 30px;
+}
+
+.page-header h2 {
+    font-size: 32px;
+    margin-bottom: 10px;
+}
+
+.subtitle {
+    color: var(--text-secondary);
+    font-size: 16px;
+}
+
+/* Tables */
+.table-container {
+    background: var(--card-bg);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.data-table thead {
+    background: var(--primary-color);
+    color: white;
+}
+
+.data-table th,
+.data-table td {
+    padding: 14px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.data-table tbody tr:hover {
+    background: #f8f9fa;
+}
+
+.logo-cell {
+    width: 60px;
+    text-align: center;
+}
+
+.team-logo {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+}
+
+.player-name {
+    font-weight: 600;
+}
+
+/* Matchup Cards */
+.matchups-container {
+    display: grid;
+    gap: 20px;
+}
+
+.matchup-card {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: var(--shadow);
+    transition: all 0.3s ease;
+}
+
+.matchup-card:hover {
+    box-shadow: var(--shadow-hover);
+    transform: translateY(-2px);
+}
+
+.matchup-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.matchup-header h3 {
+    font-size: 20px;
+    color: var(--text-primary);
+}
+
+.game-info {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.game-time {
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+.tv-badge {
+    background: var(--primary-color);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.players-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+}
+
+.school-group h4 {
+    color: var(--primary-color);
+    margin-bottom: 10px;
+    font-size: 16px;
+}
+
+.player-list {
+    list-style: none;
+    padding-left: 0;
+}
+
+.player-list li {
+    padding: 6px 0;
+    color: var(--text-secondary);
+}
+
+/* Date Picker */
+.date-picker-container {
+    background: var(--card-bg);
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow);
+}
+
+.date-picker-container label {
+    display: block;
+    margin-bottom: 10px;
+    font-weight: 600;
+}
+
+.date-input {
+    padding: 12px;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 16px;
+    width: 100%;
+    max-width: 300px;
+    transition: all 0.3s ease;
+}
+
+.date-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+/* Games Display */
+#games-display {
+    min-height: 200px;
+}
+
+.date-header {
+    background: var(--card-bg);
+    padding: 15px 20px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow);
+    font-size: 18px;
+}
+
+.games-list {
+    display: grid;
+    gap: 20px;
+}
+
+.game-card {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: var(--shadow);
+}
+
+.game-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.game-card-header h3 {
+    font-size: 18px;
+}
+
+.game-card-info {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    font-size: 14px;
+}
+
+.loading, .no-games, .error {
+    text-align: center;
+    padding: 40px;
+    color: var(--text-secondary);
+    background: var(--card-bg);
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+}
+
+.error {
+    color: #e74c3c;
+}
+
+/* Bar Chart */
+.chart-container {
+    background: var(--card-bg);
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+}
+
+.bar-chart {
+    display: grid;
+    gap: 12px;
+}
+
+.bar-row {
+    display: grid;
+    grid-template-columns: 180px 1fr;
+    align-items: center;
+    gap: 15px;
+}
+
+.bar-label {
+    font-weight: 600;
+    text-align: right;
+    color: var(--text-primary);
+}
+
+.bar-wrapper {
+    position: relative;
+    height: 36px;
+}
+
+.bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary-color), var(--primary-hover));
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 12px;
+    transition: width 0.8s ease;
+}
+
+.bar-value {
+    color: white;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+/* Footer */
+footer {
+    background: var(--card-bg);
+    border-top: 1px solid var(--border-color);
+    padding: 20px 0;
+    margin-top: 40px;
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .nav-tabs {
+        flex-wrap: wrap;
+    }
+    
+    .nav-tabs a {
+        font-size: 14px;
+        padding: 15px 10px;
+    }
+    
+    .matchup-header, .game-card-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    
+    .players-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .bar-row {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+    
+    .bar-label {
+        text-align: left;
+    }
+    
+    .data-table {
+        font-size: 14px;
+    }
+    
+    .data-table th,
+    .data-table td {
+        padding: 10px;
+    }
+}

@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Draft Board - NBA Prospect Schedule{% endblock %}
+{% block nav_draft %}active{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>Draft Board with Next Games</h2>
+    <p class="subtitle">2026 NBA Mock Draft board with each NCAA player's upcoming game</p>
+</div>
+
+<div class="table-container">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Rank</th>
+                <th>Team</th>
+                <th>Player</th>
+                <th>School</th>
+                <th>Game Time (ET)</th>
+                <th>TV</th>
+                <th>Away</th>
+                <th>Home</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for prospect in prospects %}
+            <tr>
+                <td>{{ prospect.rank }}</td>
+                <td class="logo-cell">
+                    {% if prospect.team_logo_url %}
+                    <img src="{{ prospect.team_logo_url }}" alt="Team logo" class="team-logo">
+                    {% endif %}
+                </td>
+                <td class="player-name">{{ prospect.player }}</td>
+                <td>{{ prospect.school }}</td>
+                <td>{{ prospect.game_time_et }}</td>
+                <td>{{ prospect.tv_network }}</td>
+                <td>{{ prospect.away_team }}</td>
+                <td>{{ prospect.home_team }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
