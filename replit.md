@@ -20,13 +20,15 @@ Preferred communication style: Simple, everyday language.
     - Games by Date: Simple calendar picker for viewing specific dates
     - Prospect Distribution: Bar chart (8x12 inches for readability)
   - **Tab Styling**: Custom CSS for enhanced UX
-    - Larger tabs (60px height, 18px font) for easier clicking and readability
+    - Larger tabs (60px height, 22px font) for easier clicking and readability
     - Background colors: #f0f2f6 (inactive), #4CAF50 green (active)
     - Hover effects (#e0e3e9) for better interactivity
     - Rounded corners and 8px spacing between tabs
   - **Header Layout**: Clean title with info popover (ℹ️ icon)
-    - Popover contains "About" section with app description
+    - Info icon aligned with bottom of title text for visual consistency
+    - Popover contains compact "About" section with app description (using caption text)
     - Popover contains "Data Info" section with date range, refresh interval, and refresh button
+    - Minimized whitespace in popover with bold headers, caption text, and reduced margins
     - Minimizes clutter while keeping info accessible
 - **Timezone Handling**: Eastern Time (America/New_York)
   - All date calculations use Eastern timezone (standard for US college basketball)
