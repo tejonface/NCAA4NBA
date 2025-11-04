@@ -195,7 +195,7 @@ draft_with_games = draft_with_games.drop_duplicates(subset=['Rank', 'Player', 'S
 
 st.set_page_config(layout="wide")
 
-col1, col2 = st.columns([1, 2], vertical_alignment="center")
+col1, col2, col3 = st.columns([2, 3, 1], vertical_alignment="center")
 with col1:
     st.title("NBA Prospect Schedule")
 
@@ -206,12 +206,24 @@ with col2:
             "but want to know when the next potential NBA stars are playing, this is your "
             "go-to schedule. Check back for updates on key matchups and players to watch.")
 
+with col3:
+    if st.button("🔄 Refresh Data", help="Clear cache and reload latest games"):
+        st.cache_data.clear()
+        st.rerun()
+
 # Display full draft board with upcoming games
 #st.subheader(":red[Displaying week of March 8, 2025 until 2025-2026 schedules are released.]", divider="red")
 st.divider()
+
+# Show data info
+min_date = combined_df['DATE'].min() if not combined_df.empty else None
+max_date = combined_df['DATE'].max() if not combined_df.empty else None
+if min_date and max_date:
+    st.info(f"📅 Showing games from {min_date.strftime('%b %d, %Y')} to {max_date.strftime('%b %d, %Y')} | Data refreshes every 30 minutes")
+
 st.header("Draft Board with Next Games")
 st.text("2026 NBA Mock Draft board with each NCAA players' upcoming game.")
-st.dataframe(draft_with_games, hide_index=True, use_container_width=True, height=600)
+st.dataframe(draft_with_games, hide_index=True, width="stretch", height=600)
 print(tab(draft_with_games))
 # Display Super Matchups
 st.header("SUPER MATCHUPS")
