@@ -527,10 +527,12 @@ tab1, tab2, tab3, tab4 = st.tabs(["📋 Draft Board", "⭐ Super Matchups", "�
 
 with tab1:
     st.header("Draft Board with Next Games")
-    st.text("2026 NBA Mock Draft board with each NCAA player's upcoming game.")
+    st.caption("2026 NBA Mock Draft board with each NCAA player's upcoming game.")
     
     # Select columns to display (use Game Time instead of separate DATE and TIME)
-    draft_display = draft_with_games[['Rank', 'Team', 'Player', 'School', 'Game Time (ET)', 'TV', 'AWAY', 'HOME']]
+    display_df = draft_with_games.copy()
+    display_df = display_df.rename(columns={'AWAY': 'Away', 'HOME': 'Home'})
+    draft_display = display_df[['Rank', 'Team', 'Player', 'School', 'Game Time (ET)', 'TV', 'Away', 'Home']]
     
     st.dataframe(
         draft_display, 
@@ -547,11 +549,13 @@ with tab1:
     )
 
 with tab2:
-    st.header("SUPER MATCHUPS")
-    st.text("Games with top 60 NBA draft prospects on both teams.")
+    st.header("Super Matchups")
+    st.caption("Games with top 60 NBA draft prospects on both teams.")
     
     # Select columns to display
-    super_display = super_matchups_expanded[['AWAY', 'HOME', 'Game Time (ET)', 'TV', 'All_Players']]
+    super_df = super_matchups_expanded.copy()
+    super_df = super_df.rename(columns={'AWAY': 'Away', 'HOME': 'Home', 'All_Players': 'Players'})
+    super_display = super_df[['Away', 'Home', 'Game Time (ET)', 'TV', 'Players']]
     
     st.dataframe(super_display, hide_index=True, height=300, width='stretch')
 
@@ -579,13 +583,16 @@ with tab3:
         if 'selected_date' not in st.session_state:
             st.session_state['selected_date'] = today if today in date_options else date_options[0]
         
-        # Calendar date picker
-        selected_date = st.date_input(
-            "Select date",
-            value=st.session_state['selected_date'],
-            min_value=min_cal_date,
-            max_value=max_cal_date
-        )
+        # Date picker and game count on same line
+        col_date, col_count = st.columns([1, 2])
+        
+        with col_date:
+            selected_date = st.date_input(
+                "Select Date",
+                value=st.session_state['selected_date'],
+                min_value=min_cal_date,
+                max_value=max_cal_date
+            )
         
         # Update session state
         st.session_state['selected_date'] = selected_date
@@ -593,9 +600,13 @@ with tab3:
         # Filter unique games for the selected date (deduplicated)
         filtered_games = unique_games[unique_games['DATE'] == selected_date]
         
+        # Display game count in the right column
+        with col_count:
+            if not filtered_games.empty:
+                game_count = game_counts.get(selected_date, 0)
+                st.markdown(f"#### {game_count} game{'s' if game_count != 1 else ''} on {selected_date.strftime('%A, %B %d, %Y')}")
+        
         if not filtered_games.empty:
-            game_count = game_counts.get(selected_date, 0)
-            st.write(f"**{game_count} game{'s' if game_count != 1 else ''} on {selected_date.strftime('%A, %B %d, %Y')}**")
             
             # Merge filtered games with draft data to add player info
             filtered_games_expanded = filtered_games.copy()
@@ -604,7 +615,9 @@ with tab3:
             filtered_games_expanded['Game Time (ET)'] = filtered_games_expanded.apply(format_game_time, axis=1)
         
             # Drop unnecessary columns and keep only relevant details
-            filtered_games_display = filtered_games_expanded[['AWAY', 'HOME', 'Game Time (ET)', 'TV', 'All_Players']]
+            filtered_df = filtered_games_expanded.copy()
+            filtered_df = filtered_df.rename(columns={'AWAY': 'Away', 'HOME': 'Home', 'All_Players': 'Players'})
+            filtered_games_display = filtered_df[['Away', 'Home', 'Game Time (ET)', 'TV', 'Players']]
         
             # Display in Streamlit
             st.dataframe(filtered_games_display, hide_index=True, height=350, width='stretch')
@@ -692,15 +705,15 @@ st.divider()
 col1, col2, col3 = st.columns(3)
 
 with col1:
-    st.header("Sources")
+    st.subheader("Sources")
     url = "https://www.nbadraft.net/nba-mock-drafts/?year-mock=2026"
-    st.write("[nbadraft.net mock draft board](%s)" % url)
+    st.write("[NBA Draft Mock Board](%s)" % url)
     single_date = get_eastern_today() + timedelta(days=1)  # Start with tomorrow (Eastern time)
     date_str = single_date.strftime("%Y%m%d")
     url = f"https://www.espn.com/mens-college-basketball/schedule/_/date/{date_str}"
-    st.write("[espn.com ncaa schedule](%s)" % url)
+    st.write("[ESPN NCAA Schedule](%s)" % url)
     url = "https://www.jstew.info"
-    st.write("[created by jstew.info](%s)" % url)
+    st.write("[Created by jstew.info](%s)" % url)
     
     # Show current Eastern time for reference
     eastern_time = get_eastern_now()
