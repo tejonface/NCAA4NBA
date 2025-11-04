@@ -586,7 +586,7 @@ with tab3:
             st.session_state['selected_date'] = today if today in date_options else date_options[0]
         
         # Date picker and game count on same line
-        col_date, col_count = st.columns([1, 2])
+        col_date, col_count = st.columns([1, 1.5])
         
         with col_date:
             selected_date = st.date_input(
@@ -607,7 +607,7 @@ with tab3:
         with col_count:
             if not filtered_games.empty:
                 game_count = game_counts.get(selected_date, 0)
-                st.subheader(f"{game_count} game{'s' if game_count != 1 else ''} on {selected_date.strftime('%A, %B %d, %Y')}")
+                st.markdown(f"### {game_count} game{'s' if game_count != 1 else ''} on {selected_date.strftime('%A, %B %d, %Y')}")
         
         if not filtered_games.empty:
             
