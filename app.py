@@ -809,12 +809,28 @@ with tab4:
     
     # Create a figure and axis with increased height to prevent overlap
     fig, ax = plt.subplots(figsize=(8, 12))
-    fig.patch.set_facecolor('white')
-    ax.set_facecolor('#f8fafc')
+    
+    # Determine if we're in dark mode
+    is_dark = st.session_state['theme'] == 'dark'
+    
+    # Theme-aware colors
+    if is_dark:
+        fig.patch.set_facecolor('#0f172a')
+        ax.set_facecolor('#1e293b')
+        colors_list = ['#93c5fd', '#60a5fa', '#3b82f6', '#2563eb', '#1d4ed8']
+        text_color = '#f1f5f9'
+        tick_color = '#94a3b8'
+        border_color = '#334155'
+    else:
+        fig.patch.set_facecolor('white')
+        ax.set_facecolor('#f8fafc')
+        colors_list = ['#93c5fd', '#60a5fa', '#3b82f6', '#2563eb', '#1d4ed8']
+        text_color = '#1e293b'
+        tick_color = '#64748b'
+        border_color = '#e2e8f0'
 
     # Create a modern blue gradient color palette
     from matplotlib.colors import LinearSegmentedColormap
-    colors_list = ['#93c5fd', '#60a5fa', '#3b82f6', '#2563eb', '#1d4ed8']
     n_bins = len(school_summary)
     cmap = LinearSegmentedColormap.from_list('blue_gradient', colors_list, N=n_bins)
     
@@ -831,7 +847,7 @@ with tab4:
         ax=ax,
         palette=colors,
         legend=False,
-        edgecolor='#e2e8f0',
+        edgecolor=border_color,
         linewidth=1
     )
     
@@ -849,21 +865,21 @@ with tab4:
         )
     
     # Set labels and title with modern styling
-    ax.set_xlabel("Number of NBA Prospects", fontsize=12, fontweight='600', color='#1e293b')
-    ax.set_ylabel("School/Country", fontsize=12, fontweight='600', color='#1e293b')
+    ax.set_xlabel("Number of NBA Prospects", fontsize=12, fontweight='600', color=text_color)
+    ax.set_ylabel("School/Country", fontsize=12, fontweight='600', color=text_color)
     
     # Style the spines
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
-    ax.spines['left'].set_color('#e2e8f0')
-    ax.spines['bottom'].set_color('#e2e8f0')
+    ax.spines['left'].set_color(border_color)
+    ax.spines['bottom'].set_color(border_color)
     
     # Style the ticks
-    ax.tick_params(colors='#64748b', labelsize=10)
+    ax.tick_params(colors=tick_color, labelsize=10)
     ax.set_xticks([0, 1, 2, 3])
     
     # Add subtle grid
-    ax.grid(axis='x', alpha=0.2, linestyle='--', linewidth=0.5)
+    ax.grid(axis='x', alpha=0.2, linestyle='--', linewidth=0.5, color=tick_color)
     
     # Display the plot in Streamlit
     st.pyplot(fig)
