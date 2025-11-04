@@ -4,51 +4,31 @@ __pycache__/
 *$py.class
 *.so
 .Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-pip-wheel-metadata/
-share/python-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-MANIFEST
-
-# Virtual environments
+.venv
 venv/
 ENV/
 env/
-.venv
 
-# IDEs
+# Streamlit
+.streamlit/secrets.toml
+
+# Replit
+.replit
+.config/
+.pythonlibs/
+.upm/
+.cache/
+.local/
+uv.lock
+pyproject.toml
+
+# IDE
 .vscode/
 .idea/
-*.swp
-*.swo
-*~
 
 # OS
 .DS_Store
 Thumbs.db
 
-# Jupyter Notebook
-.ipynb_checkpoints
-
-# pyenv
-.python-version
-
-# Environment variables
-.env
-.env.local
-
-# Streamlit
-.streamlit/secrets.toml
+# Cache (we'll keep schedule_cache/ since it's useful)
+*.log
