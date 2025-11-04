@@ -90,8 +90,12 @@ Preferred communication style: Simple, everyday language.
 - **File-Based Loading**: Loads pre-scraped data from CSV files in `data/` directory
   - Fast page loads (no web scraping on user visits)
   - `@st.cache_data` decorator caches loaded DataFrames in memory
+  - **Automatic Cache Invalidation**: Uses file modification timestamps to detect when scraper updates data
+    - Each load function checks the CSV file's modification time
+    - When scraper runs and updates files, cache automatically invalidates
+    - Next visitor gets fresh data without manual intervention
   - Graceful error handling if data files are missing (prompts user to run scraper)
-  - Manual refresh button clears cache and reloads from disk
+  - Manual refresh button available for immediate cache clearing
 
 - **Data Manipulation**: Pandas DataFrames
   - Primary data structure for storing and manipulating scraped data
@@ -106,15 +110,24 @@ Preferred communication style: Simple, everyday language.
   - Persistent storage survives app restarts
   - Decouples web scraping from app loading for instant page loads
   
-- **Streamlit Caching**: `@st.cache_data` decorator for in-memory performance
+- **Streamlit Caching with Auto-Refresh**: `@st.cache_data` decorator for in-memory performance
   - Caches loaded DataFrames to avoid repeated disk reads
-  - Manual refresh button clears cache and reloads from disk
+  - **File Modification Time Tracking**: Automatically detects when CSV files are updated
+    - `get_file_mtime()` helper retrieves file modification timestamps
+    - Timestamps are part of the cache key, so file updates invalidate cached data
+    - Zero overhead - single `os.path.getmtime()` call per request
+  - Manual refresh button available for immediate updates
   - User can see last scrape time in the info popover
   
 - **Update Workflow**: 
-  1. Run `python scraper.py` to fetch fresh data (takes ~10-15 seconds)
-  2. Streamlit app automatically uses updated files on next page load
-  3. Users can click "Refresh Data" button to reload from updated files without restarting app
+  1. **Scheduled Scraper** (Recommended): Set up Replit Scheduled Deployment to run `python scraper.py` daily at 6 AM
+     - Scraper updates CSV files automatically
+     - Next visitor after 6 AM gets fresh data (cache auto-invalidates based on file modification time)
+     - No manual intervention required
+  2. **Manual Scraper**: Run `python scraper.py` anytime to fetch fresh data (takes ~10-15 seconds)
+     - Updates CSV files immediately
+     - App detects changes and reloads data on next page visit
+  3. **Force Refresh**: Users can click "Refresh Data" button to clear cache and reload immediately
 
 ## Data Visualization
 - **Libraries**: Matplotlib and Seaborn
