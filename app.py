@@ -396,7 +396,7 @@ def games_by_date_fragment(combined_df, upcoming_games_df):
 # ==================================================================================== Create Streamlit Display
 # Streamlit App
 
-st.set_page_config(layout="centered")
+st.set_page_config(layout="wide")
 
 # Add custom CSS for modern, cohesive design
 st.markdown("""
@@ -422,6 +422,7 @@ st.markdown("""
         padding-top: 0.1rem;
         padding-bottom: 1rem;
         max-width: 1400px;
+        margin: 0 auto;
     }
     
     hr {
