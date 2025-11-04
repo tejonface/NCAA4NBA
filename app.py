@@ -200,9 +200,9 @@ def scrape_ncaa_schedule():
     else:
         cache_metadata = {}
     
-    # Determine which dates to scrape
+    # Determine which dates to scrape (reduced to 30 days for faster loading)
     dates_to_scrape = []
-    for i in range(150):
+    for i in range(30):
         single_date = get_eastern_today() + timedelta(days=i)
         date_str = single_date.strftime("%Y-%m-%d")
         

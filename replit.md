@@ -91,9 +91,9 @@ Preferred communication style: Simple, everyday language.
      - Manual refresh button clears both caches for immediate updates
 - **Parallel Scraping**: ThreadPoolExecutor with 10 workers
   - Only scrapes missing or stale dates based on file cache metadata
-  - First load: ~30 seconds (all 150 dates in parallel)
-  - Subsequent loads: ~2-3 seconds (only recent dates need refresh)
-  - 95% performance improvement on typical reloads
+  - First load: ~5-10 seconds (all 30 dates in parallel)
+  - Subsequent loads: ~1-2 seconds (only recent dates need refresh)
+  - Optimized from 150 days to 30 days for faster page load and refresh times
 
 ## Data Visualization
 - **Libraries**: Matplotlib and Seaborn
@@ -106,7 +106,7 @@ Preferred communication style: Simple, everyday language.
 ## Code Organization
 - **Modular Functions**: Separate functions for each scraping task
   - `scrape_nba_mock_draft()`: Handles NBA draft data extraction from nbadraft.net
-  - `scrape_ncaa_schedule()`: Scrapes 60 days of NCAA basketball schedules from ESPN (covers ~2 months)
+  - `scrape_ncaa_schedule()`: Scrapes 30 days of NCAA basketball schedules from ESPN (covers ~1 month)
   - `get_players_from_school()`: Matches draft prospects with their upcoming games
   - Promotes code reusability and maintainability
 
@@ -126,7 +126,7 @@ Preferred communication style: Simple, everyday language.
 - **Data Visualization**: Bar chart showing prospect distribution by school/country with white value labels
 - **Smart Caching**: Tiered refresh intervals (30min for soon, 12hr for near-term, 24hr for far-future)
 - **Manual Refresh**: User-triggered data refresh button to clear cache and reload latest schedules
-- **Extended Coverage**: 150-day schedule coverage (through March) allows users to plan ahead for the entire season
+- **Extended Coverage**: 30-day schedule coverage for faster loading (covers next month of games)
 
 # External Dependencies
 
@@ -150,7 +150,7 @@ Preferred communication style: Simple, everyday language.
 - **ESPN**: NCAA basketball schedule data
   - URL pattern: `https://www.espn.com/mens-college-basketball/schedule/_/date/{YYYYMMDD}`
   - Provides daily NCAA basketball game schedules
-  - Scrapes upcoming 150 days starting from today (covers through March, Eastern timezone)
+  - Scrapes upcoming 30 days starting from today (covers next month, Eastern timezone)
   - Data includes team matchups, game times, TV coverage, and venue information
   - Note: Requires User-Agent header for successful requests
 
