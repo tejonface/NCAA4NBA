@@ -475,21 +475,18 @@ with col_title:
     st.title("NBA Prospect Schedule")
 with col_info:
     with st.popover("ℹ️"):
-        st.markdown("### About")
-        st.text("This page helps basketball fans keep track of upcoming NCAA games featuring "
+        st.markdown("**About**")
+        st.caption("This page helps basketball fans keep track of upcoming NCAA games featuring "
                 "top prospects for the 2026 NBA Draft. If you don't follow college basketball "
                 "but want to know when the next potential NBA stars are playing, this is your "
                 "go-to schedule. Check back for updates on key matchups and players to watch.")
-        
-        st.divider()
         
         # Show data info with refresh button
         min_date = combined_df['DATE'].min() if not combined_df.empty else None
         max_date = combined_df['DATE'].max() if not combined_df.empty else None
         if min_date and max_date:
-            st.markdown("### Data Info")
-            st.info(f"📅 Showing games from {min_date.strftime('%b %d, %Y')} to {max_date.strftime('%b %d, %Y')}")
-            st.caption("Data refreshes: 30min (next week), 12hr (next month), 24hr (beyond)")
+            st.markdown("**Data Info**")
+            st.caption(f"📅 {min_date.strftime('%b %d, %Y')} to {max_date.strftime('%b %d, %Y')} • Refreshes: 30min (next week), 12hr (next month), 24hr (beyond)")
             
             if st.button("🔄 Refresh Data", help="Clear cache and reload latest games"):
                 st.cache_data.clear()
