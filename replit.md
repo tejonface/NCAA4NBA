@@ -59,15 +59,18 @@ Preferred communication style: Simple, everyday language.
   1. **File-based Cache**: Persistent JSON storage in `schedule_cache/` directory
      - `ncaa_schedule.json`: Stores all scraped game data
      - `metadata.json`: Tracks last update timestamps for each date
-     - Smart refresh: Recent games (within 7 days) refresh every 30 minutes; future games refresh every 6 hours
+     - Tiered refresh intervals based on game timing:
+       - Within 7 days: Every 30 minutes (games happening soon, schedules change frequently)
+       - 7-30 days: Every 12 hours (schedules more stable)
+       - 30+ days: Every 24 hours (minimal changes expected)
      - Survives app restarts and provides significant performance boost
   2. **Streamlit Cache**: `@st.cache_data` decorator with 1800-second TTL (30 minutes)
      - Second layer on top of file cache for in-memory speed
      - Manual refresh button clears both caches for immediate updates
 - **Parallel Scraping**: ThreadPoolExecutor with 10 workers
   - Only scrapes missing or stale dates based on file cache metadata
-  - First load: ~15 seconds (all 60 dates in parallel)
-  - Subsequent loads: ~2-3 seconds (only 2-3 dates need refresh)
+  - First load: ~30 seconds (all 150 dates in parallel)
+  - Subsequent loads: ~2-3 seconds (only recent dates need refresh)
   - 95% performance improvement on typical reloads
 
 ## Data Visualization
@@ -99,9 +102,9 @@ Preferred communication style: Simple, everyday language.
   - **Session State**: Selected date persists across page interactions and refreshes
 - **Prospect Tracking**: Automatically matches NCAA players with their draft rankings
 - **Data Visualization**: Bar chart showing prospect distribution by school/country with white value labels
-- **Real-Time Data**: 1-hour cache refresh for up-to-date information
+- **Smart Caching**: Tiered refresh intervals (30min for soon, 12hr for near-term, 24hr for far-future)
 - **Manual Refresh**: User-triggered data refresh button to clear cache and reload latest schedules
-- **Extended Coverage**: 60-day schedule coverage allows users to plan ahead for the rest of the season
+- **Extended Coverage**: 150-day schedule coverage (through March) allows users to plan ahead for the entire season
 
 # External Dependencies
 
@@ -125,7 +128,7 @@ Preferred communication style: Simple, everyday language.
 - **ESPN**: NCAA basketball schedule data
   - URL pattern: `https://www.espn.com/mens-college-basketball/schedule/_/date/{YYYYMMDD}`
   - Provides daily NCAA basketball game schedules
-  - Scrapes upcoming 60 days starting from today (Eastern timezone)
+  - Scrapes upcoming 150 days starting from today (covers through March, Eastern timezone)
   - Data includes team matchups, game times, TV coverage, and venue information
   - Note: Requires User-Agent header for successful requests
 

@@ -129,41 +129,61 @@ def load_cache():
     return {}
 
 # Save cache data
-def save_cache(cache_data):
+def save_cache(cache_data, dates_scraped=None):
     """Save schedule data to cache file"""
     with open(CACHE_FILE, 'w') as f:
         json.dump(cache_data, f)
     
-    # Update metadata with Eastern time
-    metadata = {
-        'last_updated': get_eastern_now().isoformat(),
-        'dates_cached': list(cache_data.keys())
-    }
+    # Load existing metadata to preserve per-date timestamps
+    if os.path.exists(CACHE_METADATA_FILE):
+        with open(CACHE_METADATA_FILE, 'r') as f:
+            metadata = json.load(f)
+        # Migrate from old format if needed
+        if 'date_timestamps' not in metadata:
+            metadata['date_timestamps'] = {}
+    else:
+        metadata = {'date_timestamps': {}}
+    
+    # Update timestamps for newly scraped dates
+    if dates_scraped:
+        for date_str in dates_scraped:
+            metadata['date_timestamps'][date_str] = get_eastern_now().isoformat()
+    
+    # Keep track of all cached dates
+    metadata['dates_cached'] = list(cache_data.keys())
+    
     with open(CACHE_METADATA_FILE, 'w') as f:
         json.dump(metadata, f)
 
-# Check if date needs refresh (older than 30 minutes)
+# Check if date needs refresh with tiered intervals
 def needs_refresh(date_str, cache_metadata):
     """Check if a specific date's data needs refreshing"""
     if not os.path.exists(CACHE_METADATA_FILE):
         return True
     
-    # Recent dates (within 7 days) refresh every 30 minutes
-    # Future dates refresh every 6 hours
+    # Tiered refresh intervals based on how far out the game is:
+    # - Within 7 days: refresh every 30 minutes (games happening soon)
+    # - 7-30 days: refresh every 12 hours (schedules more stable)
+    # - 30+ days: refresh every 24 hours (minimal changes)
     target_date = datetime.strptime(date_str, "%Y-%m-%d").date()
     days_diff = (target_date - get_eastern_today()).days
     
     if days_diff < 7:
         max_age = timedelta(minutes=30)
+    elif days_diff < 30:
+        max_age = timedelta(hours=12)
     else:
-        max_age = timedelta(hours=6)
+        max_age = timedelta(hours=24)
     
-    if cache_metadata and 'last_updated' in cache_metadata:
-        last_update = datetime.fromisoformat(cache_metadata['last_updated'])
-        # Make last_update timezone-aware if it's not
-        if last_update.tzinfo is None:
-            last_update = last_update.replace(tzinfo=ZoneInfo("America/New_York"))
-        return get_eastern_now() - last_update > max_age
+    # Check per-date timestamp from metadata
+    if cache_metadata and 'date_timestamps' in cache_metadata:
+        date_timestamps = cache_metadata['date_timestamps']
+        if date_str in date_timestamps:
+            last_update = datetime.fromisoformat(date_timestamps[date_str])
+            # Make last_update timezone-aware if it's not
+            if last_update.tzinfo is None:
+                last_update = last_update.replace(tzinfo=ZoneInfo("America/New_York"))
+            return get_eastern_now() - last_update > max_age
     
     return True
 
@@ -182,7 +202,7 @@ def scrape_ncaa_schedule():
     
     # Determine which dates to scrape
     dates_to_scrape = []
-    for i in range(60):
+    for i in range(150):
         single_date = get_eastern_today() + timedelta(days=i)
         date_str = single_date.strftime("%Y-%m-%d")
         
@@ -207,8 +227,9 @@ def scrape_ncaa_schedule():
                 except Exception as e:
                     print(f"Error processing {single_date}: {e}")
         
-        # Save updated cache
-        save_cache(cache_data)
+        # Save updated cache with newly scraped dates
+        scraped_date_strs = [d.strftime("%Y-%m-%d") for d in dates_to_scrape]
+        save_cache(cache_data, scraped_date_strs)
     
     # Convert cached data to DataFrame
     all_records = []
@@ -468,7 +489,7 @@ with col_info:
         if min_date and max_date:
             st.markdown("### Data Info")
             st.info(f"📅 Showing games from {min_date.strftime('%b %d, %Y')} to {max_date.strftime('%b %d, %Y')}")
-            st.caption("Data refreshes every hour")
+            st.caption("Data refreshes: 30min (next week), 12hr (next month), 24hr (beyond)")
             
             if st.button("🔄 Refresh Data", help="Clear cache and reload latest games"):
                 st.cache_data.clear()
