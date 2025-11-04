@@ -150,6 +150,66 @@ def scrape_single_date(single_date):
         return None
 
 
+# Function to scrape a specific date range
+def scrape_date_range(start_date, end_date):
+    """Scrape NCAA schedule for a specific date range
+    
+    Args:
+        start_date: date object for start of range
+        end_date: date object for end of range
+    
+    Returns:
+        DataFrame with games in the date range
+    """
+    print(f"Scraping date range: {start_date} to {end_date}")
+    
+    all_data = {}
+    batch_dates = []
+    current_date = start_date
+    
+    while current_date <= end_date:
+        batch_dates.append(current_date)
+        current_date += timedelta(days=1)
+    
+    print(f"Scraping {len(batch_dates)} dates...")
+    
+    # Scrape in parallel
+    with ThreadPoolExecutor(max_workers=10) as executor:
+        future_to_date = {executor.submit(scrape_single_date, d): d for d in batch_dates}
+        
+        for future in as_completed(future_to_date):
+            single_date = future_to_date[future]
+            try:
+                result = future.result()
+                date_str = single_date.strftime("%Y-%m-%d")
+                
+                if result:
+                    all_data[date_str] = result
+                    print(f"✓ Scraped {date_str} ({len(result)} games)")
+            except Exception as e:
+                print(f"✗ Error processing {single_date}: {e}")
+    
+    # Convert to DataFrame
+    all_records = []
+    for date_str in sorted(all_data.keys()):
+        all_records.extend(all_data[date_str])
+    
+    combined_df = pd.DataFrame(all_records)
+    if not combined_df.empty:
+        combined_df['DATE'] = pd.to_datetime(combined_df['DATE']).dt.date
+        # Rename columns to proper names before saving
+        combined_df = combined_df.rename(columns={
+            'MATCHUP': 'AWAY',
+            '': 'HOME',
+            'tickets': 'TICKETS',
+            'location': 'LOCATION',
+            'logo espnbet': 'ODDS_BY'
+        })
+    
+    print(f"✓ Scraped {len(combined_df)} games from {len(all_data)} dates with games")
+    return combined_df
+
+
 # Main function to scrape NCAA schedule
 def scrape_ncaa_schedule(max_consecutive_empty=10):
     """Scrape NCAA schedule until we hit max_consecutive_empty days with no games
@@ -234,6 +294,127 @@ def scrape_ncaa_schedule(max_consecutive_empty=10):
     return combined_df
 
 
+# =================================================================== Smart Update Functions
+
+def load_metadata():
+    """Load scrape metadata from file"""
+    if os.path.exists(SCRAPE_METADATA_FILE):
+        with open(SCRAPE_METADATA_FILE, 'r') as f:
+            return json.load(f)
+    return {
+        "last_scrape_time": None,
+        "draft_prospects_count": 0,
+        "games_count": 0,
+        "scraper_version": "2.0",
+        "last_today_scrape": None,
+        "last_nearfuture_scrape": None,
+        "last_full_scrape": None
+    }
+
+
+def update_schedule_partial(date_range_name, start_date, end_date):
+    """Update only a specific date range in the schedule
+    
+    Args:
+        date_range_name: "today", "nearfuture" (next 7 days), or "full"
+        start_date: Start date for scraping
+        end_date: End date for scraping
+    
+    Returns:
+        True if update succeeded, False otherwise
+    """
+    print(f"\n{'='*60}")
+    print(f"Partial Schedule Update: {date_range_name}")
+    print(f"Date range: {start_date} to {end_date}")
+    print("="*60 + "\n")
+    
+    try:
+        # Scrape the new data for this range
+        new_data = scrape_date_range(start_date, end_date)
+        
+        if new_data.empty:
+            print(f"⚠ No games found in range {start_date} to {end_date}")
+            return False
+        
+        # Load existing schedule data
+        if os.path.exists(SCHEDULE_DATA_FILE):
+            existing_df = pd.read_csv(SCHEDULE_DATA_FILE)
+            existing_df['DATE'] = pd.to_datetime(existing_df['DATE']).dt.date
+            
+            # Remove old data from this date range
+            existing_df = existing_df[
+                (existing_df['DATE'] < start_date) | (existing_df['DATE'] > end_date)
+            ]
+            
+            # Combine with new data
+            combined_df = pd.concat([existing_df, new_data], ignore_index=True)
+            combined_df = combined_df.sort_values('DATE').reset_index(drop=True)
+        else:
+            combined_df = new_data
+        
+        # Save updated schedule
+        backup_file(SCHEDULE_DATA_FILE)
+        save_with_atomic_write(combined_df, SCHEDULE_DATA_FILE, f"schedule data ({date_range_name})")
+        
+        # Update metadata
+        metadata = load_metadata()
+        metadata[f"last_{date_range_name}_scrape"] = get_eastern_now().isoformat()
+        metadata["games_count"] = len(combined_df)
+        
+        temp_metadata_path = SCRAPE_METADATA_FILE + ".tmp"
+        with open(temp_metadata_path, 'w') as f:
+            json.dump(metadata, f, indent=2)
+        os.replace(temp_metadata_path, SCRAPE_METADATA_FILE)
+        
+        print(f"\n✓ Updated {date_range_name} schedule: {len(new_data)} games")
+        print("="*60 + "\n")
+        return True
+        
+    except Exception as e:
+        print(f"\n✗ Error updating {date_range_name} schedule: {e}")
+        print("="*60 + "\n")
+        return False
+
+
+def update_draft_data():
+    """Update draft board data
+    
+    Returns:
+        True if update succeeded, False otherwise
+    """
+    print(f"\n{'='*60}")
+    print("Updating Draft Board")
+    print("="*60 + "\n")
+    
+    try:
+        draft_url = "https://www.nbadraft.net/nba-mock-drafts/?year-mock=2026"
+        draft_df = scrape_nba_mock_draft(draft_url)
+        
+        validate_data(draft_df, min_rows=30, data_type="Draft prospects")
+        
+        backup_file(DRAFT_DATA_FILE)
+        save_with_atomic_write(draft_df, DRAFT_DATA_FILE, "draft data")
+        
+        # Update metadata
+        metadata = load_metadata()
+        metadata["draft_prospects_count"] = len(draft_df)
+        metadata["last_scrape_time"] = get_eastern_now().isoformat()
+        
+        temp_metadata_path = SCRAPE_METADATA_FILE + ".tmp"
+        with open(temp_metadata_path, 'w') as f:
+            json.dump(metadata, f, indent=2)
+        os.replace(temp_metadata_path, SCRAPE_METADATA_FILE)
+        
+        print(f"\n✓ Updated draft data: {len(draft_df)} prospects")
+        print("="*60 + "\n")
+        return True
+        
+    except Exception as e:
+        print(f"\n✗ Error updating draft data: {e}")
+        print("="*60 + "\n")
+        return False
+
+
 # =================================================================== Main Scraping Function
 
 def run_scraper():
@@ -277,7 +458,10 @@ def run_scraper():
             "last_scrape_time": scrape_time,
             "draft_prospects_count": len(draft_df),
             "games_count": len(schedule_df),
-            "scraper_version": "1.1"
+            "scraper_version": "2.0",
+            "last_today_scrape": scrape_time,
+            "last_nearfuture_scrape": scrape_time,
+            "last_full_scrape": scrape_time
         }
         
         backup_file(SCRAPE_METADATA_FILE)

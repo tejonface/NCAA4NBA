@@ -2,7 +2,7 @@ modules = ["python-3.11"]
 
 [nix]
 channel = "stable-25_05"
-packages = ["cairo", "ffmpeg-full", "freetype", "ghostscript", "gobject-introspection", "gtk3", "pkg-config", "qhull", "tcl", "tk", "xcodebuild", "zlib"]
+packages = ["cairo", "ffmpeg-full", "freetype", "ghostscript", "glibcLocales", "gobject-introspection", "gtk3", "pkg-config", "qhull", "tcl", "tk", "xcodebuild", "zlib"]
 
 [deployment]
 deploymentTarget = "autoscale"
@@ -38,6 +38,10 @@ waitForPort = 5000
 [[ports]]
 localPort = 5000
 externalPort = 80
+
+[[ports]]
+localPort = 43859
+externalPort = 3001
 
 [[ports]]
 localPort = 45879

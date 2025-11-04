@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 from tabulate import tabulate as tab
 import json
 import os
+import logging
 
 # File paths for loading data
 DATA_DIR = "data"
@@ -23,6 +24,28 @@ def get_eastern_now():
 def get_eastern_today():
     """Get today's date in Eastern timezone"""
     return get_eastern_now().date()
+
+
+# =================================================================== Background Scheduler Setup
+
+@st.cache_resource
+def get_background_scheduler():
+    """Initialize and start background scheduler (singleton)
+    
+    Uses @st.cache_resource to ensure only one scheduler instance across all sessions
+    """
+    try:
+        from background_scheduler import DataRefreshScheduler
+        scheduler = DataRefreshScheduler()
+        scheduler.start()
+        logging.info("Background scheduler initialized and started")
+        return scheduler
+    except Exception as e:
+        logging.error(f"Failed to start background scheduler: {e}")
+        return None
+
+# Initialize scheduler on app load (runs once)
+background_scheduler = get_background_scheduler()
 
 
 # =================================================================== Load Data from Files
@@ -294,19 +317,65 @@ def get_team_logo(team_name):
 # Replace team names with logo URLs
 draft_with_games['Team'] = draft_with_games['Team'].apply(get_team_logo)
 
+# ==================================================================================== Live Game Detection
+def detect_live_games(row):
+    """Detect if a game is live, upcoming, or final based on current time
+    
+    Returns status: 'Live', 'Final', or the formatted game time
+    """
+    if pd.isna(row['DATE']) or pd.isna(row['TIME']):
+        return ""
+    
+    try:
+        date_obj = row['DATE'] if isinstance(row['DATE'], date) else pd.to_datetime(row['DATE']).date()
+        time_str = str(row['TIME']).strip().upper()
+        
+        # Handle TBD and special cases
+        if time_str in ['TBD', 'TBA', '']:
+            return "TBD"
+        
+        # Parse game time
+        current_et = get_eastern_now()
+        today_et = current_et.date()
+        
+        # Only check live status for today's games
+        if date_obj != today_et:
+            # Future or past games - just return formatted time
+            month_day = date_obj.strftime('%b %-d')
+            return f"{month_day}, {time_str}" if time_str not in ['TBD', 'TBA'] else f"{month_day}, TBD"
+        
+        # For today's games, check if live
+        try:
+            # Parse time like "7:00 PM" or "12:30 PM"
+            from datetime import datetime as dt
+            game_time_obj = dt.strptime(time_str, '%I:%M %p').time()
+            game_datetime = datetime.combine(date_obj, game_time_obj, tzinfo=ZoneInfo("America/New_York"))
+            
+            # Game is typically 2-2.5 hours long
+            # Consider "Live" if within game time window (start time to +3 hours)
+            time_diff = (current_et - game_datetime).total_seconds() / 60  # minutes
+            
+            if -15 <= time_diff <= 180:  # 15 min before start to 3 hours after
+                return "🔴 Live"
+            elif time_diff > 180:
+                return "Final"
+            else:
+                # Game hasn't started yet (today)
+                return f"Today, {time_str}"
+        except:
+            # If time parsing fails, just show the time
+            return f"Today, {time_str}"
+            
+    except Exception as e:
+        return ""
+
+
 # ==================================================================================== Format Game Time (ET) Column
 # Helper function to format date and time
 def format_game_time(row):
-    """Format DATE and TIME into 'Nov 8, 9:00 PM' format"""
-    if pd.isna(row['DATE']) or pd.isna(row['TIME']):
-        return ""
-    try:
-        date_obj = row['DATE'] if isinstance(row['DATE'], date) else pd.to_datetime(row['DATE']).date()
-        month_day = date_obj.strftime('%b %-d')  # e.g., "Nov 8"
-        time_str = str(row['TIME']).strip()
-        return f"{month_day}, {time_str}" if time_str else month_day
-    except:
-        return ""
+    """Format DATE and TIME into 'Nov 8, 9:00 PM' format or detect live games"""
+    # Use live game detection which includes formatting
+    return detect_live_games(row)
 
 # Create formatted Game Time column for draft board
 draft_with_games['Game Time (ET)'] = draft_with_games.apply(format_game_time, axis=1)
