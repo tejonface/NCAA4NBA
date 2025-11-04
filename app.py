@@ -486,9 +486,16 @@ st.markdown("""
         }
     }
     
-    /* Apply background and text colors to main app */
-    .theme-dark, .theme-dark .main, 
+    /* Apply background and text colors to main app for dark mode */
+    .theme-dark,
+    .theme-dark .main {
+        background-color: var(--bg-light);
+        color: var(--text-primary);
+    }
+    
+    /* Apply dark mode styles when system preference is dark and theme is auto */
     @media (prefers-color-scheme: dark) {
+        .theme-auto,
         .theme-auto .main {
             background-color: var(--bg-light);
             color: var(--text-primary);
