@@ -312,8 +312,8 @@ ax.set_xlabel("Number of NBA Prospects")
 ax.set_ylabel("School/Country")
 # ax.set_title("Schools with Most NBA Prospects in 2025 Draft")
 
-# Rotate the labels for better readability if needed
-plt.xticks(rotation=30)
+# Set x-axis ticks to only show 0, 1, 2, 3
+ax.set_xticks([0, 1, 2, 3])
 
 # Display the plot in Streamlit
 st.header("NBA Prospect Distribution by School/Country")
