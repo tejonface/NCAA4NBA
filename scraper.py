@@ -6,6 +6,7 @@ from zoneinfo import ZoneInfo
 import json
 import os
 import shutil
+import threading
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 # File paths for saving data
@@ -16,6 +17,9 @@ SCRAPE_METADATA_FILE = os.path.join(DATA_DIR, "scrape_metadata.json")
 
 # Ensure data directory exists
 os.makedirs(DATA_DIR, exist_ok=True)
+
+# Global lock for thread-safe file updates
+_file_update_lock = threading.Lock()
 
 # Helper functions for Eastern timezone
 def get_eastern_now():
@@ -336,35 +340,37 @@ def update_schedule_partial(date_range_name, start_date, end_date):
             print(f"⚠ No games found in range {start_date} to {end_date}")
             return False
         
-        # Load existing schedule data
-        if os.path.exists(SCHEDULE_DATA_FILE):
-            existing_df = pd.read_csv(SCHEDULE_DATA_FILE)
-            existing_df['DATE'] = pd.to_datetime(existing_df['DATE']).dt.date
+        # CRITICAL: Acquire lock before read-modify-write to prevent race conditions
+        with _file_update_lock:
+            # Load existing schedule data
+            if os.path.exists(SCHEDULE_DATA_FILE):
+                existing_df = pd.read_csv(SCHEDULE_DATA_FILE)
+                existing_df['DATE'] = pd.to_datetime(existing_df['DATE']).dt.date
+                
+                # Remove old data from this date range
+                existing_df = existing_df[
+                    (existing_df['DATE'] < start_date) | (existing_df['DATE'] > end_date)
+                ]
+                
+                # Combine with new data
+                combined_df = pd.concat([existing_df, new_data], ignore_index=True)
+                combined_df = combined_df.sort_values('DATE').reset_index(drop=True)
+            else:
+                combined_df = new_data
             
-            # Remove old data from this date range
-            existing_df = existing_df[
-                (existing_df['DATE'] < start_date) | (existing_df['DATE'] > end_date)
-            ]
+            # Save updated schedule
+            backup_file(SCHEDULE_DATA_FILE)
+            save_with_atomic_write(combined_df, SCHEDULE_DATA_FILE, f"schedule data ({date_range_name})")
             
-            # Combine with new data
-            combined_df = pd.concat([existing_df, new_data], ignore_index=True)
-            combined_df = combined_df.sort_values('DATE').reset_index(drop=True)
-        else:
-            combined_df = new_data
-        
-        # Save updated schedule
-        backup_file(SCHEDULE_DATA_FILE)
-        save_with_atomic_write(combined_df, SCHEDULE_DATA_FILE, f"schedule data ({date_range_name})")
-        
-        # Update metadata
-        metadata = load_metadata()
-        metadata[f"last_{date_range_name}_scrape"] = get_eastern_now().isoformat()
-        metadata["games_count"] = len(combined_df)
-        
-        temp_metadata_path = SCRAPE_METADATA_FILE + ".tmp"
-        with open(temp_metadata_path, 'w') as f:
-            json.dump(metadata, f, indent=2)
-        os.replace(temp_metadata_path, SCRAPE_METADATA_FILE)
+            # Update metadata
+            metadata = load_metadata()
+            metadata[f"last_{date_range_name}_scrape"] = get_eastern_now().isoformat()
+            metadata["games_count"] = len(combined_df)
+            
+            temp_metadata_path = SCRAPE_METADATA_FILE + ".tmp"
+            with open(temp_metadata_path, 'w') as f:
+                json.dump(metadata, f, indent=2)
+            os.replace(temp_metadata_path, SCRAPE_METADATA_FILE)
         
         print(f"\n✓ Updated {date_range_name} schedule: {len(new_data)} games")
         print("="*60 + "\n")
@@ -392,18 +398,20 @@ def update_draft_data():
         
         validate_data(draft_df, min_rows=30, data_type="Draft prospects")
         
-        backup_file(DRAFT_DATA_FILE)
-        save_with_atomic_write(draft_df, DRAFT_DATA_FILE, "draft data")
-        
-        # Update metadata
-        metadata = load_metadata()
-        metadata["draft_prospects_count"] = len(draft_df)
-        metadata["last_scrape_time"] = get_eastern_now().isoformat()
-        
-        temp_metadata_path = SCRAPE_METADATA_FILE + ".tmp"
-        with open(temp_metadata_path, 'w') as f:
-            json.dump(metadata, f, indent=2)
-        os.replace(temp_metadata_path, SCRAPE_METADATA_FILE)
+        # CRITICAL: Acquire lock before file updates to prevent race conditions
+        with _file_update_lock:
+            backup_file(DRAFT_DATA_FILE)
+            save_with_atomic_write(draft_df, DRAFT_DATA_FILE, "draft data")
+            
+            # Update metadata
+            metadata = load_metadata()
+            metadata["draft_prospects_count"] = len(draft_df)
+            metadata["last_scrape_time"] = get_eastern_now().isoformat()
+            
+            temp_metadata_path = SCRAPE_METADATA_FILE + ".tmp"
+            with open(temp_metadata_path, 'w') as f:
+                json.dump(metadata, f, indent=2)
+            os.replace(temp_metadata_path, SCRAPE_METADATA_FILE)
         
         print(f"\n✓ Updated draft data: {len(draft_df)} prospects")
         print("="*60 + "\n")
