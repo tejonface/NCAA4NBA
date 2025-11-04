@@ -92,6 +92,18 @@ Preferred communication style: Simple, everyday language.
   - Automatically strips asterisks from projected picks (e.g., "*Utah" → Utah logo)
   - ImageColumn configuration shows logos at optimal "medium" size for table readability
 - **Super Matchups**: Highlights games featuring top draft prospects on both teams
+  - **Player Formatting**: Players grouped by school with clean multi-line display
+  - Format shows school name as header with bullet-pointed players beneath:
+    ```
+    Florida:
+      • #15 Boogie Fland
+      • #28 Thomas Haugh
+    
+    Arizona:
+      • #23 Brayden Burries
+    ```
+  - Table height increased to 600px to accommodate multi-line rows
+  - Players column uses TextColumn configuration with "large" width for readability
 - **Date Selection**: Simple interactive calendar with clean UX
   - **Game Counts**: Displays number of unique matchups for selected date (e.g., "5 games on Monday, November 4, 2025")
   - **Empty State Handling**: Shows clear message when no games scheduled
