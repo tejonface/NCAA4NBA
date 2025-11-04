@@ -763,9 +763,14 @@ with col2:
     st.text("")
 
 with col3:
+    # Create clickable logo using HTML
+    import base64
+    with open("static/logo.png", "rb") as img_file:
+        img_data = base64.b64encode(img_file.read()).decode()
+    
     st.markdown(
-        '<a href="https://www.jstew.info/" target="_blank">'
-        '<img src="app/static/logo.png" width="200">'
-        '</a>',
+        f'<a href="https://www.jstew.info/" target="_blank">'
+        f'<img src="data:image/png;base64,{img_data}" width="200">'
+        f'</a>',
         unsafe_allow_html=True
     )
