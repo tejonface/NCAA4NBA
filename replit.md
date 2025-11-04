@@ -24,7 +24,10 @@ Preferred communication style: Simple, everyday language.
     - Background colors: #f0f2f6 (inactive), #4CAF50 green (active)
     - Hover effects (#e0e3e9) for better interactivity
     - Rounded corners and 8px spacing between tabs
-  - **Header Layout**: Title and description with refresh button positioned inline next to data info banner
+  - **Header Layout**: Clean title with info popover (ℹ️ icon)
+    - Popover contains "About" section with app description
+    - Popover contains "Data Info" section with date range, refresh interval, and refresh button
+    - Minimizes clutter while keeping info accessible
 - **Timezone Handling**: Eastern Time (America/New_York)
   - All date calculations use Eastern timezone (standard for US college basketball)
   - Helper functions: `get_eastern_now()` and `get_eastern_today()`
