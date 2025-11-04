@@ -125,7 +125,7 @@ Preferred communication style: Simple, everyday language.
 - **ESPN**: NCAA basketball schedule data
   - URL pattern: `https://www.espn.com/mens-college-basketball/schedule/_/date/{YYYYMMDD}`
   - Provides daily NCAA basketball game schedules
-  - Scrapes upcoming 60 days starting from yesterday (to account for timezone differences)
+  - Scrapes upcoming 60 days starting from today (Eastern timezone)
   - Data includes team matchups, game times, TV coverage, and venue information
   - Note: Requires User-Agent header for successful requests
 

@@ -183,7 +183,7 @@ def scrape_ncaa_schedule():
     # Determine which dates to scrape
     dates_to_scrape = []
     for i in range(60):
-        single_date = get_eastern_today() + timedelta(days=-1 + i)
+        single_date = get_eastern_today() + timedelta(days=i)
         date_str = single_date.strftime("%Y-%m-%d")
         
         # Check if we need to refresh this date
