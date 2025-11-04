@@ -1,7 +1,5 @@
 import streamlit as st
 import pandas as pd
-import requests
-from bs4 import BeautifulSoup
 from datetime import date, timedelta, datetime
 from zoneinfo import ZoneInfo
 import numpy as np
@@ -10,7 +8,12 @@ import matplotlib.pyplot as plt
 from tabulate import tabulate as tab
 import json
 import os
-from concurrent.futures import ThreadPoolExecutor, as_completed
+
+# File paths for loading data
+DATA_DIR = "data"
+DRAFT_DATA_FILE = os.path.join(DATA_DIR, "draft_data.csv")
+SCHEDULE_DATA_FILE = os.path.join(DATA_DIR, "schedule_data.csv")
+SCRAPE_METADATA_FILE = os.path.join(DATA_DIR, "scrape_metadata.json")
 
 # Helper functions for Eastern timezone
 def get_eastern_now():
@@ -22,228 +25,44 @@ def get_eastern_today():
     return get_eastern_now().date()
 
 
+# =================================================================== Load Data from Files
 
-# =================================================================== Scrape NBA Draft Board
-# Function to scrape NBA draft board tables
-@st.cache_data(ttl=1800)
-def scrape_nba_mock_draft(url):
-    response = requests.get(url)
-    response.raise_for_status()
-    soup = BeautifulSoup(response.content, "html.parser")
+@st.cache_data
+def load_draft_data():
+    """Load draft board data from CSV file"""
+    if os.path.exists(DRAFT_DATA_FILE):
+        return pd.read_csv(DRAFT_DATA_FILE)
+    else:
+        st.error(f"Draft data file not found. Please run `python scraper.py` to generate data.")
+        return pd.DataFrame()
 
-    all_data = []  # List to store data from both tables
-
-    for table_id in ["nba_mock_consensus_table", "nba_mock_consensus_table2"]:
-        table = soup.find("table", {"id": table_id})
-        if table:
-            rows = table.find("tbody").find_all("tr")
-            for row in rows:
-                cols = row.find_all("td")
-                cols = [col.text.strip() for col in cols]
-                all_data.append(cols)  # Append data to the common list
-
-    df = pd.DataFrame(all_data)  # Create DataFrame from combined data
-    # Assign column names (assuming they are the same for both tables)
-    df.columns = ["Rank", "Team", "Player", "H", "W", "P", "School", "C"]
-    return df
-
-
-# Scrape draft data
-draft_url = "https://www.nbadraft.net/nba-mock-drafts/?year-mock=2026"
-draft_df = scrape_nba_mock_draft(draft_url)
-
-
-
-# =================================================================== Scrape NCAA Schedule
-
-# File paths for caching
-CACHE_DIR = "schedule_cache"
-CACHE_FILE = os.path.join(CACHE_DIR, "ncaa_schedule.json")
-CACHE_METADATA_FILE = os.path.join(CACHE_DIR, "metadata.json")
-
-# Create cache directory if it doesn't exist
-os.makedirs(CACHE_DIR, exist_ok=True)
-
-# Helper function to extract cell content (handles both text and images)
-def extract_cell_content(cell):
-    """Extract content from a table cell, checking for images (TV logos) first"""
-    # Check if cell contains an image (common for TV networks)
-    img = cell.find("img")
-    if img:
-        # Try to get alt text first
-        alt_text = img.get("alt", "")
-        
-        # Only use alt text if it looks like a real network name (not base64 placeholder)
-        # ESPN uses lazy loading with base64 placeholders like "YH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
-        if alt_text and len(alt_text) < 20 and not alt_text.startswith("YH5"):
-            return alt_text.strip()
-        
-        # If no valid alt text, try to extract from src URL
-        src = img.get("src", "")
-        if src and "network" in src:
-            # Extract network name from URL like "/i/network/espn_plus.png" -> "ESPN+"
-            parts = src.split("/")
-            if parts:
-                filename = parts[-1].replace(".png", "").replace(".jpg", "").replace("_", " ")
-                return filename.strip().upper()
-    
-    # Fall back to text content
-    return cell.text.strip()
-
-# Function to scrape a single date
-def scrape_single_date(single_date):
-    """Scrape NCAA schedule for a single date"""
-    date_str = single_date.strftime("%Y%m%d")
-    url = f"https://www.espn.com/mens-college-basketball/schedule/_/date/{date_str}"
-    headers = {"User-Agent": "Mozilla/5.0"}
-    
-    try:
-        response = requests.get(url, headers=headers, timeout=10)
-        soup = BeautifulSoup(response.content, "html.parser")
-        
-        table = soup.find("table")
-        if not table:
-            return None
-        
-        rows = table.find_all("tr")
-        # Use helper function to extract content from each cell
-        data = [[extract_cell_content(col) for col in row.find_all(["th", "td"])] for row in rows if row.find_all(["th", "td"])]
-        
-        df = pd.DataFrame(data)
+@st.cache_data
+def load_schedule_data():
+    """Load schedule data from CSV file"""
+    if os.path.exists(SCHEDULE_DATA_FILE):
+        df = pd.read_csv(SCHEDULE_DATA_FILE)
         if not df.empty:
-            df.columns = df.iloc[0]
-            df = df.drop(0).reset_index(drop=True)
-            df.columns = [df.columns[0]] + [''] + list(df.columns[1:-1])
-            df["DATE"] = single_date.strftime("%Y-%m-%d")
-            return df.to_dict('records')
-    except Exception as e:
-        print(f"Error scraping {date_str}: {e}")
-        return None
+            df['DATE'] = pd.to_datetime(df['DATE']).dt.date
+        return df
+    else:
+        st.error(f"Schedule data file not found. Please run `python scraper.py` to generate data.")
+        return pd.DataFrame()
 
-# Load cached data
-def load_cache():
-    """Load cached schedule data from file"""
-    if os.path.exists(CACHE_FILE):
-        with open(CACHE_FILE, 'r') as f:
+def load_metadata():
+    """Load scrape metadata"""
+    if os.path.exists(SCRAPE_METADATA_FILE):
+        with open(SCRAPE_METADATA_FILE, 'r') as f:
             return json.load(f)
-    return {}
+    return None
 
-# Save cache data
-def save_cache(cache_data, dates_scraped=None):
-    """Save schedule data to cache file"""
-    with open(CACHE_FILE, 'w') as f:
-        json.dump(cache_data, f)
-    
-    # Load existing metadata to preserve per-date timestamps
-    if os.path.exists(CACHE_METADATA_FILE):
-        with open(CACHE_METADATA_FILE, 'r') as f:
-            metadata = json.load(f)
-        # Migrate from old format if needed
-        if 'date_timestamps' not in metadata:
-            metadata['date_timestamps'] = {}
-    else:
-        metadata = {'date_timestamps': {}}
-    
-    # Update timestamps for newly scraped dates
-    if dates_scraped:
-        for date_str in dates_scraped:
-            metadata['date_timestamps'][date_str] = get_eastern_now().isoformat()
-    
-    # Keep track of all cached dates
-    metadata['dates_cached'] = list(cache_data.keys())
-    
-    with open(CACHE_METADATA_FILE, 'w') as f:
-        json.dump(metadata, f)
+# Load data
+draft_df = load_draft_data()
+combined_df = load_schedule_data()
+metadata = load_metadata()
 
-# Check if date needs refresh with tiered intervals
-def needs_refresh(date_str, cache_metadata):
-    """Check if a specific date's data needs refreshing"""
-    if not os.path.exists(CACHE_METADATA_FILE):
-        return True
-    
-    # Tiered refresh intervals based on how far out the game is:
-    # - Within 7 days: refresh every 30 minutes (games happening soon)
-    # - 7-30 days: refresh every 12 hours (schedules more stable)
-    # - 30+ days: refresh every 24 hours (minimal changes)
-    target_date = datetime.strptime(date_str, "%Y-%m-%d").date()
-    days_diff = (target_date - get_eastern_today()).days
-    
-    if days_diff < 7:
-        max_age = timedelta(minutes=30)
-    elif days_diff < 30:
-        max_age = timedelta(hours=12)
-    else:
-        max_age = timedelta(hours=24)
-    
-    # Check per-date timestamp from metadata
-    if cache_metadata and 'date_timestamps' in cache_metadata:
-        date_timestamps = cache_metadata['date_timestamps']
-        if date_str in date_timestamps:
-            last_update = datetime.fromisoformat(date_timestamps[date_str])
-            # Make last_update timezone-aware if it's not
-            if last_update.tzinfo is None:
-                last_update = last_update.replace(tzinfo=ZoneInfo("America/New_York"))
-            return get_eastern_now() - last_update > max_age
-    
-    return True
-
-# Main function to get NCAA schedule with caching and parallel scraping
-@st.cache_data(ttl=1800)  # 30-minute Streamlit cache on top of file cache
-def scrape_ncaa_schedule():
-    """Scrape NCAA schedule with file caching and parallel processing"""
-    cache_data = load_cache()
-    
-    # Load metadata
-    if os.path.exists(CACHE_METADATA_FILE):
-        with open(CACHE_METADATA_FILE, 'r') as f:
-            cache_metadata = json.load(f)
-    else:
-        cache_metadata = {}
-    
-    # Determine which dates to scrape (reduced to 30 days for faster loading)
-    dates_to_scrape = []
-    for i in range(30):
-        single_date = get_eastern_today() + timedelta(days=i)
-        date_str = single_date.strftime("%Y-%m-%d")
-        
-        # Check if we need to refresh this date
-        if date_str not in cache_data or needs_refresh(date_str, cache_metadata):
-            dates_to_scrape.append(single_date)
-    
-    # Scrape missing dates in parallel
-    if dates_to_scrape:
-        print(f"Scraping {len(dates_to_scrape)} dates in parallel...")
-        with ThreadPoolExecutor(max_workers=10) as executor:
-            future_to_date = {executor.submit(scrape_single_date, d): d for d in dates_to_scrape}
-            
-            for future in as_completed(future_to_date):
-                single_date = future_to_date[future]
-                try:
-                    result = future.result()
-                    if result:
-                        date_str = single_date.strftime("%Y-%m-%d")
-                        cache_data[date_str] = result
-                        print(f"Scraped {date_str}")
-                except Exception as e:
-                    print(f"Error processing {single_date}: {e}")
-        
-        # Save updated cache with newly scraped dates
-        scraped_date_strs = [d.strftime("%Y-%m-%d") for d in dates_to_scrape]
-        save_cache(cache_data, scraped_date_strs)
-    
-    # Convert cached data to DataFrame
-    all_records = []
-    for date_str in sorted(cache_data.keys()):
-        all_records.extend(cache_data[date_str])
-    
-    combined_df = pd.DataFrame(all_records)
-    if not combined_df.empty:
-        combined_df['DATE'] = pd.to_datetime(combined_df['DATE']).dt.date
-    
-    return combined_df
-
-# Scrape NCAA schedule
-combined_df = scrape_ncaa_schedule()
+# Exit early if data is missing
+if draft_df.empty or combined_df.empty:
+    st.stop()
 
 # =================================================================== Clean Draft Data
 
@@ -259,15 +78,8 @@ draft_df['School_Merge'] = draft_df['School_Merge'].str.replace("'", "")
 
 # =================================================================== Clean Schedule Data
 
-# Rename schedule columns
-# ESPN's current structure: MATCHUP, '', TIME, TV, tickets, location, logo espnbet, DATE
-combined_df = combined_df.rename(columns={
-    'MATCHUP': 'AWAY',
-    '': 'HOME',
-    'tickets': 'TICKETS',
-    'location': 'LOCATION',
-    'logo espnbet': 'ODDS_BY'
-})
+# Note: Column renaming is now done in scraper.py before saving
+# Columns are: AWAY, HOME, TIME, TV, TICKETS, LOCATION, ODDS_BY, DATE
 
 # Create duplicate df to join on home or away team.
 combined_df_home = combined_df.copy()
@@ -320,7 +132,7 @@ combined_df['All_Players'] = combined_df.apply(
     ]),
     axis=1
 )
-print(tab(combined_df.head(),headers="firstrow", tablefmt="grid"))
+
 # ==================================================================================== Prepare Tables for Display
 
 # Merge draft board with upcoming games
@@ -337,7 +149,6 @@ super_matchups = combined_df[
 super_matchups = super_matchups[
     ['AWAY', 'HOME', 'DATE', 'TIME', 'TV', 'HomeTeam', 'AwayTeam', 'All_Players']].drop_duplicates()
 
-# print(tabulate(super_matchups, headers='keys', tablefmt='psql'))
 # Merge super_matchups with draft data to get players for each game
 super_matchups_expanded = super_matchups.copy()
 
@@ -427,17 +238,13 @@ super_matchups_expanded['Game Time (ET)'] = super_matchups_expanded.apply(format
 # ==================================================================================== Create Streamlit Display
 # Streamlit App
 
-# Initialize theme in session state
-if 'theme' not in st.session_state:
-    st.session_state['theme'] = 'light'  # Options: 'light', 'dark'
-
 st.set_page_config(layout="centered")
 
-# Add custom CSS for modern, cohesive design with dark mode support
+# Add custom CSS for modern, cohesive design
 st.markdown("""
 <style>
-    /* ===== Color Palette - Light Mode (Default) ===== */
-    :root, .theme-light {
+    /* ===== Color Palette ===== */
+    :root {
         --primary-blue: #3b82f6;
         --primary-dark: #2563eb;
         --primary-light: #60a5fa;
@@ -450,29 +257,6 @@ st.markdown("""
         --hover-bg: #f1f5f9;
         --table-even-row: #f8fafc;
         --table-hover: #e0f2fe;
-    }
-    
-    /* ===== Dark Mode Colors ===== */
-    .theme-dark {
-        --primary-blue: #60a5fa;
-        --primary-dark: #3b82f6;
-        --primary-light: #93c5fd;
-        --accent: #a78bfa;
-        --bg-light: #1e293b;
-        --bg-card: #0f172a;
-        --border-color: #334155;
-        --text-primary: #f1f5f9;
-        --text-secondary: #94a3b8;
-        --hover-bg: #334155;
-        --table-even-row: #1e293b;
-        --table-hover: #334155;
-    }
-    
-    /* Apply background and text colors to main app for dark mode */
-    .theme-dark,
-    .theme-dark .main {
-        background-color: var(--bg-light);
-        color: var(--text-primary);
     }
     
     /* ===== Layout & Spacing ===== */
@@ -628,41 +412,10 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# JavaScript to apply theme class based on session state
-theme_class = f"theme-{st.session_state['theme']}"
-
-st.markdown(f"""
-<script>
-    // Apply theme class to main app container
-    const applyTheme = () => {{
-        const app = window.parent.document.querySelector('.stApp');
-        if (app) {{
-            app.className = app.className.replace(/theme-\\w+/g, '');
-            app.classList.add('{theme_class}');
-        }}
-    }};
-    
-    // Apply immediately and on DOM changes
-    applyTheme();
-    new MutationObserver(applyTheme).observe(
-        window.parent.document.body,
-        {{ childList: true, subtree: true }}
-    );
-</script>
-""", unsafe_allow_html=True)
-
-# Header with theme toggle and info popover
-col_title, col_theme, col_info = st.columns([8, 1, 1])
+# Header with info popover
+col_title, col_info = st.columns([9, 1])
 with col_title:
     st.title("NBA Prospect Schedule")
-with col_theme:
-    # Theme toggle button (simple light/dark toggle)
-    theme_icons = {'light': '☀️', 'dark': '🌙'}
-    current_icon = theme_icons[st.session_state['theme']]
-    if st.button(current_icon, help=f"Toggle theme (Current: {st.session_state['theme'].capitalize()})"):
-        # Toggle between light and dark
-        st.session_state['theme'] = 'dark' if st.session_state['theme'] == 'light' else 'light'
-        st.rerun()
 with col_info:
     with st.popover("ℹ️"):
         st.markdown("**About**")
@@ -671,16 +424,16 @@ with col_info:
                 "but want to know when the next potential NBA stars are playing, this is your "
                 "go-to schedule. Check back for updates on key matchups and players to watch.")
         
-        # Show data info with refresh button
-        min_date = combined_df['DATE'].min() if not combined_df.empty else None
-        max_date = combined_df['DATE'].max() if not combined_df.empty else None
-        if min_date and max_date:
+        # Show data info with metadata
+        if metadata:
             st.markdown("**Data Info**")
-            st.caption(f"📅 {min_date.strftime('%b %d, %Y')} to {max_date.strftime('%b %d, %Y')} • Refreshes: 30min (next week), 12hr (next month), 24hr (beyond)")
+            last_scrape = datetime.fromisoformat(metadata['last_scrape_time'])
+            st.caption(f"📅 Last updated: {last_scrape.strftime('%b %d, %Y at %I:%M %p ET')}")
+            st.caption(f"Draft prospects: {metadata.get('draft_prospects_count', 'N/A')}")
+            st.caption(f"Games: {metadata.get('games_count', 'N/A')}")
             
-            if st.button("🔄 Refresh Data", help="Clear cache and reload latest games"):
-                with st.spinner("Refreshing data..."):
-                    st.cache_data.clear()
+            if st.button("🔄 Refresh Data", help="Clear cache and reload data from files"):
+                st.cache_data.clear()
                 st.rerun()
 
 st.divider()
@@ -708,7 +461,6 @@ with tab1:
             )
         }
     )
-    print(tab(draft_with_games))
 
 with tab2:
     st.header("SUPER MATCHUPS")
@@ -718,7 +470,6 @@ with tab2:
     super_display = super_matchups_expanded[['AWAY', 'HOME', 'Game Time (ET)', 'TV', 'All_Players']]
     
     st.dataframe(super_display, hide_index=True, height=300, width='stretch')
-    print(tab(super_matchups_expanded))
 
 with tab3:
     st.header("Games by Date")
@@ -729,7 +480,7 @@ with tab3:
     
     # Handle empty date options gracefully
     if not date_options:
-        st.warning("No schedule data available. Please try refreshing the data.")
+        st.warning("No schedule data available. Please run `python scraper.py` to generate data.")
     else:
         # Deduplicate games (remove duplicate rows for games with prospects on both teams)
         unique_games = upcoming_games_df.drop_duplicates(subset=['DATE', 'AWAY', 'HOME'])
@@ -789,24 +540,13 @@ with tab4:
     # Create a figure and axis with increased height to prevent overlap
     fig, ax = plt.subplots(figsize=(8, 12))
     
-    # Determine if we're in dark mode
-    is_dark = (st.session_state['theme'] == 'dark')
-    
-    # Theme-aware colors
-    if is_dark:
-        fig.patch.set_facecolor('#0f172a')
-        ax.set_facecolor('#1e293b')
-        colors_list = ['#93c5fd', '#60a5fa', '#3b82f6', '#2563eb', '#1d4ed8']
-        text_color = '#f1f5f9'
-        tick_color = '#94a3b8'
-        border_color = '#334155'
-    else:
-        fig.patch.set_facecolor('white')
-        ax.set_facecolor('#f8fafc')
-        colors_list = ['#93c5fd', '#60a5fa', '#3b82f6', '#2563eb', '#1d4ed8']
-        text_color = '#1e293b'
-        tick_color = '#64748b'
-        border_color = '#e2e8f0'
+    # Set colors
+    fig.patch.set_facecolor('white')
+    ax.set_facecolor('#f8fafc')
+    colors_list = ['#93c5fd', '#60a5fa', '#3b82f6', '#2563eb', '#1d4ed8']
+    text_color = '#1e293b'
+    tick_color = '#64748b'
+    border_color = '#e2e8f0'
 
     # Create a modern blue gradient color palette
     from matplotlib.colors import LinearSegmentedColormap
@@ -870,7 +610,6 @@ col1, col2, col3 = st.columns(3)
 with col1:
     st.header("Sources")
     url = "https://www.nbadraft.net/nba-mock-drafts/?year-mock=2026"
-    ## url = "https://www.nbadraft.net/nba-mock-drafts/?year-mock=2025"
     st.write("[nbadraft.net mock draft board](%s)" % url)
     single_date = get_eastern_today() + timedelta(days=1)  # Start with tomorrow (Eastern time)
     date_str = single_date.strftime("%Y%m%d")
