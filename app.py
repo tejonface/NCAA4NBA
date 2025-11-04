@@ -408,7 +408,7 @@ super_matchups_expanded['Game Time (ET)'] = super_matchups_expanded.apply(format
 
 st.set_page_config(layout="centered")
 
-# Add custom CSS for larger, styled tabs and popover alignment
+# Add custom CSS for larger, styled tabs
 st.markdown("""
 <style>
     /* Make tabs larger with better spacing */
@@ -417,17 +417,12 @@ st.markdown("""
     }
     
     .stTabs [data-baseweb="tab"] {
-        height: 60px !important;
-        padding: 0px 24px !important;
+        height: 60px;
+        padding: 0px 24px;
         background-color: #f0f2f6;
         border-radius: 8px 8px 0px 0px;
-    }
-    
-    .stTabs [data-baseweb="tab"] p,
-    .stTabs [data-baseweb="tab"] div,
-    .stTabs [data-baseweb="tab"] span {
-        font-size: 22px !important;
-        font-weight: 600 !important;
+        font-size: 18px;
+        font-weight: 600;
     }
     
     .stTabs [data-baseweb="tab"]:hover {
@@ -438,51 +433,36 @@ st.markdown("""
         background-color: #4CAF50 !important;
         color: white !important;
     }
-    
-    /* Make header row use flexbox to align title and icon */
-    .element-container:has(> div[data-testid="column"]) {
-        display: flex !important;
-        align-items: flex-end !important;
-    }
-    
-    /* Minimize whitespace in popover */
-    [data-testid="stPopover"] h3 {
-        margin-top: 0 !important;
-        margin-bottom: 0.5rem !important;
-        font-size: 1.1rem !important;
-    }
-    
-    [data-testid="stPopover"] .element-container {
-        margin-bottom: 0.5rem !important;
-    }
 </style>
 """, unsafe_allow_html=True)
 
 # Header with info popover
-col1, col2 = st.columns([20, 1])
-with col1:
+col_title, col_info = st.columns([10, 1])
+with col_title:
     st.title("NBA Prospect Schedule")
-with col2:
+with col_info:
     with st.popover("ℹ️"):
-        st.markdown("**About**")
-        st.caption("This page helps basketball fans keep track of upcoming NCAA games featuring "
-                   "top prospects for the 2026 NBA Draft. If you don't follow college basketball "
-                   "but want to know when the next potential NBA stars are playing, this is your "
-                   "go-to schedule. Check back for updates on key matchups and players to watch.")
+        st.markdown("### About")
+        st.text("This page helps basketball fans keep track of upcoming NCAA games featuring "
+                "top prospects for the 2026 NBA Draft. If you don't follow college basketball "
+                "but want to know when the next potential NBA stars are playing, this is your "
+                "go-to schedule. Check back for updates on key matchups and players to watch.")
         
-        st.markdown("---")
+        st.divider()
         
         # Show data info with refresh button
         min_date = combined_df['DATE'].min() if not combined_df.empty else None
         max_date = combined_df['DATE'].max() if not combined_df.empty else None
         if min_date and max_date:
-            st.markdown("**Data Info**")
+            st.markdown("### Data Info")
             st.info(f"📅 Showing games from {min_date.strftime('%b %d, %Y')} to {max_date.strftime('%b %d, %Y')}")
             st.caption("Data refreshes every hour")
             
             if st.button("🔄 Refresh Data", help="Clear cache and reload latest games"):
                 st.cache_data.clear()
                 st.rerun()
+
+st.divider()
 
 # Create tabs for different sections
 tab1, tab2, tab3, tab4 = st.tabs(["📋 Draft Board", "⭐ Super Matchups", "📅 Games by Date", "📊 Prospect Distribution"])
