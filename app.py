@@ -500,7 +500,7 @@ with tab1:
             "Team": st.column_config.ImageColumn(
                 "Team",
                 help="NBA Team Logo",
-                width="medium"
+                width="small"
             )
         }
     )

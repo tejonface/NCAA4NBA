@@ -90,7 +90,7 @@ Preferred communication style: Simple, everyday language.
   - **NBA Team Logos**: Displays official NBA team logos from ESPN's CDN instead of text team names
   - Logo mapping handles all 30 NBA teams with variations (e.g., "Golden State" vs "Golden St.")
   - Automatically strips asterisks from projected picks (e.g., "*Utah" → Utah logo)
-  - ImageColumn configuration shows logos at optimal "medium" size for table readability
+  - ImageColumn configuration shows logos at "small" size for compact table layout
 - **Super Matchups**: Highlights games featuring top draft prospects on both teams
   - **Player Formatting**: Players grouped by school with clean multi-line display
   - Format shows school name as header with bullet-pointed players beneath:
