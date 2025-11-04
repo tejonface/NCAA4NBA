@@ -419,7 +419,7 @@ st.markdown("""
     
     /* ===== Layout & Spacing ===== */
     .main .block-container {
-        padding-top: 0.5rem;
+        padding-top: 0.1rem;
         padding-bottom: 1rem;
         max-width: 1200px;
     }
@@ -432,7 +432,7 @@ st.markdown("""
     }
     
     h1 {
-        margin-top: 0.25rem !important;
+        margin-top: 0 !important;
         margin-bottom: 0.25rem !important;
         padding-top: 0 !important;
         padding-bottom: 0 !important;
