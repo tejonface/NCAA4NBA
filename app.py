@@ -64,6 +64,32 @@ CACHE_METADATA_FILE = os.path.join(CACHE_DIR, "metadata.json")
 # Create cache directory if it doesn't exist
 os.makedirs(CACHE_DIR, exist_ok=True)
 
+# Helper function to extract cell content (handles both text and images)
+def extract_cell_content(cell):
+    """Extract content from a table cell, checking for images (TV logos) first"""
+    # Check if cell contains an image (common for TV networks)
+    img = cell.find("img")
+    if img:
+        # Try to get alt text first
+        alt_text = img.get("alt", "")
+        
+        # Only use alt text if it looks like a real network name (not base64 placeholder)
+        # ESPN uses lazy loading with base64 placeholders like "YH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+        if alt_text and len(alt_text) < 20 and not alt_text.startswith("YH5"):
+            return alt_text.strip()
+        
+        # If no valid alt text, try to extract from src URL
+        src = img.get("src", "")
+        if src and "network" in src:
+            # Extract network name from URL like "/i/network/espn_plus.png" -> "ESPN+"
+            parts = src.split("/")
+            if parts:
+                filename = parts[-1].replace(".png", "").replace(".jpg", "").replace("_", " ")
+                return filename.strip().upper()
+    
+    # Fall back to text content
+    return cell.text.strip()
+
 # Function to scrape a single date
 def scrape_single_date(single_date):
     """Scrape NCAA schedule for a single date"""
@@ -80,7 +106,8 @@ def scrape_single_date(single_date):
             return None
         
         rows = table.find_all("tr")
-        data = [[col.text.strip() for col in row.find_all(["th", "td"])] for row in rows if row.find_all(["th", "td"])]
+        # Use helper function to extract content from each cell
+        data = [[extract_cell_content(col) for col in row.find_all(["th", "td"])] for row in rows if row.find_all(["th", "td"])]
         
         df = pd.DataFrame(data)
         if not df.empty:
@@ -212,16 +239,13 @@ draft_df['School_Merge'] = draft_df['School_Merge'].str.replace("'", "")
 # =================================================================== Clean Schedule Data
 
 # Rename schedule columns
+# ESPN's current structure: MATCHUP, '', TIME, TV, tickets, location, logo espnbet, DATE
 combined_df = combined_df.rename(columns={
-    combined_df.columns[0]: "AWAY",
-    combined_df.columns[1]: "HOME",
-    combined_df.columns[2]: "TIME",
-    combined_df.columns[3]: "TV",
-    combined_df.columns[4]: "TICKETS",
-    combined_df.columns[5]: "LOCATION",
-#    combined_df.columns[6]: "ODDS BY",
-#    combined_df.columns[7]: "DATE",
-    "DATE": "DATE"
+    'MATCHUP': 'AWAY',
+    '': 'HOME',
+    'tickets': 'TICKETS',
+    'location': 'LOCATION',
+    'logo espnbet': 'ODDS_BY'
 })
 
 # Create duplicate df to join on home or away team.
