@@ -12,14 +12,14 @@ import json
 import os
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-# Helper functions for Pacific timezone
-def get_pacific_now():
-    """Get current datetime in Pacific timezone"""
-    return datetime.now(ZoneInfo("America/Los_Angeles"))
+# Helper functions for Eastern timezone
+def get_eastern_now():
+    """Get current datetime in Eastern timezone"""
+    return datetime.now(ZoneInfo("America/New_York"))
 
-def get_pacific_today():
-    """Get today's date in Pacific timezone"""
-    return get_pacific_now().date()
+def get_eastern_today():
+    """Get today's date in Eastern timezone"""
+    return get_eastern_now().date()
 
 
 
@@ -134,9 +134,9 @@ def save_cache(cache_data):
     with open(CACHE_FILE, 'w') as f:
         json.dump(cache_data, f)
     
-    # Update metadata with Pacific time
+    # Update metadata with Eastern time
     metadata = {
-        'last_updated': get_pacific_now().isoformat(),
+        'last_updated': get_eastern_now().isoformat(),
         'dates_cached': list(cache_data.keys())
     }
     with open(CACHE_METADATA_FILE, 'w') as f:
@@ -151,7 +151,7 @@ def needs_refresh(date_str, cache_metadata):
     # Recent dates (within 7 days) refresh every 30 minutes
     # Future dates refresh every 6 hours
     target_date = datetime.strptime(date_str, "%Y-%m-%d").date()
-    days_diff = (target_date - get_pacific_today()).days
+    days_diff = (target_date - get_eastern_today()).days
     
     if days_diff < 7:
         max_age = timedelta(minutes=30)
@@ -162,8 +162,8 @@ def needs_refresh(date_str, cache_metadata):
         last_update = datetime.fromisoformat(cache_metadata['last_updated'])
         # Make last_update timezone-aware if it's not
         if last_update.tzinfo is None:
-            last_update = last_update.replace(tzinfo=ZoneInfo("America/Los_Angeles"))
-        return get_pacific_now() - last_update > max_age
+            last_update = last_update.replace(tzinfo=ZoneInfo("America/New_York"))
+        return get_eastern_now() - last_update > max_age
     
     return True
 
@@ -183,7 +183,7 @@ def scrape_ncaa_schedule():
     # Determine which dates to scrape
     dates_to_scrape = []
     for i in range(60):
-        single_date = get_pacific_today() + timedelta(days=-1 + i)
+        single_date = get_eastern_today() + timedelta(days=-1 + i)
         date_str = single_date.strftime("%Y-%m-%d")
         
         # Check if we need to refresh this date
@@ -383,6 +383,26 @@ def get_team_logo(team_name):
 # Replace team names with logo URLs
 draft_with_games['Team'] = draft_with_games['Team'].apply(get_team_logo)
 
+# ==================================================================================== Format Game Time (ET) Column
+# Helper function to format date and time
+def format_game_time(row):
+    """Format DATE and TIME into 'Nov 8, 9:00 PM' format"""
+    if pd.isna(row['DATE']) or pd.isna(row['TIME']):
+        return ""
+    try:
+        date_obj = row['DATE'] if isinstance(row['DATE'], date) else pd.to_datetime(row['DATE']).date()
+        month_day = date_obj.strftime('%b %-d')  # e.g., "Nov 8"
+        time_str = str(row['TIME']).strip()
+        return f"{month_day}, {time_str}" if time_str else month_day
+    except:
+        return ""
+
+# Create formatted Game Time column for draft board
+draft_with_games['Game Time (ET)'] = draft_with_games.apply(format_game_time, axis=1)
+
+# Create formatted Game Time column for super matchups
+super_matchups_expanded['Game Time (ET)'] = super_matchups_expanded.apply(format_game_time, axis=1)
+
 # ==================================================================================== Create Streamlit Display
 # Streamlit App
 
@@ -414,124 +434,144 @@ max_date = combined_df['DATE'].max() if not combined_df.empty else None
 if min_date and max_date:
     st.info(f"📅 Showing games from {min_date.strftime('%b %d, %Y')} to {max_date.strftime('%b %d, %Y')} | Data refreshes every hour")
 
-st.header("Draft Board with Next Games")
-st.text("2026 NBA Mock Draft board with each NCAA players' upcoming game.")
-st.dataframe(
-    draft_with_games, 
-    hide_index=True, 
-    height=400, 
-    use_container_width=True,
-    column_config={
-        "Team": st.column_config.ImageColumn(
-            "Team",
-            help="NBA Team Logo",
-            width="small"
-        )
-    }
-)
-print(tab(draft_with_games))
-# Display Super Matchups
-st.header("SUPER MATCHUPS")
-st.text("Games with top 60 NBA draft prospects on both teams.")
-st.dataframe(super_matchups_expanded, hide_index=True, height=300, use_container_width=True)
-print(tab(super_matchups_expanded))
-# Get date range for calendar
-today = get_pacific_today()
-date_options = sorted(combined_df['DATE'].dropna().unique())
+# Create tabs for different sections
+tab1, tab2, tab3, tab4 = st.tabs(["📋 Draft Board", "⭐ Super Matchups", "📅 Games by Date", "📊 Prospect Distribution"])
 
-# Handle empty date options gracefully
-if not date_options:
-    st.warning("No schedule data available. Please try refreshing the data.")
-    selected_date = None
-else:
-    min_cal_date = date_options[0]
-    max_cal_date = date_options[-1]
-    default_value = today if today in date_options else date_options[0]
+with tab1:
+    st.header("Draft Board with Next Games")
+    st.text("2026 NBA Mock Draft board with each NCAA player's upcoming game.")
     
-    # Calendar date picker
+    # Select columns to display (use Game Time instead of separate DATE and TIME)
+    draft_display = draft_with_games[['Rank', 'Team', 'Player', 'School', 'Game Time (ET)', 'TV', 'AWAY', 'HOME']]
+    
+    st.dataframe(
+        draft_display, 
+        hide_index=True, 
+        height=400, 
+        use_container_width=True,
+        column_config={
+            "Team": st.column_config.ImageColumn(
+                "Team",
+                help="NBA Team Logo",
+                width="medium"
+            )
+        }
+    )
+    print(tab(draft_with_games))
+
+with tab2:
+    st.header("SUPER MATCHUPS")
+    st.text("Games with top 60 NBA draft prospects on both teams.")
+    
+    # Select columns to display
+    super_display = super_matchups_expanded[['AWAY', 'HOME', 'Game Time (ET)', 'TV', 'All_Players']]
+    
+    st.dataframe(super_display, hide_index=True, height=300, use_container_width=True)
+    print(tab(super_matchups_expanded))
+
+with tab3:
     st.header("Select Game Date")
-    selected_date = st.date_input(
-        "Choose a date to view games",
-        value=default_value,
-        min_value=min_cal_date,
-        max_value=max_cal_date,
-        help="Select any date to view scheduled games"
+    
+    # Get date range for calendar
+    today = get_eastern_today()
+    date_options = sorted(combined_df['DATE'].dropna().unique())
+    
+    # Handle empty date options gracefully
+    if not date_options:
+        st.warning("No schedule data available. Please try refreshing the data.")
+        selected_date = None
+    else:
+        min_cal_date = date_options[0]
+        max_cal_date = date_options[-1]
+        default_value = today if today in date_options else date_options[0]
+        
+        # Calendar date picker
+        selected_date = st.date_input(
+            "Choose a date to view games",
+            value=default_value,
+            min_value=min_cal_date,
+            max_value=max_cal_date,
+            help="Select any date to view scheduled games"
+        )
+    
+    # Display schedule for the selected date
+    if selected_date:
+        st.subheader(f"Schedule for {selected_date.strftime('%A, %B %d, %Y')}")
+        # Filter upcoming games for the selected date
+        filtered_games = upcoming_games_df[upcoming_games_df['DATE'] == selected_date]
+    
+        # Merge filtered games with draft data to add player info
+        filtered_games_expanded = filtered_games.copy()
+        
+        # Format game time for filtered games
+        filtered_games_expanded['Game Time (ET)'] = filtered_games_expanded.apply(format_game_time, axis=1)
+    
+        # Drop unnecessary columns and keep only relevant details
+        filtered_games_display = filtered_games_expanded[['AWAY', 'HOME', 'Game Time (ET)', 'TV', 'All_Players']]
+    
+        # Display in Streamlit
+        st.dataframe(filtered_games_display, hide_index=True, height=350, use_container_width=True)
+    
+    else:
+        st.write("Please select a date.")
+
+with tab4:
+    st.header("NBA Prospect Distribution by School/Country")
+    
+    # ==================================================================================== Chart
+    
+    school_summary = draft_df.groupby(['School'])['Player'].count()
+    school_summary = school_summary.reset_index()
+    school_summary = school_summary.rename(columns={'School': 'School/Country', 'Player': 'Total'})
+    school_summary = school_summary.sort_values(by='Total', ascending=False)
+    
+    # Create a figure and axis with increased height to prevent overlap
+    fig, ax = plt.subplots(figsize=(8, 12))
+
+    # Choose a colormap
+    cmap = plt.get_cmap("crest")
+    
+    values = np.array(school_summary['Total'])
+    
+    # Normalize values
+    norm = plt.Normalize(values.min(), values.max())
+    
+    # Generate colors (same values get same colors)
+    colors = [cmap(norm(value)) for value in values]
+    
+    # Create a bar plot of Schools with the most prospects
+    bars = sns.barplot(
+        data=school_summary,
+        x="Total",
+        y="School/Country",
+        hue="School/Country",
+        ax=ax,
+        palette=colors,
+        legend=False
     )
-
-# Display schedule for the selected date
-if selected_date:
-    st.header(f"Schedule for {selected_date.strftime('%A, %B %d, %Y')}")
-    # Filter upcoming games for the selected date
-    filtered_games = upcoming_games_df[upcoming_games_df['DATE'] == selected_date]
-
-    # Merge filtered games with draft data to add player info
-    filtered_games_expanded = filtered_games.copy()
-
-    # Drop unnecessary columns and keep only relevant details
-    filtered_games_expanded = filtered_games_expanded[['AWAY', 'HOME', 'DATE', 'TIME', 'TV', 'All_Players']]
-
-    # Display in Streamlit
-    st.dataframe(filtered_games_expanded, hide_index=True, height=350, use_container_width=True)
-
-else:
-    st.write("Please select a date.")
-
-# ==================================================================================== Chart
-
-school_summary = draft_df.groupby(['School'])['Player'].count()
-school_summary = school_summary.reset_index()
-school_summary = school_summary.rename(columns={'School': 'School/Country', 'Player': 'Total'})
-school_summary = school_summary.sort_values(by='Total', ascending=False)
-
-# Create a figure and axis
-fig, ax = plt.subplots(figsize=(8, 6))
-
-# Choose a colormap
-cmap = plt.get_cmap("crest")
-
-values = np.array(school_summary['Total'])
-
-# Normalize values
-norm = plt.Normalize(values.min(), values.max())
-
-# Generate colors (same values get same colors)
-colors = [cmap(norm(value)) for value in values]
-
-# Create a bar plot of Schools with the most prospects
-bars = sns.barplot(
-    data=school_summary,
-    x="Total",
-    y="School/Country",
-    hue="School/Country",
-    ax=ax,
-    palette=colors,
-    legend=False
-)
-
-# Add value labels inside the bars in white
-for i, (value, bar) in enumerate(zip(school_summary['Total'], ax.patches)):
-    ax.text(
-        bar.get_width() - 0.2,  # Position near the end of the bar
-        bar.get_y() + bar.get_height() / 2,  # Center vertically
-        str(value),  # The value to display
-        ha='right',  # Right-align the text
-        va='center',  # Center vertically
-        color='white',  # White text
-        fontsize=10,
-        fontweight='bold'
-    )
-
-# Set labels and title
-ax.set_xlabel("Number of NBA Prospects")
-ax.set_ylabel("School/Country")
-# ax.set_title("Schools with Most NBA Prospects in 2025 Draft")
-
-# Set x-axis ticks to only show 0, 1, 2, 3
-ax.set_xticks([0, 1, 2, 3])
-
-# Display the plot in Streamlit
-st.header("NBA Prospect Distribution by School/Country")
-st.pyplot(fig)
+    
+    # Add value labels inside the bars in white
+    for i, (value, bar) in enumerate(zip(school_summary['Total'], ax.patches)):
+        ax.text(
+            bar.get_width() - 0.2,  # Position near the end of the bar
+            bar.get_y() + bar.get_height() / 2,  # Center vertically
+            str(value),  # The value to display
+            ha='right',  # Right-align the text
+            va='center',  # Center vertically
+            color='white',  # White text
+            fontsize=10,
+            fontweight='bold'
+        )
+    
+    # Set labels and title
+    ax.set_xlabel("Number of NBA Prospects")
+    ax.set_ylabel("School/Country")
+    
+    # Set x-axis ticks to only show 0, 1, 2, 3
+    ax.set_xticks([0, 1, 2, 3])
+    
+    # Display the plot in Streamlit
+    st.pyplot(fig)
 
 st.divider()
 # ==================================================================================== Footer
@@ -542,16 +582,16 @@ with col1:
     url = "https://www.nbadraft.net/nba-mock-drafts/?year-mock=2026"
     ## url = "https://www.nbadraft.net/nba-mock-drafts/?year-mock=2025"
     st.write("[nbadraft.net mock draft board](%s)" % url)
-    single_date = get_pacific_today() + timedelta(days=1)  # Start with tomorrow (Pacific time)
+    single_date = get_eastern_today() + timedelta(days=1)  # Start with tomorrow (Eastern time)
     date_str = single_date.strftime("%Y%m%d")
     url = f"https://www.espn.com/mens-college-basketball/schedule/_/date/{date_str}"
     st.write("[espn.com ncaa schedule](%s)" % url)
     url = "https://www.jstew.info"
     st.write("[created by jstew.info](%s)" % url)
     
-    # Show current Pacific time for reference
-    pacific_time = get_pacific_now()
-    st.caption(f"Pacific Time: {pacific_time.strftime('%I:%M %p PT')}")
+    # Show current Eastern time for reference
+    eastern_time = get_eastern_now()
+    st.caption(f"Eastern Time: {eastern_time.strftime('%I:%M %p ET')}")
 
 with col2:
     st.text("")

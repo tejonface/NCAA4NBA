@@ -14,13 +14,18 @@ Preferred communication style: Simple, everyday language.
   - Simplifies deployment and user interface creation without HTML/CSS/JS
   - Trade-off: Less flexibility than traditional web frameworks but much faster development
   - Layout: Centered layout (max-width ~980px) to prevent excessive stretching on large external monitors
-  - Tables use container width for optimal display within centered layout
-- **Timezone Handling**: Pacific Time (America/Los_Angeles)
-  - All date calculations use Pacific timezone (not server UTC time)
-  - Helper functions: `get_pacific_now()` and `get_pacific_today()`
-  - Cache metadata stores timestamps with Pacific timezone offset
-  - Ensures game schedules align with West Coast sports viewing times
-  - Footer displays current Pacific time for user reference
+  - **Tab Organization**: Four tabs organize different views
+    - Draft Board: Main table with team logos (medium size) and upcoming games
+    - Super Matchups: Games with prospects on both teams
+    - Games by Date: Calendar picker for viewing specific dates
+    - Prospect Distribution: Bar chart (8x12 inches for readability)
+- **Timezone Handling**: Eastern Time (America/New_York)
+  - All date calculations use Eastern timezone (standard for US college basketball)
+  - Helper functions: `get_eastern_now()` and `get_eastern_today()`
+  - Cache metadata stores timestamps with Eastern timezone offset
+  - Game times displayed in "Nov 8, 9:00 PM" format
+  - Column labeled "Game Time (ET)" but individual times don't show "ET" suffix
+  - Footer displays current Eastern time for user reference
 
 ## Data Processing Pipeline
 - **Web Scraping**: BeautifulSoup4 with requests library
@@ -58,10 +63,11 @@ Preferred communication style: Simple, everyday language.
 
 ## Data Visualization
 - **Libraries**: Matplotlib and Seaborn
-  - Chart size: 8x6 inches for optimal viewing on laptop and external monitors
+  - Chart size: 8x12 inches (increased height to prevent text/label overlap)
   - Seaborn provides higher-level statistical plotting interface
   - Matplotlib offers low-level customization capabilities
   - Bar chart includes white value labels inside bars for readability
+  - Displayed in dedicated "Prospect Distribution" tab
 
 ## Code Organization
 - **Modular Functions**: Separate functions for each scraping task
