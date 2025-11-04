@@ -448,7 +448,7 @@ st.markdown("""
     
     /* ===== Layout & Spacing ===== */
     .main .block-container {
-        padding-top: 2rem;
+        padding-top: 0.5rem;
         padding-bottom: 1rem;
         max-width: 1200px;
     }
@@ -458,6 +458,11 @@ st.markdown("""
         margin-bottom: 0.5rem;
         border: none;
         border-top: 1px solid var(--border-color);
+    }
+    
+    h1 {
+        margin-top: 0.5rem !important;
+        margin-bottom: 0.5rem !important;
     }
     
     /* ===== Tabs Styling ===== */
@@ -534,12 +539,6 @@ st.markdown("""
     }
     
     /* ===== Headers ===== */
-    h1 {
-        color: var(--text-primary) !important;
-        font-weight: 700 !important;
-        letter-spacing: -0.02em !important;
-    }
-    
     h2, h3 {
         color: var(--text-primary) !important;
         font-weight: 600 !important;
