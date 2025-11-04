@@ -429,7 +429,7 @@ super_matchups_expanded['Game Time (ET)'] = super_matchups_expanded.apply(format
 
 # Initialize theme in session state
 if 'theme' not in st.session_state:
-    st.session_state['theme'] = 'auto'  # Options: 'auto', 'light', 'dark'
+    st.session_state['theme'] = 'light'  # Options: 'light', 'dark'
 
 st.set_page_config(layout="centered")
 
@@ -468,38 +468,11 @@ st.markdown("""
         --table-hover: #334155;
     }
     
-    /* ===== Auto Dark Mode (System Preference) ===== */
-    @media (prefers-color-scheme: dark) {
-        .theme-auto {
-            --primary-blue: #60a5fa;
-            --primary-dark: #3b82f6;
-            --primary-light: #93c5fd;
-            --accent: #a78bfa;
-            --bg-light: #1e293b;
-            --bg-card: #0f172a;
-            --border-color: #334155;
-            --text-primary: #f1f5f9;
-            --text-secondary: #94a3b8;
-            --hover-bg: #334155;
-            --table-even-row: #1e293b;
-            --table-hover: #334155;
-        }
-    }
-    
     /* Apply background and text colors to main app for dark mode */
     .theme-dark,
     .theme-dark .main {
         background-color: var(--bg-light);
         color: var(--text-primary);
-    }
-    
-    /* Apply dark mode styles when system preference is dark and theme is auto */
-    @media (prefers-color-scheme: dark) {
-        .theme-auto,
-        .theme-auto .main {
-            background-color: var(--bg-light);
-            color: var(--text-primary);
-        }
     }
     
     /* ===== Layout & Spacing ===== */
@@ -657,6 +630,7 @@ st.markdown("""
 
 # JavaScript to apply theme class based on session state
 theme_class = f"theme-{st.session_state['theme']}"
+
 st.markdown(f"""
 <script>
     // Apply theme class to main app container
@@ -682,14 +656,12 @@ col_title, col_theme, col_info = st.columns([8, 1, 1])
 with col_title:
     st.title("NBA Prospect Schedule")
 with col_theme:
-    # Theme toggle button
-    theme_icons = {'auto': '🌓', 'light': '☀️', 'dark': '🌙'}
+    # Theme toggle button (simple light/dark toggle)
+    theme_icons = {'light': '☀️', 'dark': '🌙'}
     current_icon = theme_icons[st.session_state['theme']]
-    if st.button(current_icon, help=f"Current: {st.session_state['theme'].capitalize()} mode"):
-        # Cycle through themes: auto -> light -> dark -> auto
-        themes = ['auto', 'light', 'dark']
-        current_index = themes.index(st.session_state['theme'])
-        st.session_state['theme'] = themes[(current_index + 1) % 3]
+    if st.button(current_icon, help=f"Toggle theme (Current: {st.session_state['theme'].capitalize()})"):
+        # Toggle between light and dark
+        st.session_state['theme'] = 'dark' if st.session_state['theme'] == 'light' else 'light'
         st.rerun()
 with col_info:
     with st.popover("ℹ️"):
@@ -818,7 +790,7 @@ with tab4:
     fig, ax = plt.subplots(figsize=(8, 12))
     
     # Determine if we're in dark mode
-    is_dark = st.session_state['theme'] == 'dark'
+    is_dark = (st.session_state['theme'] == 'dark')
     
     # Theme-aware colors
     if is_dark:

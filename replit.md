@@ -50,17 +50,17 @@ Preferred communication style: Simple, everyday language.
       - Improved typography and spacing
       - Subtle grid lines for easier reading
       - Minimalist spine styling (top/right removed)
-  - **Dark Mode Support**: Three-mode theme system (November 2025)
-    - **Auto Mode** (🌓): Automatically detects and respects user's system preference via CSS media queries
-    - **Light Mode** (☀️): Forces light theme regardless of system settings
-    - **Dark Mode** (🌙): Forces dark theme regardless of system settings
-    - Theme toggle button in header cycles through modes
-    - Theme preference persists in session state
+  - **Dark Mode Support**: Light/Dark toggle (November 2025)
+    - **Light Mode** (☀️): Bright theme with blue accents
+    - **Dark Mode** (🌙): Dark theme with lighter blue accents for better contrast
+    - Theme toggle button in header switches between modes
+    - Theme preference persists in session state across interactions
     - JavaScript applies theme classes to DOM for instant switching
-    - All UI elements adapt colors: backgrounds, text, tables, tabs, buttons, inputs, popovers
+    - All UI elements adapt: backgrounds, text, tables, tabs, buttons, inputs, popovers
     - Matplotlib charts dynamically adjust colors based on active theme
-    - Dark mode colors: #0f172a (card bg), #1e293b (light bg), #60a5fa (primary blue), #f1f5f9 (text)
-    - Light mode colors preserved: #ffffff (card bg), #f8fafc (light bg), #3b82f6 (primary blue), #1e293b (text)
+    - Complete visual consistency: UI and charts both change together
+    - Dark colors: #0f172a (card bg), #1e293b (light bg), #60a5fa (primary blue), #f1f5f9 (text)
+    - Light colors: #ffffff (card bg), #f8fafc (light bg), #3b82f6 (primary blue), #1e293b (text)
 - **Timezone Handling**: Eastern Time (America/New_York)
   - All date calculations use Eastern timezone (standard for US college basketball)
   - Helper functions: `get_eastern_now()` and `get_eastern_today()`
