@@ -417,12 +417,17 @@ st.markdown("""
     }
     
     .stTabs [data-baseweb="tab"] {
-        height: 60px;
-        padding: 0px 24px;
+        height: 60px !important;
+        padding: 0px 24px !important;
         background-color: #f0f2f6;
         border-radius: 8px 8px 0px 0px;
-        font-size: 22px;
-        font-weight: 600;
+    }
+    
+    .stTabs [data-baseweb="tab"] p,
+    .stTabs [data-baseweb="tab"] div,
+    .stTabs [data-baseweb="tab"] span {
+        font-size: 22px !important;
+        font-weight: 600 !important;
     }
     
     .stTabs [data-baseweb="tab"]:hover {
@@ -434,50 +439,56 @@ st.markdown("""
         color: white !important;
     }
     
-    /* Align popover button with bottom of title */
+    /* Align popover button with title on same line */
     [data-testid="stPopoverButton"] {
-        align-self: flex-end;
-        margin-bottom: 0.5rem;
+        vertical-align: middle;
+        margin-left: 0.5rem;
+    }
+    
+    /* Make title and popover appear on same line */
+    .element-container:has(h1) + .element-container:has([data-testid="stPopoverButton"]) {
+        display: inline-block !important;
+        vertical-align: bottom !important;
+        margin-left: 10px !important;
     }
     
     /* Minimize whitespace in popover */
     [data-testid="stPopover"] h3 {
-        margin-top: 0;
-        margin-bottom: 0.5rem;
-        font-size: 1.1rem;
+        margin-top: 0 !important;
+        margin-bottom: 0.5rem !important;
+        font-size: 1.1rem !important;
     }
     
     [data-testid="stPopover"] .element-container {
-        margin-bottom: 0.5rem;
+        margin-bottom: 0.5rem !important;
     }
 </style>
 """, unsafe_allow_html=True)
 
 # Header with info popover
-col_title, col_info = st.columns([10, 1])
-with col_title:
-    st.title("NBA Prospect Schedule")
-with col_info:
-    with st.popover("ℹ️"):
-        st.markdown("**About**")
-        st.caption("This page helps basketball fans keep track of upcoming NCAA games featuring "
-                   "top prospects for the 2026 NBA Draft. If you don't follow college basketball "
-                   "but want to know when the next potential NBA stars are playing, this is your "
-                   "go-to schedule. Check back for updates on key matchups and players to watch.")
+st.markdown('<h1 style="display: inline-block; margin-bottom: 0;">NBA Prospect Schedule</h1>', unsafe_allow_html=True)
+
+# Popover positioned next to title
+with st.popover("ℹ️"):
+    st.markdown("**About**")
+    st.caption("This page helps basketball fans keep track of upcoming NCAA games featuring "
+               "top prospects for the 2026 NBA Draft. If you don't follow college basketball "
+               "but want to know when the next potential NBA stars are playing, this is your "
+               "go-to schedule. Check back for updates on key matchups and players to watch.")
+    
+    st.markdown("---")
+    
+    # Show data info with refresh button
+    min_date = combined_df['DATE'].min() if not combined_df.empty else None
+    max_date = combined_df['DATE'].max() if not combined_df.empty else None
+    if min_date and max_date:
+        st.markdown("**Data Info**")
+        st.info(f"📅 Showing games from {min_date.strftime('%b %d, %Y')} to {max_date.strftime('%b %d, %Y')}")
+        st.caption("Data refreshes every hour")
         
-        st.markdown("---")
-        
-        # Show data info with refresh button
-        min_date = combined_df['DATE'].min() if not combined_df.empty else None
-        max_date = combined_df['DATE'].max() if not combined_df.empty else None
-        if min_date and max_date:
-            st.markdown("**Data Info**")
-            st.info(f"📅 Showing games from {min_date.strftime('%b %d, %Y')} to {max_date.strftime('%b %d, %Y')}")
-            st.caption("Data refreshes every hour")
-            
-            if st.button("🔄 Refresh Data", help="Clear cache and reload latest games"):
-                st.cache_data.clear()
-                st.rerun()
+        if st.button("🔄 Refresh Data", help="Clear cache and reload latest games"):
+            st.cache_data.clear()
+            st.rerun()
 
 st.divider()
 
