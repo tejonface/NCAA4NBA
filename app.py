@@ -11,7 +11,6 @@ from tabulate import tabulate as tab
 import json
 import os
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from collections import defaultdict
 
 # Helper functions for Eastern timezone
 def get_eastern_now():
@@ -292,30 +291,14 @@ combined_df['All_Players'] = combined_df.apply(
     lambda row: row['HomeTeam_Players'] + row['AwayTeam_Players'], axis=1
 )
 
-# Function to format players grouped by school
-def format_players_by_school(players_list):
-    """Format players grouped by school with clean structure"""
-    if not players_list:
-        return ""
-    
-    # Sort players by rank first
-    sorted_players = sorted(players_list, key=lambda x: int(x['Rank']))
-    
-    # Group players by school
-    schools = defaultdict(list)
-    for player in sorted_players:
-        schools[player['School']].append(player)
-    
-    # Format as school name with players beneath
-    formatted_parts = []
-    for school, school_players in schools.items():
-        player_lines = [f"  • #{p['Rank']} {p['Player']}" for p in school_players]
-        formatted_parts.append(f"{school}:\n" + "\n".join(player_lines))
-    
-    return "\n\n".join(formatted_parts)
-
-# Apply formatting function to All_Players
-combined_df['All_Players'] = combined_df['All_Players'].apply(format_players_by_school)
+# Sort players by rank before formatting
+combined_df['All_Players'] = combined_df.apply(
+    lambda row: ', '.join([
+        f"{p['School']}-#{str(p['Rank'])} {p['Player']}"
+        for p in sorted(row['All_Players'], key=lambda x: int(x['Rank']))
+    ]),
+    axis=1
+)
 print(tab(combined_df.head(),headers="firstrow", tablefmt="grid"))
 # ==================================================================================== Prepare Tables for Display
 
@@ -495,12 +478,12 @@ with tab1:
         draft_display, 
         hide_index=True, 
         height=400, 
-        width='stretch',
+        use_container_width=True,
         column_config={
             "Team": st.column_config.ImageColumn(
                 "Team",
                 help="NBA Team Logo",
-                width="small"
+                width="medium"
             )
         }
     )
@@ -513,19 +496,7 @@ with tab2:
     # Select columns to display
     super_display = super_matchups_expanded[['AWAY', 'HOME', 'Game Time (ET)', 'TV', 'All_Players']]
     
-    st.dataframe(
-        super_display, 
-        hide_index=True, 
-        height=600, 
-        width='stretch',
-        column_config={
-            "All_Players": st.column_config.TextColumn(
-                "Players",
-                help="Draft prospects playing in this game, grouped by school",
-                width="large"
-            )
-        }
-    )
+    st.dataframe(super_display, hide_index=True, height=300, use_container_width=True)
     print(tab(super_matchups_expanded))
 
 with tab3:
@@ -580,7 +551,7 @@ with tab3:
             filtered_games_display = filtered_games_expanded[['AWAY', 'HOME', 'Game Time (ET)', 'TV', 'All_Players']]
         
             # Display in Streamlit
-            st.dataframe(filtered_games_display, hide_index=True, height=350, width='stretch')
+            st.dataframe(filtered_games_display, hide_index=True, height=350, use_container_width=True)
         else:
             st.info(f"No games scheduled for {selected_date.strftime('%A, %B %d, %Y')}")
 

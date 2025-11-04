@@ -1,8 +1,8 @@
-modules = ["python-3.11", "postgresql-16"]
+modules = ["python-3.11"]
 
 [nix]
 channel = "stable-25_05"
-packages = ["cairo", "ffmpeg-full", "freetype", "ghostscript", "glibcLocales", "gobject-introspection", "gtk3", "pkg-config", "qhull", "tcl", "tk", "xcodebuild", "zlib"]
+packages = ["cairo", "ffmpeg-full", "freetype", "ghostscript", "gobject-introspection", "gtk3", "pkg-config", "qhull", "tcl", "tk", "xcodebuild", "zlib"]
 
 [deployment]
 deploymentTarget = "autoscale"
@@ -21,15 +21,15 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "flask_app"
+args = "streamlit_app"
 
 [[workflows.workflow]]
-name = "flask_app"
+name = "streamlit_app"
 author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "python flask_app.py"
+args = "streamlit run app.py --server.port 5000"
 waitForPort = 5000
 
 [workflows.workflow.metadata]
