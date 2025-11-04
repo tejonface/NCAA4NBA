@@ -3,6 +3,7 @@ import pandas as pd
 import requests
 from bs4 import BeautifulSoup
 from datetime import date, timedelta, datetime
+from zoneinfo import ZoneInfo
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
@@ -10,6 +11,15 @@ from tabulate import tabulate as tab
 import json
 import os
 from concurrent.futures import ThreadPoolExecutor, as_completed
+
+# Helper functions for Pacific timezone
+def get_pacific_now():
+    """Get current datetime in Pacific timezone"""
+    return datetime.now(ZoneInfo("America/Los_Angeles"))
+
+def get_pacific_today():
+    """Get today's date in Pacific timezone"""
+    return get_pacific_now().date()
 
 
 
@@ -114,7 +124,7 @@ def needs_refresh(date_str, cache_metadata):
     # Recent dates (within 7 days) refresh every 30 minutes
     # Future dates refresh every 6 hours
     target_date = datetime.strptime(date_str, "%Y-%m-%d").date()
-    days_diff = (target_date - date.today()).days
+    days_diff = (target_date - get_pacific_today()).days
     
     if days_diff < 7:
         max_age = timedelta(minutes=30)
@@ -123,7 +133,10 @@ def needs_refresh(date_str, cache_metadata):
     
     if cache_metadata and 'last_updated' in cache_metadata:
         last_update = datetime.fromisoformat(cache_metadata['last_updated'])
-        return datetime.now() - last_update > max_age
+        # Make last_update timezone-aware if it's not
+        if last_update.tzinfo is None:
+            last_update = last_update.replace(tzinfo=ZoneInfo("America/Los_Angeles"))
+        return get_pacific_now() - last_update > max_age
     
     return True
 
@@ -143,7 +156,7 @@ def scrape_ncaa_schedule():
     # Determine which dates to scrape
     dates_to_scrape = []
     for i in range(60):
-        single_date = date.today() + timedelta(days=-1 + i)
+        single_date = get_pacific_today() + timedelta(days=-1 + i)
         date_str = single_date.strftime("%Y-%m-%d")
         
         # Check if we need to refresh this date
@@ -338,7 +351,7 @@ st.text("Games with top 60 NBA draft prospects on both teams.")
 st.dataframe(super_matchups_expanded, hide_index=True, height=300, use_container_width=True)
 print(tab(super_matchups_expanded))
 # Get date range for calendar
-today = date.today()
+today = get_pacific_today()
 date_options = sorted(combined_df['DATE'].dropna().unique())
 
 # Handle empty date options gracefully
@@ -444,12 +457,16 @@ with col1:
     url = "https://www.nbadraft.net/nba-mock-drafts/?year-mock=2026"
     ## url = "https://www.nbadraft.net/nba-mock-drafts/?year-mock=2025"
     st.write("[nbadraft.net mock draft board](%s)" % url)
-    single_date = date.today() + timedelta(days=1)  # Start with tomorrow
+    single_date = get_pacific_today() + timedelta(days=1)  # Start with tomorrow (Pacific time)
     date_str = single_date.strftime("%Y%m%d")
     url = f"https://www.espn.com/mens-college-basketball/schedule/_/date/{date_str}"
     st.write("[espn.com ncaa schedule](%s)" % url)
     url = "https://www.jstew.info"
     st.write("[created by jstew.info](%s)" % url)
+    
+    # Show current Pacific time for reference
+    pacific_time = get_pacific_now()
+    st.caption(f"Pacific Time: {pacific_time.strftime('%I:%M %p PT')}")
 
 with col2:
     st.text("")
