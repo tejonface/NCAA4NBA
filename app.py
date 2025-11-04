@@ -427,13 +427,17 @@ super_matchups_expanded['Game Time (ET)'] = super_matchups_expanded.apply(format
 # ==================================================================================== Create Streamlit Display
 # Streamlit App
 
+# Initialize theme in session state
+if 'theme' not in st.session_state:
+    st.session_state['theme'] = 'auto'  # Options: 'auto', 'light', 'dark'
+
 st.set_page_config(layout="centered")
 
-# Add custom CSS for modern, cohesive design
+# Add custom CSS for modern, cohesive design with dark mode support
 st.markdown("""
 <style>
-    /* ===== Color Palette ===== */
-    :root {
+    /* ===== Color Palette - Light Mode (Default) ===== */
+    :root, .theme-light {
         --primary-blue: #3b82f6;
         --primary-dark: #2563eb;
         --primary-light: #60a5fa;
@@ -444,6 +448,51 @@ st.markdown("""
         --text-primary: #1e293b;
         --text-secondary: #64748b;
         --hover-bg: #f1f5f9;
+        --table-even-row: #f8fafc;
+        --table-hover: #e0f2fe;
+    }
+    
+    /* ===== Dark Mode Colors ===== */
+    .theme-dark {
+        --primary-blue: #60a5fa;
+        --primary-dark: #3b82f6;
+        --primary-light: #93c5fd;
+        --accent: #a78bfa;
+        --bg-light: #1e293b;
+        --bg-card: #0f172a;
+        --border-color: #334155;
+        --text-primary: #f1f5f9;
+        --text-secondary: #94a3b8;
+        --hover-bg: #334155;
+        --table-even-row: #1e293b;
+        --table-hover: #334155;
+    }
+    
+    /* ===== Auto Dark Mode (System Preference) ===== */
+    @media (prefers-color-scheme: dark) {
+        .theme-auto {
+            --primary-blue: #60a5fa;
+            --primary-dark: #3b82f6;
+            --primary-light: #93c5fd;
+            --accent: #a78bfa;
+            --bg-light: #1e293b;
+            --bg-card: #0f172a;
+            --border-color: #334155;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --hover-bg: #334155;
+            --table-even-row: #1e293b;
+            --table-hover: #334155;
+        }
+    }
+    
+    /* Apply background and text colors to main app */
+    .theme-dark, .theme-dark .main, 
+    @media (prefers-color-scheme: dark) {
+        .theme-auto .main {
+            background-color: var(--bg-light);
+            color: var(--text-primary);
+        }
     }
     
     /* ===== Layout & Spacing ===== */
@@ -519,11 +568,11 @@ st.markdown("""
     
     /* Table body styling */
     .stDataFrame tbody tr:nth-child(even) {
-        background-color: #f8fafc !important;
+        background-color: var(--table-even-row) !important;
     }
     
     .stDataFrame tbody tr:hover {
-        background-color: #e0f2fe !important;
+        background-color: var(--table-hover) !important;
         transition: background-color 0.15s ease;
     }
     
@@ -599,10 +648,42 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Header with info popover
-col_title, col_info = st.columns([10, 1])
+# JavaScript to apply theme class based on session state
+theme_class = f"theme-{st.session_state['theme']}"
+st.markdown(f"""
+<script>
+    // Apply theme class to main app container
+    const applyTheme = () => {{
+        const app = window.parent.document.querySelector('.stApp');
+        if (app) {{
+            app.className = app.className.replace(/theme-\\w+/g, '');
+            app.classList.add('{theme_class}');
+        }}
+    }};
+    
+    // Apply immediately and on DOM changes
+    applyTheme();
+    new MutationObserver(applyTheme).observe(
+        window.parent.document.body,
+        {{ childList: true, subtree: true }}
+    );
+</script>
+""", unsafe_allow_html=True)
+
+# Header with theme toggle and info popover
+col_title, col_theme, col_info = st.columns([8, 1, 1])
 with col_title:
     st.title("NBA Prospect Schedule")
+with col_theme:
+    # Theme toggle button
+    theme_icons = {'auto': '🌓', 'light': '☀️', 'dark': '🌙'}
+    current_icon = theme_icons[st.session_state['theme']]
+    if st.button(current_icon, help=f"Current: {st.session_state['theme'].capitalize()} mode"):
+        # Cycle through themes: auto -> light -> dark -> auto
+        themes = ['auto', 'light', 'dark']
+        current_index = themes.index(st.session_state['theme'])
+        st.session_state['theme'] = themes[(current_index + 1) % 3]
+        st.rerun()
 with col_info:
     with st.popover("ℹ️"):
         st.markdown("**About**")
