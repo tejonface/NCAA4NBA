@@ -66,6 +66,10 @@ Preferred communication style: Simple, everyday language.
 
 ## Application Features
 - **Draft Board Display**: Shows 2026 NBA Mock Draft rankings with upcoming game schedules
+  - **NBA Team Logos**: Displays official NBA team logos from ESPN's CDN instead of text team names
+  - Logo mapping handles all 30 NBA teams with variations (e.g., "Golden State" vs "Golden St.")
+  - Automatically strips asterisks from projected picks (e.g., "*Utah" → Utah logo)
+  - ImageColumn configuration shows logos at optimal "small" size for table readability
 - **Super Matchups**: Highlights games featuring top draft prospects on both teams
 - **Date-Based Filtering**: Interactive calendar date picker for viewing games on any specific day within the 60-day range
 - **Prospect Tracking**: Automatically matches NCAA players with their draft rankings
