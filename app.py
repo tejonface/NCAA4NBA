@@ -85,7 +85,7 @@ def load_nearfuture_schedule(file_mtime, date_range_key):
 
 @st.cache_data(ttl=172800)  # 48 hours TTL for far-future games
 def load_farfuture_schedule(file_mtime, date_range_key):
-    """Load 8+ days schedule with infrequent refresh
+    """Load 8+ days schedule with infrequent refresh (full season)
     
     Args:
         file_mtime: File modification time
@@ -97,8 +97,8 @@ def load_farfuture_schedule(file_mtime, date_range_key):
             df['DATE'] = pd.to_datetime(df['DATE']).dt.date
             today = get_eastern_today()
             week_start = today + timedelta(days=8)
-            month_end = today + timedelta(days=30)
-            return df[(df['DATE'] >= week_start) & (df['DATE'] <= month_end)]
+            # Load all games from day 8 onwards (no upper limit for full season coverage)
+            return df[df['DATE'] >= week_start]
         return pd.DataFrame()
     else:
         return pd.DataFrame()
@@ -109,7 +109,7 @@ def load_schedule_data_smart():
     Returns combined DataFrame with different TTLs for different date ranges:
     - Today's games: 30 min refresh
     - Next 7 days: 12 hour refresh  
-    - 8-30 days out: 24 hour refresh
+    - 8+ days out: 48 hour refresh (full season coverage)
     """
     file_mtime = get_file_mtime(SCHEDULE_DATA_FILE)
     today = get_eastern_today()
