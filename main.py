@@ -81,6 +81,7 @@ def scrape_ncaa_schedule():
 # Scrape NCAA schedule
 combined_df = scrape_ncaa_schedule()
 
+
 # =================================================================== Clean Draft Data
 
 # Convert Draft Rank to Int for Sorting purposes
