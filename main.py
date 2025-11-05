@@ -204,6 +204,7 @@ with col1:
 
 with col2:
     # with st.expander("Upcoming NCAA games featuring top 60 NBA draft prospects.", expanded=False):
+    st.write("[New and Improved - https://ncaa4nba.replit.app/](https://ncaa4nba.replit.app/)")
     st.text("This page helps basketball fans keep track of upcoming NCAA games featuring "
             "top prospects for the 2026 NBA Draft. If you don’t follow college basketball "
             "but want to know when the next potential NBA stars are playing, this is your "
