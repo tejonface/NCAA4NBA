@@ -13,15 +13,12 @@ from tabulate import tabulate as tab
 
 # =================================================================== Scrape NBA Draft Board
 # Function to scrape NBA draft board tables
-USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
-
-
 @st.cache_data(ttl=1800)
 def scrape_nba_mock_draft(url):
     columns = ["Rank", "Team", "Player", "H", "W", "P", "School", "C"]
 
     try:
-        response = requests.get(url, headers={"User-Agent": USER_AGENT}, timeout=10)
+        response = requests.get(url, timeout=10)
     except RequestException:
         st.warning("Unable to reach the NBA mock draft source right now.")
         return pd.DataFrame(columns=columns)
@@ -72,7 +69,7 @@ def scrape_ncaa_schedule():
         url = f"https://www.espn.com/mens-college-basketball/schedule/_/date/{date_str}"
 
         try:
-            response = requests.get(url, headers={"User-Agent": USER_AGENT}, timeout=10)
+            response = requests.get(url, timeout=10)
         except RequestException:
             if not schedule_error_reported:
                 st.warning("Unable to reach the NCAA schedule source right now.")
