@@ -48,8 +48,8 @@ draft_df = scrape_nba_mock_draft(draft_url)
 def scrape_ncaa_schedule():
     combined_df = pd.DataFrame()
 
-    for i in range(7):  # Loop through the next 7 days
-        single_date = date.today() + timedelta(days=0 + i)  # Start with today
+    for i in range(8):  # Loop through 8 days to cover timezone differences
+        single_date = date.today() + timedelta(days=-1 + i)  # Start with yesterday to handle timezone differences
         # single_date = date(2025, 11,3) + timedelta(days=i)
         date_str = single_date.strftime("%Y%m%d")
         #  date_str = sample_date.strftime("%Y%m%d")

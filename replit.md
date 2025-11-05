@@ -63,7 +63,7 @@ Preferred communication style: Simple, everyday language.
 - **Purpose**: Source for NCAA men's college basketball game schedules
 - **Data Extracted**: Game matchups and scheduling information
 - **Method**: HTTP GET requests with custom User-Agent headers to avoid blocking
-- **Schedule Range**: Configured to scrape 7 days of upcoming games
+- **Schedule Range**: Configured to scrape 8 days starting from yesterday to handle timezone differences (ensures users in all timezones see their "today" games)
 
 ## Python Libraries
 
@@ -84,10 +84,20 @@ Preferred communication style: Simple, everyday language.
 
 ## Deployment Configuration
 
-**Platform**: GitHub Codespaces / VS Code Dev Containers
+**Platform**: Replit
 
-**Port Configuration**: Application runs on port 8501 with auto-forwarding enabled
+**Port Configuration**: Application runs on port 5000
 
 **Streamlit Server Settings**: 
-- CORS disabled for development
-- XSRF protection disabled for development
+- CORS disabled to work with Replit's proxy
+- XSRF protection disabled for compatibility
+- Server address set to 0.0.0.0 to accept all hosts
+- Headless mode enabled for production deployment
+
+## Recent Changes
+
+**Date**: November 5, 2025
+**Change**: Fixed timezone handling in schedule scraping
+- Modified `scrape_ncaa_schedule()` to start from yesterday instead of today
+- Extended scraping range from 7 to 8 days
+- **Rationale**: Server runs in UTC timezone, but users may be in different timezones. Starting from yesterday ensures users in all timezones (including those behind UTC) can see their "today" games
