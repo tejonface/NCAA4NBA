@@ -5,3 +5,12 @@ seaborn
 matplotlib
 numpy
 tabulate
+beautifulsoup4
+ipywidgets
+matplotlib
+numpy
+pandas
+requests
+seaborn
+streamlit
+tabulate
