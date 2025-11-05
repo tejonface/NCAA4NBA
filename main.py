@@ -22,8 +22,14 @@ def scrape_nba_mock_draft(url):
 
     try:
         response = requests.get(url, headers={"User-Agent": USER_AGENT}, timeout=10)
-        response.raise_for_status()
     except RequestException:
+        st.warning("Unable to reach the NBA mock draft source right now.")
+        return pd.DataFrame(columns=columns)
+
+    if response.status_code >= 400:
+        st.warning(
+            "NBA mock draft data source responded with an error (status %s)." % response.status_code
+        )
         return pd.DataFrame(columns=columns)
 
     soup = BeautifulSoup(response.content, "html.parser")
@@ -58,6 +64,7 @@ draft_df = scrape_nba_mock_draft(draft_url)
 @st.cache_data(ttl=1800)
 def scrape_ncaa_schedule():
     combined_df = pd.DataFrame()
+    schedule_error_reported = False
 
     for i in range(7):  # Loop through the next 7 days
         single_date = date.today() + timedelta(days=0 + i - 1)  # Start with today
@@ -66,8 +73,18 @@ def scrape_ncaa_schedule():
 
         try:
             response = requests.get(url, headers={"User-Agent": USER_AGENT}, timeout=10)
-            response.raise_for_status()
         except RequestException:
+            if not schedule_error_reported:
+                st.warning("Unable to reach the NCAA schedule source right now.")
+                schedule_error_reported = True
+            continue
+
+        if response.status_code >= 400:
+            if not schedule_error_reported:
+                st.warning(
+                    "NCAA schedule data source responded with an error (status %s)." % response.status_code
+                )
+                schedule_error_reported = True
             continue
 
         soup = BeautifulSoup(response.content, "html.parser")
