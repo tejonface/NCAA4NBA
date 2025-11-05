@@ -216,6 +216,7 @@ st.divider()
 st.header("Draft Board with Next Games")
 st.text("2026 NBA Mock Draft board with each NCAA players' upcoming game.")
 st.dataframe(draft_with_games, hide_index=True)
+
 print(tab(draft_with_games))
 # Display Super Matchups
 st.header("SUPER MATCHUPS")
