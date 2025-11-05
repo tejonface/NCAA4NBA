@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import requests
+from requests.exceptions import RequestException
 from bs4 import BeautifulSoup
 from datetime import date, timedelta, datetime
 import numpy as np
@@ -12,10 +13,19 @@ from tabulate import tabulate as tab
 
 # =================================================================== Scrape NBA Draft Board
 # Function to scrape NBA draft board tables
+USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
+
+
 @st.cache_data(ttl=1800)
 def scrape_nba_mock_draft(url):
-    response = requests.get(url)
-    response.raise_for_status()
+    columns = ["Rank", "Team", "Player", "H", "W", "P", "School", "C"]
+
+    try:
+        response = requests.get(url, headers={"User-Agent": USER_AGENT}, timeout=10)
+        response.raise_for_status()
+    except RequestException:
+        return pd.DataFrame(columns=columns)
+
     soup = BeautifulSoup(response.content, "html.parser")
 
     all_data = []  # List to store data from both tables
@@ -29,9 +39,10 @@ def scrape_nba_mock_draft(url):
                 cols = [col.text.strip() for col in cols]
                 all_data.append(cols)  # Append data to the common list
 
-    df = pd.DataFrame(all_data)  # Create DataFrame from combined data
-    # Assign column names (assuming they are the same for both tables)
-    df.columns = ["Rank", "Team", "Player", "H", "W", "P", "School", "C"]
+    if not all_data:
+        return pd.DataFrame(columns=columns)
+
+    df = pd.DataFrame(all_data, columns=columns)  # Create DataFrame from combined data
     return df
 
 
@@ -49,14 +60,16 @@ def scrape_ncaa_schedule():
     combined_df = pd.DataFrame()
 
     for i in range(7):  # Loop through the next 7 days
-        single_date = date.today() + timedelta(days=0 + i-1)  # Start with today
-        # single_date = date(2025, 11,3) + timedelta(days=i)
+        single_date = date.today() + timedelta(days=0 + i - 1)  # Start with today
         date_str = single_date.strftime("%Y%m%d")
-        #  date_str = sample_date.strftime("%Y%m%d")
-        #print(sample_date)
         url = f"https://www.espn.com/mens-college-basketball/schedule/_/date/{date_str}"
-        headers = {"User-Agent": "Mozilla/5.0"}
-        response = requests.get(url, headers=headers)
+
+        try:
+            response = requests.get(url, headers={"User-Agent": USER_AGENT}, timeout=10)
+            response.raise_for_status()
+        except RequestException:
+            continue
+
         soup = BeautifulSoup(response.content, "html.parser")
 
         table = soup.find("table")
@@ -64,22 +77,32 @@ def scrape_ncaa_schedule():
             continue
 
         rows = table.find_all("tr")
-        data = [[col.text.strip() for col in row.find_all(["th", "td"])] for row in rows if row.find_all(["th", "td"])]
+        data = [
+            [col.text.strip() for col in row.find_all(["th", "td"])]
+            for row in rows
+            if row.find_all(["th", "td"])
+        ]
 
         df = pd.DataFrame(data)
-        if not df.empty:
-            df.columns = df.iloc[0]
-            df = df.drop(0).reset_index(drop=True)
-            df.columns = [df.columns[0]] + [''] + list(df.columns[1:-1])  # Shift columns
-            # df["DATE"] = single_date
-            df["DATE"] = single_date
-            # df["DATE"] = sample_date
-            combined_df = pd.concat([combined_df, df], ignore_index=True)
+        if df.empty:
+            continue
+
+        df.columns = df.iloc[0]
+        df = df.drop(0).reset_index(drop=True)
+        df.columns = [df.columns[0]] + [''] + list(df.columns[1:-1])  # Shift columns
+        df["DATE"] = single_date
+        combined_df = pd.concat([combined_df, df], ignore_index=True)
 
     return combined_df
 
 # Scrape NCAA schedule
 combined_df = scrape_ncaa_schedule()
+
+if draft_df.empty:
+    st.warning("No NBA mock draft data is available at the moment.")
+
+if combined_df.empty:
+    st.warning("No NCAA schedule data is available at the moment.")
 
 # =================================================================== Clean Draft Data
 
@@ -95,70 +118,77 @@ draft_df['School_Merge'] = draft_df['School_Merge'].str.replace("'", "")
 
 # =================================================================== Clean Schedule Data
 
-# Rename schedule columns
-combined_df = combined_df.rename(columns={
-    combined_df.columns[0]: "AWAY",
-    combined_df.columns[1]: "HOME",
-    combined_df.columns[2]: "TIME",
-    combined_df.columns[3]: "TV",
-    combined_df.columns[4]: "TICKETS",
-    combined_df.columns[5]: "LOCATION",
-#    combined_df.columns[6]: "ODDS BY",
-#    combined_df.columns[7]: "DATE",
-    "DATE": "DATE"
-})
+if not combined_df.empty:
+    # Rename schedule columns
+    combined_df = combined_df.rename(columns={
+        combined_df.columns[0]: "AWAY",
+        combined_df.columns[1]: "HOME",
+        combined_df.columns[2]: "TIME",
+        combined_df.columns[3]: "TV",
+        combined_df.columns[4]: "TICKETS",
+        combined_df.columns[5]: "LOCATION",
+        "DATE": "DATE"
+    })
 
-# Create duplicate df to join on home or away team.
-combined_df_home = combined_df.copy()
-combined_df_away = combined_df.copy()
+    # Create duplicate df to join on home or away team.
+    combined_df_home = combined_df.copy()
+    combined_df_away = combined_df.copy()
 
-# Clean team names in schedule
-combined_df_home['TEAM'] = combined_df_home['HOME'].str.replace(r'[@0-9]', '', regex=True).str.strip()
-combined_df_away['TEAM'] = combined_df_away['AWAY'].str.replace(r'[@0-9]', '', regex=True).str.strip()
+    # Clean team names in schedule
+    combined_df_home['TEAM'] = combined_df_home['HOME'].str.replace(r'[@0-9]', '', regex=True).str.strip()
+    combined_df_away['TEAM'] = combined_df_away['AWAY'].str.replace(r'[@0-9]', '', regex=True).str.strip()
 
-# Concatenate home and away df
-combined_df = pd.concat([combined_df_home, combined_df_away])
+    # Concatenate home and away df
+    combined_df = pd.concat([combined_df_home, combined_df_away])
 
-combined_df['TEAM'] = combined_df['TEAM'].str.replace("'", "")
-combined_df['TEAM'] = combined_df['TEAM'].str.replace(r'St\.$', 'State', regex=True)
-combined_df['TEAM'] = combined_df['TEAM'].str.replace(r'^St\.', 'Saint', regex=True)
+    combined_df['TEAM'] = combined_df['TEAM'].str.replace("'", "")
+    combined_df['TEAM'] = combined_df['TEAM'].str.replace(r'St\.$', 'State', regex=True)
+    combined_df['TEAM'] = combined_df['TEAM'].str.replace(r'^St\.', 'Saint', regex=True)
 
-combined_df['HomeTeam'] = combined_df['HOME'].str.replace(r'[@0-9]', '', regex=True).str.strip()
-combined_df['HomeTeam'] = combined_df['HomeTeam'].str.replace(r'St\.$', 'State', regex=True)
-combined_df['HomeTeam'] = combined_df['HomeTeam'].str.replace(r'^St\.', 'Saint', regex=True)
-combined_df['HomeTeam'] = combined_df['HomeTeam'].str.replace("'", "")
+    combined_df['HomeTeam'] = combined_df['HOME'].str.replace(r'[@0-9]', '', regex=True).str.strip()
+    combined_df['HomeTeam'] = combined_df['HomeTeam'].str.replace(r'St\.$', 'State', regex=True)
+    combined_df['HomeTeam'] = combined_df['HomeTeam'].str.replace(r'^St\.', 'Saint', regex=True)
+    combined_df['HomeTeam'] = combined_df['HomeTeam'].str.replace("'", "")
 
-combined_df['AwayTeam'] = combined_df['AWAY'].str.replace(r'[@0-9]', '', regex=True).str.strip()
-combined_df['AwayTeam'] = combined_df['AwayTeam'].str.replace(r'St\.$', 'State', regex=True)
-combined_df['AwayTeam'] = combined_df['AwayTeam'].str.replace(r'^St\.', 'Saint', regex=True)
-combined_df['AwayTeam'] = combined_df['AwayTeam'].str.replace("'", "")
-
-
-# ==================================================================================== Add column for Players In Games
-
-# Function to get players from a given school
-def get_players_from_school(school):
-    players = draft_df[draft_df['School_Merge'] == school][['Rank', 'Player', 'School']]
-    return players.to_dict(orient='records')
+    combined_df['AwayTeam'] = combined_df['AWAY'].str.replace(r'[@0-9]', '', regex=True).str.strip()
+    combined_df['AwayTeam'] = combined_df['AwayTeam'].str.replace(r'St\.$', 'State', regex=True)
+    combined_df['AwayTeam'] = combined_df['AwayTeam'].str.replace(r'^St\.', 'Saint', regex=True)
+    combined_df['AwayTeam'] = combined_df['AwayTeam'].str.replace("'", "")
 
 
-# Apply get_players_from_school to HomeTeam and AwayTeam
-combined_df['HomeTeam_Players'] = combined_df['HomeTeam'].apply(get_players_from_school)
-combined_df['AwayTeam_Players'] = combined_df['AwayTeam'].apply(get_players_from_school)
+    # ==================================================================================== Add column for Players In Games
 
-# Combine home and away players into a single list
-combined_df['All_Players'] = combined_df.apply(
-    lambda row: row['HomeTeam_Players'] + row['AwayTeam_Players'], axis=1
-)
+    # Function to get players from a given school
+    def get_players_from_school(school):
+        players = draft_df[draft_df['School_Merge'] == school][['Rank', 'Player', 'School']]
+        return players.to_dict(orient='records')
 
-# Sort players by rank before formatting
-combined_df['All_Players'] = combined_df.apply(
-    lambda row: ', '.join([
-        f"{p['School']}-#{str(p['Rank'])} {p['Player']}"
-        for p in sorted(row['All_Players'], key=lambda x: int(x['Rank']))
-    ]),
-    axis=1
-)
+
+    # Apply get_players_from_school to HomeTeam and AwayTeam
+    combined_df['HomeTeam_Players'] = combined_df['HomeTeam'].apply(get_players_from_school)
+    combined_df['AwayTeam_Players'] = combined_df['AwayTeam'].apply(get_players_from_school)
+
+    # Combine home and away players into a single list
+    combined_df['All_Players'] = combined_df.apply(
+        lambda row: row['HomeTeam_Players'] + row['AwayTeam_Players'], axis=1
+    )
+
+    # Sort players by rank before formatting
+    combined_df['All_Players'] = combined_df.apply(
+        lambda row: ', '.join([
+            f"{p['School']}-#{str(p['Rank'])} {p['Player']}"
+            for p in sorted(row['All_Players'], key=lambda x: int(x['Rank']))
+        ]),
+        axis=1
+    )
+else:
+    combined_df = pd.DataFrame(
+        columns=[
+            'AWAY', 'HOME', 'TIME', 'TV', 'TICKETS', 'LOCATION', 'DATE',
+            'TEAM', 'HomeTeam', 'AwayTeam', 'HomeTeam_Players', 'AwayTeam_Players',
+            'All_Players'
+        ]
+    )
 print(tab(combined_df.head(),headers="firstrow", tablefmt="grid"))
 # ==================================================================================== Prepare Tables for Display
 
@@ -227,33 +257,34 @@ print(tab(super_matchups_expanded))
 today = date.today()
 
 # Select a single date using segmented control, default to the closest available date
-date_options = sorted(combined_df['DATE'].dropna().unique())
+date_options = sorted(combined_df['DATE'].dropna().unique()) if 'DATE' in combined_df else []
 
-# Ensure the default value exists in the list of options
-default_date = today if today in date_options else date_options[0]  # Pick the first available date if not found
+selected_date = None
+if date_options:
+    # Ensure the default value exists in the list of options
+    default_date = today if today in date_options else date_options[0]
 
-selected_date = st.segmented_control("Select Date", date_options, selection_mode="single", default=default_date)
+    selected_date = st.segmented_control(
+        "Select Date", date_options, selection_mode="single", default=default_date
+    )
 
+    if selected_date:
+        # Display schedule for the selected date
+        st.header(f"Schedule for {selected_date}")
 
-# Display schedule for the selected date
-st.header(f"Schedule for {selected_date}")
+        # Filter upcoming games for the selected date
+        filtered_games = upcoming_games_df[upcoming_games_df['DATE'] == selected_date]
 
-# Ensure selected_date is treated as a single value for filtering
-if selected_date:
-    # Filter upcoming games for the selected date
-    filtered_games = upcoming_games_df[upcoming_games_df['DATE'] == selected_date]
+        # Merge filtered games with draft data to add player info
+        filtered_games_expanded = filtered_games.copy()
 
-    # Merge filtered games with draft data to add player info
-    filtered_games_expanded = filtered_games.copy()
+        # Drop unnecessary columns and keep only relevant details
+        filtered_games_expanded = filtered_games_expanded[['AWAY', 'HOME', 'DATE', 'TIME', 'All_Players']]
 
-    # Drop unnecessary columns and keep only relevant details
-    filtered_games_expanded = filtered_games_expanded[['AWAY', 'HOME', 'DATE', 'TIME', 'All_Players']]
-
-    # Display in Streamlit
-    st.dataframe(filtered_games_expanded, hide_index=True)
-
+        # Display in Streamlit
+        st.dataframe(filtered_games_expanded, hide_index=True)
 else:
-    st.write("Please select a date.")
+    st.info("No schedule data to display right now.")
 
 # ==================================================================================== Chart
 
