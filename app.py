@@ -754,7 +754,7 @@ with tab4:
     school_summary = school_summary.sort_values(by='Total', ascending=False)
     
     # Create a figure and axis
-    fig, ax = plt.subplots(figsize=(6, 8))
+    fig, ax = plt.subplots(figsize=(6, 10))
     
     # Set colors
     fig.patch.set_facecolor('white')
