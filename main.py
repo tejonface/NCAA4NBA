@@ -16,7 +16,6 @@ import re
 from concurrent.futures import ThreadPoolExecutor
 import time
 
-
 # ====================================================================================
 # UTILITY FUNCTIONS
 # ====================================================================================
@@ -25,11 +24,9 @@ def get_eastern_now():
     """Get current datetime in Eastern timezone"""
     return datetime.now(ZoneInfo("America/New_York"))
 
-
 def get_eastern_today():
     """Get today's date in Eastern timezone"""
     return get_eastern_now().date()
-
 
 def clean_team_name(team_name):
     """Clean and standardize team names for matching"""
@@ -41,11 +38,9 @@ def clean_team_name(team_name):
     cleaned = cleaned.replace("'", "")
     return cleaned
 
-
 def clean_team_name_series(series):
     """Clean and standardize team names in a pandas Series"""
     return series.apply(clean_team_name)
-
 
 # ====================================================================================
 # WEB SCRAPING FUNCTIONS
@@ -54,6 +49,8 @@ def clean_team_name_series(series):
 @st.cache_data(ttl=7200, show_spinner="Scraping NBA Draft data...")
 def scrape_nba_draft_data():
     """Scrape mock draft data from nbadraft.net
+
+    Falls back to static_draft_data.csv if scraping fails.
 
     Returns:
         DataFrame with columns: Rank, Team, Player, School
@@ -72,8 +69,8 @@ def scrape_nba_draft_data():
         tables = soup.find_all('table', {'id': ['nba_mock_consensus_table', 'nba_mock_consensus_table2']})
 
         if not tables:
-            st.warning("Could not find draft table on nbadraft.net")
-            return pd.DataFrame()
+            st.warning("Could not find draft table on nbadraft.net - using cached data")
+            return load_static_draft_data()
 
         all_rows = []
         for table in tables:
@@ -99,13 +96,25 @@ def scrape_nba_draft_data():
             df = df.drop_duplicates(subset=['Rank', 'Player'])
             return df
         else:
-            st.warning("No draft data found")
-            return pd.DataFrame()
+            st.warning("No draft data found - using cached data")
+            return load_static_draft_data()
 
     except Exception as e:
-        st.error(f"Error scraping draft data: {e}")
-        return pd.DataFrame()
+        st.warning(f"Error scraping draft data - using cached data")
+        return load_static_draft_data()
 
+def load_static_draft_data():
+    """Load static draft data as fallback
+
+    Returns:
+        DataFrame with draft data from static file
+    """
+    try:
+        df = pd.read_csv('static_draft_data.csv')
+        return df
+    except Exception as e:
+        st.error(f"⚠️ Could not load draft data: {e}")
+        return pd.DataFrame()
 
 def scrape_single_date_schedule(date_obj):
     """Scrape ESPN schedule for a single date
@@ -180,7 +189,6 @@ def scrape_single_date_schedule(date_obj):
     except:
         return []
 
-
 @st.cache_data(ttl=7200, show_spinner="Scraping NCAA schedule data...")
 def scrape_ncaa_schedule():
     """Scrape NCAA basketball schedule from ESPN
@@ -205,7 +213,6 @@ def scrape_ncaa_schedule():
         return df
     else:
         return pd.DataFrame()
-
 
 # ====================================================================================
 # DATA TRANSFORMATION FUNCTIONS
@@ -258,7 +265,6 @@ def prepare_draft_with_games(draft_df, schedule_df):
 
     return result
 
-
 @st.cache_data(ttl=7200)
 def prepare_games_with_players(draft_df, schedule_df):
     """Add All_Players column showing prospects in each game
@@ -300,7 +306,6 @@ def prepare_games_with_players(draft_df, schedule_df):
 
     return schedule_df
 
-
 @st.cache_data(ttl=7200)
 def prepare_super_matchups(draft_df, games_with_players_df):
     """Filter to games with prospects on BOTH teams
@@ -320,11 +325,10 @@ def prepare_super_matchups(draft_df, games_with_players_df):
     super_matchups = games_df[
         (games_df['HomeTeam'].isin(draft_df['School_Merge'])) &
         (games_df['AwayTeam'].isin(draft_df['School_Merge']))
-        ]
+    ]
 
     result = super_matchups[['AWAY', 'HOME', 'DATE', 'TIME', 'TV', 'All_Players']].drop_duplicates()
     return result
-
 
 # ====================================================================================
 # LOAD AND PREPARE ALL DATA
@@ -392,7 +396,6 @@ NBA_TEAM_LOGOS = {
     "Washington": "https://a.espncdn.com/i/teamlogos/nba/500/wsh.png"
 }
 
-
 def get_team_logo(team_name):
     """Get logo URL for a team, stripping asterisks and handling variations"""
     if pd.isna(team_name) or team_name == "":
@@ -400,11 +403,9 @@ def get_team_logo(team_name):
     clean_name = team_name.strip().replace("*", "")
     return NBA_TEAM_LOGOS.get(clean_name, "")
 
-
 # Add team logos to draft board
 if not draft_with_games.empty:
     draft_with_games['Team'] = draft_with_games['Team'].apply(get_team_logo)
-
 
 # ====================================================================================
 # LIVE GAME DETECTION
@@ -451,11 +452,9 @@ def detect_live_games(row):
     except:
         return ""
 
-
 def format_game_time(row):
     """Format DATE and TIME into readable format"""
     return detect_live_games(row)
-
 
 # Add formatted game time to draft board
 if not draft_with_games.empty:
@@ -479,18 +478,18 @@ st.markdown("""
         --text-primary: #1e293b;
         --text-secondary: #64748b;
     }
-
+    
     .main .block-container {
         padding-top: 0.1rem;
         max-width: 1400px;
         margin: 0 auto;
     }
-
+    
     .stTabs [data-baseweb="tab-list"] {
         gap: 8px;
         padding-top: 4px;
     }
-
+    
     .stTabs [data-baseweb="tab"] {
         height: 60px;
         background-color: var(--bg-light);
@@ -501,7 +500,7 @@ st.markdown("""
         color: var(--text-secondary);
         border: 1px solid var(--border-color);
     }
-
+    
     .stTabs [aria-selected="true"] {
         background-color: var(--primary-blue);
         color: white;
@@ -608,8 +607,7 @@ with tab3:
             with col_count:
                 if not filtered_games.empty:
                     game_count = game_counts.get(selected_date, 0)
-                    st.markdown(
-                        f"### {game_count} game{'s' if game_count != 1 else ''} on {selected_date.strftime('%a, %b %d, %Y')}")
+                    st.markdown(f"### {game_count} game{'s' if game_count != 1 else ''} on {selected_date.strftime('%a, %b %d, %Y')}")
 
             if not filtered_games.empty:
                 filtered_df = filtered_games.copy()
