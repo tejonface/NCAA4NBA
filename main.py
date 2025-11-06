@@ -302,7 +302,7 @@ st.header(":red[**_New and Improved!_: [ncaa4nba.replit.app](https://ncaa4nba.re
 
 st.divider()
 # ==================================================================================== Footer
-col1, col2, col3 = st.columns(3)
+col1, col2 = st.columns(2)
 
 with col1:
     #st.header("Sources")
@@ -315,9 +315,8 @@ with col1:
     #st.write("[espn.com ncaa schedule](%s)" % url)
     url = "https://www.jstew.info"
     st.write("[created by jstew.info](%s)" % url)
-
+    st.image("static/logo.png", width=200)
 with col2:
     st.text("")
-    st.image("static/logo.png", width=201)
-with col3:
+
 
