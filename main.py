@@ -43,6 +43,73 @@ def clean_team_name_series(series):
     return series.apply(clean_team_name)
 
 # ====================================================================================
+# STATIC FALLBACK DATA (60 top 2026 NBA Draft prospects)
+# ====================================================================================
+
+STATIC_DRAFT_DATA = [
+    {'Rank': 1, 'Team': '*Utah', 'Player': 'AJ Dybantsa', 'School': 'BYU'},
+    {'Rank': 2, 'Team': '*Washington', 'Player': 'Darryn Peterson', 'School': 'Kansas'},
+    {'Rank': 3, 'Team': 'Charlotte', 'Player': 'Mikel Brown', 'School': 'Louisville'},
+    {'Rank': 4, 'Team': 'New Orleans', 'Player': 'Cameron Boozer', 'School': 'Duke'},
+    {'Rank': 5, 'Team': '*Philadelphia', 'Player': 'Caleb Wilson', 'School': 'North Carolina'},
+    {'Rank': 6, 'Team': 'Brooklyn', 'Player': 'Kam Williams', 'School': 'Kentucky'},
+    {'Rank': 7, 'Team': 'Toronto', 'Player': 'Chris Cenac', 'School': 'Houston'},
+    {'Rank': 8, 'Team': 'San Antonio', 'Player': 'Nate Ament', 'School': 'Tennessee'},
+    {'Rank': 9, 'Team': 'Phoenix', 'Player': 'Isaiah Evans', 'School': 'Duke'},
+    {'Rank': 10, 'Team': '*Portland', 'Player': 'Kingston Flemings', 'School': 'Houston'},
+    {'Rank': 11, 'Team': '*Miami', 'Player': 'Johann Grunloh', 'School': 'Virginia'},
+    {'Rank': 12, 'Team': 'Dallas', 'Player': 'Karter Knox', 'School': 'Arkansas'},
+    {'Rank': 13, 'Team': '*San Antonio', 'Player': 'Karim Lopez', 'School': 'Mexico'},
+    {'Rank': 14, 'Team': 'Sacramento', 'Player': 'Ian Jackson', 'School': 'St. Johns'},
+    {'Rank': 15, 'Team': 'Atlanta', 'Player': 'Boogie Fland', 'School': 'Florida'},
+    {'Rank': 16, 'Team': 'Orlando', 'Player': 'Jayden Quaintance', 'School': 'Kentucky'},
+    {'Rank': 17, 'Team': 'Detroit', 'Player': 'Tounde Yessoufou', 'School': 'Baylor'},
+    {'Rank': 18, 'Team': 'Golden St.', 'Player': 'Miles Byrd', 'School': 'San Diego St.'},
+    {'Rank': 19, 'Team': 'Memphis', 'Player': 'Labaron Philon', 'School': 'Alabama'},
+    {'Rank': 20, 'Team': 'Milwaukee', 'Player': 'Matt Able', 'School': 'NC State'},
+    {'Rank': 21, 'Team': 'Minnesota', 'Player': 'Alijah Arenas', 'School': 'USC'},
+    {'Rank': 22, 'Team': 'LA Lakers', 'Player': 'Hannes Steinbach', 'School': 'Washington'},
+    {'Rank': 23, 'Team': 'Indiana', 'Player': 'Brayden Burries', 'School': 'Arizona'},
+    {'Rank': 24, 'Team': 'Denver', 'Player': 'Dash Daniels', 'School': 'Australia'},
+    {'Rank': 25, 'Team': 'LA Clippers', 'Player': 'Meleek Thomas', 'School': 'Arkansas'},
+    {'Rank': 26, 'Team': 'New York', 'Player': 'Bennett Stirtz', 'School': 'Iowa'},
+    {'Rank': 27, 'Team': 'Houston', 'Player': 'Yaxel Lendeborg', 'School': 'Michigan'},
+    {'Rank': 28, 'Team': 'Boston', 'Player': 'Thomas Haugh', 'School': 'Florida'},
+    {'Rank': 29, 'Team': 'Cleveland', 'Player': 'JT Toppin', 'School': 'Texas Tech'},
+    {'Rank': 30, 'Team': 'Oklahoma Cty', 'Player': 'Dame Sarr', 'School': 'Duke'},
+    {'Rank': 31, 'Team': 'Utah', 'Player': 'Luigi Suigo', 'School': 'Italy'},
+    {'Rank': 32, 'Team': 'Washington', 'Player': 'Neoklis Avdalas', 'School': 'Virginia Tech'},
+    {'Rank': 33, 'Team': 'Charlotte', 'Player': 'Milos Uzan', 'School': 'Houston'},
+    {'Rank': 34, 'Team': 'New Orleans', 'Player': 'Baye Ndongo', 'School': 'Georgia Tech'},
+    {'Rank': 35, 'Team': 'Philadelphia', 'Player': 'Jaron Pierre', 'School': 'SMU'},
+    {'Rank': 36, 'Team': 'Brooklyn', 'Player': 'Zuby Ejiofor', 'School': 'St. Johns'},
+    {'Rank': 37, 'Team': 'Toronto', 'Player': 'Richie Saunders', 'School': 'BYU'},
+    {'Rank': 38, 'Team': 'San Antonio', 'Player': 'Michael Ruzic', 'School': 'Croatia'},
+    {'Rank': 39, 'Team': 'Phoenix', 'Player': 'Malique Lewis', 'School': ''},
+    {'Rank': 40, 'Team': 'Portland', 'Player': 'Sergio De Larrea', 'School': 'Spain'},
+    {'Rank': 41, 'Team': 'Miami', 'Player': 'PJ Haggerty', 'School': 'Kansas State'},
+    {'Rank': 42, 'Team': 'Dallas', 'Player': 'Amarion Dickerson', 'School': 'USC'},
+    {'Rank': 43, 'Team': 'Chicago', 'Player': 'Alex Karaban', 'School': 'UConn'},
+    {'Rank': 44, 'Team': 'Sacramento', 'Player': 'Noa Kouakou-Heugue', 'School': 'France'},
+    {'Rank': 45, 'Team': 'Atlanta', 'Player': 'Baba Miller', 'School': 'Cincinnati'},
+    {'Rank': 46, 'Team': 'Orlando', 'Player': 'Nate Bittle', 'School': 'Oregon'},
+    {'Rank': 47, 'Team': 'Detroit', 'Player': 'Mackenzie Mgbako', 'School': 'Texas A&M'},
+    {'Rank': 48, 'Team': 'Golden St.', 'Player': 'Mathias M\'Madi', 'School': 'Madigascar'},
+    {'Rank': 49, 'Team': 'Memphis', 'Player': 'Robert Wright', 'School': 'BYU'},
+    {'Rank': 50, 'Team': 'Milwaukee', 'Player': 'Tarris Reed', 'School': 'UConn'},
+    {'Rank': 51, 'Team': 'Minnesota', 'Player': 'Jevon Porter', 'School': 'Missouri'},
+    {'Rank': 52, 'Team': 'LA Lakers', 'Player': 'Seth Trimble', 'School': 'North Carolina'},
+    {'Rank': 53, 'Team': 'Indiana', 'Player': 'Roddy Gayle', 'School': 'Michigan'},
+    {'Rank': 54, 'Team': 'Denver', 'Player': 'Tre White', 'School': 'Kansas'},
+    {'Rank': 55, 'Team': 'LA Clippers', 'Player': 'Donovan Dent', 'School': 'UCLA'},
+    {'Rank': 56, 'Team': 'New York', 'Player': 'Xaivian Lee', 'School': 'Florida'},
+    {'Rank': 57, 'Team': 'Houston', 'Player': 'Malik Reneau', 'School': 'Miami'},
+    {'Rank': 58, 'Team': 'Boston', 'Player': 'JJ Starling', 'School': 'Syracuse'},
+    {'Rank': 59, 'Team': 'Cleveland', 'Player': 'Ognjen Srzentic', 'School': 'Serbia'},
+    {'Rank': 60, 'Team': 'Oklahoma Cty', 'Player': 'Otega Oweh', 'School': 'Kentucky'},
+]
+
+# ====================================================================================
 # WEB SCRAPING FUNCTIONS
 # ====================================================================================
 
@@ -104,17 +171,12 @@ def scrape_nba_draft_data():
         return load_static_draft_data()
 
 def load_static_draft_data():
-    """Load static draft data as fallback
+    """Load hardcoded static draft data as fallback
 
     Returns:
-        DataFrame with draft data from static file
+        DataFrame with draft data from hardcoded constant
     """
-    try:
-        df = pd.read_csv('static_draft_data.csv')
-        return df
-    except Exception as e:
-        st.error(f"⚠️ Could not load draft data: {e}")
-        return pd.DataFrame()
+    return pd.DataFrame(STATIC_DRAFT_DATA)
 
 def scrape_single_date_schedule(date_obj):
     """Scrape ESPN schedule for a single date
