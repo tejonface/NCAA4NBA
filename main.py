@@ -1,12 +1,12 @@
 import streamlit as st
-import pandas as pd
-import requests
-from bs4 import BeautifulSoup
-from datetime import date, timedelta, datetime
-import numpy as np
-import seaborn as sns
-import matplotlib.pyplot as plt
-from tabulate import tabulate as tab
+#import pandas as pd
+##import requests
+#from bs4 import BeautifulSoup
+#from datetime import date, timedelta, datetime
+#import numpy as np
+#import seaborn as sns
+#import matplotlib.pyplot as plt
+#from tabulate import tabulate as tab
 
 
 st.header(":red[**_New and Improved_ [ncaa4nba.replit.app](https://ncaa4nba.replit.app/)**]")
