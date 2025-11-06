@@ -5,7 +5,6 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="9e54fb23-1bbe-43bb-8726-2ebe687cffda" name="Changes" comment="Commit Message">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -170,31 +169,7 @@
       <workItem from="1762235616095" duration="11768000" />
       <workItem from="1762383035687" duration="1098000" />
       <workItem from="1762385155890" duration="1451000" />
-      <workItem from="1762386967275" duration="3598000" />
-    </task>
-    <task id="LOCAL-00206" summary="Commit Message">
-      <option name="closed" value="true" />
-      <created>1752943647226</created>
-      <option name="number" value="00206" />
-      <option name="presentableId" value="LOCAL-00206" />
-      <option name="project" value="LOCAL" />
-      <updated>1752943647226</updated>
-    </task>
-    <task id="LOCAL-00207" summary="Commit Message">
-      <option name="closed" value="true" />
-      <created>1752944032943</created>
-      <option name="number" value="00207" />
-      <option name="presentableId" value="LOCAL-00207" />
-      <option name="project" value="LOCAL" />
-      <updated>1752944032943</updated>
-    </task>
-    <task id="LOCAL-00208" summary="Commit Message">
-      <option name="closed" value="true" />
-      <created>1752944071002</created>
-      <option name="number" value="00208" />
-      <option name="presentableId" value="LOCAL-00208" />
-      <option name="project" value="LOCAL" />
-      <updated>1752944071002</updated>
+      <workItem from="1762386967275" duration="4036000" />
     </task>
     <task id="LOCAL-00209" summary="Commit Message">
       <option name="closed" value="true" />
@@ -564,7 +539,31 @@
       <option name="project" value="LOCAL" />
       <updated>1762389898460</updated>
     </task>
-    <option name="localTasksCounter" value="255" />
+    <task id="LOCAL-00255" summary="Commit Message">
+      <option name="closed" value="true" />
+      <created>1762390885135</created>
+      <option name="number" value="00255" />
+      <option name="presentableId" value="LOCAL-00255" />
+      <option name="project" value="LOCAL" />
+      <updated>1762390885135</updated>
+    </task>
+    <task id="LOCAL-00256" summary="Commit Message">
+      <option name="closed" value="true" />
+      <created>1762390966023</created>
+      <option name="number" value="00256" />
+      <option name="presentableId" value="LOCAL-00256" />
+      <option name="project" value="LOCAL" />
+      <updated>1762390966025</updated>
+    </task>
+    <task id="LOCAL-00257" summary="Commit Message">
+      <option name="closed" value="true" />
+      <created>1762391051401</created>
+      <option name="number" value="00257" />
+      <option name="presentableId" value="LOCAL-00257" />
+      <option name="project" value="LOCAL" />
+      <updated>1762391051401</updated>
+    </task>
+    <option name="localTasksCounter" value="258" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

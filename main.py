@@ -9,7 +9,7 @@ import streamlit as st
 #from tabulate import tabulate as tab
 
 
-st.header(":red[**_New and Improved_ [ncaa4nba.replit.app](https://ncaa4nba.replit.app/)**]")
+st.header(":red[**_New and Improved!_: [ncaa4nba.replit.app](https://ncaa4nba.replit.app/)**]")
 #
 # /*
 # # =================================================================== Scrape NBA Draft Board
@@ -318,6 +318,6 @@ with col1:
 
 with col2:
     st.text("")
-
-with col3:
     st.image("static/logo.png", width=201)
+with col3:
+
