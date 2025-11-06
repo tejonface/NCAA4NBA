@@ -320,4 +320,4 @@ with col2:
     st.text("")
 
 with col3:
-    st.image("static/logo.png", width=200)
+    st.image("static/logo.png", width=201)
